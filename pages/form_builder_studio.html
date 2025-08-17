@@ -1,0 +1,862 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>استوديو بناء النماذج - منصة النماذج الذكية</title>
+    <link rel="stylesheet" href="../css/main.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<script type="module" src="https://static.rocket.new/rocket-web.js?_cfg=https%3A%2F%2Fsmartform5678back.builtwithrocket.new&_be=https%3A%2F%2Fapplication.rocket.new&_v=0.1.6"></script>
+</head>
+<body class="bg-background text-text-primary">
+    <!-- Navigation Header -->
+    <nav class="bg-surface shadow-soft sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <!-- Logo -->
+                <div class="flex items-center">
+                    <svg class="h-10 w-10 text-primary" viewBox="0 0 40 40" fill="currentColor">
+                        <rect x="4" y="8" width="32" height="24" rx="4" stroke="currentColor" stroke-width="2" fill="none"/>
+                        <path d="M8 16h8v2H8zm0 4h12v2H8zm0 4h6v2H8z" fill="currentColor"/>
+                        <circle cx="28" cy="20" r="6" fill="currentColor" opacity="0.2"/>
+                        <path d="M25 20l2 2 4-4" stroke="currentColor" stroke-width="2" fill="none"/>
+                    </svg>
+                    <span class="mr-3 text-xl font-bold text-primary">منصة النماذج الذكية</span>
+                </div>
+
+                <!-- Desktop Navigation -->
+                <div class="hidden md:flex items-center space-x-reverse space-x-8">
+                    <a href="homepage.html" class="text-text-secondary hover:text-primary transition-quick">الرئيسية</a>
+                    <a href="form_builder_studio.html" class="text-primary font-semibold border-b-2 border-secondary pb-1">منشئ النماذج</a>
+                    <a href="template_gallery.html" class="text-text-secondary hover:text-primary transition-quick">معرض القوالب</a>
+                    <a href="ocr_technology_center.html" class="text-text-secondary hover:text-primary transition-quick">تقنية OCR</a>
+                    <a href="customer_success_stories.html" class="text-text-secondary hover:text-primary transition-quick">قصص النجاح</a>
+                    <button class="btn-primary">حفظ النموذج</button>
+                </div>
+
+                <!-- Mobile Menu Button -->
+                <div class="md:hidden">
+                    <button id="mobile-menu-button" class="text-primary hover:text-secondary transition-quick">
+                        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Mobile Menu -->
+            <div id="mobile-menu" class="md:hidden hidden pb-4">
+                <div class="flex flex-col space-y-4">
+                    <a href="homepage.html" class="text-text-secondary">الرئيسية</a>
+                    <a href="form_builder_studio.html" class="text-primary font-semibold">منشئ النماذج</a>
+                    <a href="template_gallery.html" class="text-text-secondary">معرض القوالب</a>
+                    <a href="ocr_technology_center.html" class="text-text-secondary">تقنية OCR</a>
+                    <a href="customer_success_stories.html" class="text-text-secondary">قصص النجاح</a>
+                    <button class="btn-primary w-full mt-4">حفظ النموذج</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Form Builder Interface -->
+    <div class="flex h-screen bg-background">
+        <!-- Left Sidebar - Form Elements -->
+        <div class="w-80 bg-surface shadow-soft overflow-y-auto">
+            <div class="p-6">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-xl font-semibold text-primary">عناصر النموذج</h2>
+                    <button class="btn-secondary text-sm px-3 py-1">
+                        <svg class="w-4 h-4 ml-1 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                        </svg>
+                        إضافة عنصر
+                    </button>
+                </div>
+
+                <!-- Basic Elements -->
+                <div class="mb-8">
+                    <h3 class="text-sm font-semibold text-text-secondary mb-4 uppercase tracking-wide">العناصر الأساسية</h3>
+                    <div class="space-y-3">
+                        <div class="form-element-item p-3 border-2 border-dashed border-gray-200 rounded-lg cursor-pointer hover:border-secondary hover:bg-secondary-50 transition-all" data-element="text">
+                            <div class="flex items-center">
+                                <svg class="w-5 h-5 text-secondary ml-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h8m-8 6h16"/>
+                                </svg>
+                                <div>
+                                    <div class="font-medium">حقل نصي</div>
+                                    <div class="text-sm text-text-secondary">إدخال نص عادي</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-element-item p-3 border-2 border-dashed border-gray-200 rounded-lg cursor-pointer hover:border-secondary hover:bg-secondary-50 transition-all" data-element="textarea">
+                            <div class="flex items-center">
+                                <svg class="w-5 h-5 text-secondary ml-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"/>
+                                </svg>
+                                <div>
+                                    <div class="font-medium">منطقة نص</div>
+                                    <div class="text-sm text-text-secondary">نص متعدد الأسطر</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-element-item p-3 border-2 border-dashed border-gray-200 rounded-lg cursor-pointer hover:border-secondary hover:bg-secondary-50 transition-all" data-element="select">
+                            <div class="flex items-center">
+                                <svg class="w-5 h-5 text-secondary ml-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l4-4 4 4m0 6l-4 4-4-4"/>
+                                </svg>
+                                <div>
+                                    <div class="font-medium">قائمة منسدلة</div>
+                                    <div class="text-sm text-text-secondary">اختيار من قائمة</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-element-item p-3 border-2 border-dashed border-gray-200 rounded-lg cursor-pointer hover:border-secondary hover:bg-secondary-50 transition-all" data-element="checkbox">
+                            <div class="flex items-center">
+                                <svg class="w-5 h-5 text-secondary ml-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                </svg>
+                                <div>
+                                    <div class="font-medium">مربع اختيار</div>
+                                    <div class="text-sm text-text-secondary">اختيار متعدد</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-element-item p-3 border-2 border-dashed border-gray-200 rounded-lg cursor-pointer hover:border-secondary hover:bg-secondary-50 transition-all" data-element="radio">
+                            <div class="flex items-center">
+                                <svg class="w-5 h-5 text-secondary ml-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                </svg>
+                                <div>
+                                    <div class="font-medium">أزرار اختيار</div>
+                                    <div class="text-sm text-text-secondary">اختيار واحد</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Advanced Elements -->
+                <div class="mb-8">
+                    <h3 class="text-sm font-semibold text-text-secondary mb-4 uppercase tracking-wide">العناصر المتقدمة</h3>
+                    <div class="space-y-3">
+                        <div class="form-element-item p-3 border-2 border-dashed border-gray-200 rounded-lg cursor-pointer hover:border-accent hover:bg-accent-50 transition-all" data-element="signature">
+                            <div class="flex items-center">
+                                <svg class="w-5 h-5 text-accent ml-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
+                                </svg>
+                                <div>
+                                    <div class="font-medium">حقل التوقيع</div>
+                                    <div class="text-sm text-text-secondary">توقيع رقمي</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-element-item p-3 border-2 border-dashed border-gray-200 rounded-lg cursor-pointer hover:border-accent hover:bg-accent-50 transition-all" data-element="file">
+                            <div class="flex items-center">
+                                <svg class="w-5 h-5 text-accent ml-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+                                </svg>
+                                <div>
+                                    <div class="font-medium">رفع ملف</div>
+                                    <div class="text-sm text-text-secondary">مرفقات</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-element-item p-3 border-2 border-dashed border-gray-200 rounded-lg cursor-pointer hover:border-accent hover:bg-accent-50 transition-all" data-element="date">
+                            <div class="flex items-center">
+                                <svg class="w-5 h-5 text-accent ml-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                </svg>
+                                <div>
+                                    <div class="font-medium">حقل التاريخ</div>
+                                    <div class="text-sm text-text-secondary">تاريخ هجري/ميلادي</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-element-item p-3 border-2 border-dashed border-gray-200 rounded-lg cursor-pointer hover:border-accent hover:bg-accent-50 transition-all" data-element="ocr">
+                            <div class="flex items-center">
+                                <svg class="w-5 h-5 text-accent ml-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                </svg>
+                                <div>
+                                    <div class="font-medium">استخراج OCR</div>
+                                    <div class="text-sm text-text-secondary">استخراج من صورة</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- OCR Integration Panel -->
+                <div class="bg-accent-50 p-4 rounded-lg">
+                    <h4 class="font-semibold text-accent mb-3">تكامل OCR الذكي</h4>
+                    <p class="text-sm text-text-secondary mb-4">ارفع مستند عينة لإنشاء حقول تلقائياً</p>
+                    <div class="border-2 border-dashed border-accent-300 rounded-lg p-4 text-center cursor-pointer hover:border-accent-500 transition-colors" id="ocr-upload">
+                        <svg class="w-8 h-8 text-accent-400 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+                        </svg>
+                        <p class="text-sm text-accent">ارفع مستند عربي</p>
+                        <input type="file" class="hidden" id="ocr-file-input" accept="image/*" />
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Center Canvas - Form Preview -->
+        <div class="flex-1 flex flex-col">
+            <!-- Canvas Toolbar -->
+            <div class="bg-surface border-b border-gray-200 p-4">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-reverse space-x-4">
+                        <h1 class="text-xl font-semibold text-primary">نموذج جديد</h1>
+                        <div class="flex items-center space-x-reverse space-x-2">
+                            <span class="text-sm text-text-secondary">آخر حفظ:</span>
+                            <span class="text-sm text-success">16 أغسطس 2025، 11:44 م</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-reverse space-x-4">
+                        <!-- Preview Mode Toggle -->
+                        <div class="flex bg-gray-100 rounded-lg p-1">
+                            <button class="preview-mode-btn active px-3 py-1 rounded text-sm font-medium" data-mode="desktop">
+                                <svg class="w-4 h-4 ml-1 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+                                    <line x1="8" y1="21" x2="16" y2="21"/>
+                                    <line x1="12" y1="17" x2="12" y2="21"/>
+                                </svg>
+                                سطح المكتب
+                            </button>
+                            <button class="preview-mode-btn px-3 py-1 rounded text-sm font-medium" data-mode="mobile">
+                                <svg class="w-4 h-4 ml-1 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <rect x="5" y="2" width="14" height="20" rx="2" ry="2"/>
+                                    <line x1="12" y1="18" x2="12.01" y2="18"/>
+                                </svg>
+                                الجوال
+                            </button>
+                        </div>
+                        
+                        <button class="btn-secondary">
+                            <svg class="w-4 h-4 ml-1 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                            </svg>
+                            معاينة
+                        </button>
+                        
+                        <button class="btn-primary">
+                            <svg class="w-4 h-4 ml-1 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3-3m0 0l-3 3m3-3v12"/>
+                            </svg>
+                            نشر النموذج
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Form Canvas -->
+            <div class="flex-1 p-8 overflow-y-auto bg-gray-50">
+                <div class="max-w-4xl mx-auto">
+                    <div id="form-canvas" class="bg-surface rounded-lg shadow-soft p-8 min-h-96">
+                        <!-- Form Header -->
+                        <div class="mb-8 text-center">
+                            <h2 class="text-2xl font-bold text-primary mb-2 editable-title" contenteditable="true">عنوان النموذج</h2>
+                            <p class="text-text-secondary editable-description" contenteditable="true">وصف مختصر للنموذج وغرضه</p>
+                        </div>
+
+                        <!-- Dynamic Form Elements -->
+                        <div id="form-elements" class="space-y-6">
+                            <!-- Sample Form Element -->
+                            <div class="form-element-container relative group" data-element-id="1">
+                                <div class="absolute -right-4 top-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <div class="flex flex-col space-y-1">
+                                        <button class="w-6 h-6 bg-secondary text-white rounded text-xs hover:bg-secondary-700 transition-colors" title="تحرير">
+                                            <svg class="w-3 h-3 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2.5 2.5 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                                            </svg>
+                                        </button>
+                                        <button class="w-6 h-6 bg-error text-white rounded text-xs hover:bg-error-600 transition-colors" title="حذف">
+                                            <svg class="w-3 h-3 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <div>
+                                    <label class="block text-sm font-medium mb-2 text-primary">الاسم الكامل *</label>
+                                    <input type="text" class="form-input arabic-text" placeholder="أدخل اسمك الكامل" required />
+                                    <p class="text-xs text-text-secondary mt-1">هذا الحقل مطلوب</p>
+                                </div>
+                            </div>
+
+                            <!-- Drop Zone -->
+                            <div class="drop-zone border-2 border-dashed border-gray-300 rounded-lg p-8 text-center text-gray-400 transition-colors hover:border-secondary hover:text-secondary">
+                                <svg class="w-12 h-12 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                                </svg>
+                                <p>اسحب عنصر من الشريط الجانبي أو انقر لإضافة حقل جديد</p>
+                            </div>
+                        </div>
+
+                        <!-- Form Footer -->
+                        <div class="mt-8 pt-6 border-t border-gray-200">
+                            <div class="flex justify-between items-center">
+                                <div class="text-sm text-text-secondary">
+                                    * الحقول المطلوبة
+                                </div>
+                                <button type="submit" class="btn-primary">
+                                    إرسال النموذج
+                                    <svg class="w-4 h-4 mr-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Panel - Styling & Properties -->
+        <div class="w-80 bg-surface shadow-soft overflow-y-auto">
+            <div class="p-6">
+                <!-- Element Properties -->
+                <div class="mb-8">
+                    <h3 class="text-lg font-semibold text-primary mb-4">خصائص العنصر</h3>
+                    <div id="element-properties" class="space-y-4">
+                        <div class="text-center text-text-secondary py-8">
+                            <svg class="w-12 h-12 mx-auto mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
+                            </svg>
+                            <p>اختر عنصر لتحرير خصائصه</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Form Styling -->
+                <div class="mb-8">
+                    <h3 class="text-lg font-semibold text-primary mb-4">تنسيق النموذج</h3>
+                    
+                    <!-- Typography -->
+                    <div class="mb-6">
+                        <h4 class="text-sm font-semibold text-text-secondary mb-3">الخطوط العربية</h4>
+                        <select class="form-input mb-3" id="font-family">
+                            <option value="Tajawal">تجوال (Tajawal)</option>
+                            <option value="Amiri">أميري (Amiri)</option>
+                            <option value="Cairo">القاهرة (Cairo)</option>
+                            <option value="Noto Sans Arabic">نوتو العربية</option>
+                        </select>
+                        
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-xs font-medium mb-1">حجم الخط</label>
+                                <select class="form-input text-sm" id="font-size">
+                                    <option value="14">14px</option>
+                                    <option value="16" selected>16px</option>
+                                    <option value="18">18px</option>
+                                    <option value="20">20px</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium mb-1">وزن الخط</label>
+                                <select class="form-input text-sm" id="font-weight">
+                                    <option value="400">عادي</option>
+                                    <option value="500">متوسط</option>
+                                    <option value="600">شبه عريض</option>
+                                    <option value="700">عريض</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Color Scheme -->
+                    <div class="mb-6">
+                        <h4 class="text-sm font-semibold text-text-secondary mb-3">نظام الألوان</h4>
+                        <div class="grid grid-cols-3 gap-2">
+                            <div class="color-option w-full h-12 bg-primary rounded-lg cursor-pointer border-2 border-transparent hover:border-gray-300 transition-colors" data-color="primary" title="أزرق داكن"></div>
+                            <div class="color-option w-full h-12 bg-secondary rounded-lg cursor-pointer border-2 border-transparent hover:border-gray-300 transition-colors" data-color="secondary" title="أزرق فاتح"></div>
+                            <div class="color-option w-full h-12 bg-accent rounded-lg cursor-pointer border-2 border-transparent hover:border-gray-300 transition-colors" data-color="accent" title="برتقالي"></div>
+                            <div class="color-option w-full h-12 bg-success rounded-lg cursor-pointer border-2 border-transparent hover:border-gray-300 transition-colors" data-color="success" title="أخضر"></div>
+                            <div class="color-option w-full h-12 bg-warning rounded-lg cursor-pointer border-2 border-transparent hover:border-gray-300 transition-colors" data-color="warning" title="أصفر"></div>
+                            <div class="color-option w-full h-12 bg-error rounded-lg cursor-pointer border-2 border-transparent hover:border-gray-300 transition-colors" data-color="error" title="أحمر"></div>
+                        </div>
+                    </div>
+
+                    <!-- Layout Options -->
+                    <div class="mb-6">
+                        <h4 class="text-sm font-semibold text-text-secondary mb-3">تخطيط النموذج</h4>
+                        <div class="space-y-3">
+                            <div class="flex items-center justify-between">
+                                <label class="text-sm">عرض كامل</label>
+                                <input type="checkbox" class="form-checkbox" id="full-width" />
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <label class="text-sm">خلفية شفافة</label>
+                                <input type="checkbox" class="form-checkbox" id="transparent-bg" />
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <label class="text-sm">حدود مدورة</label>
+                                <input type="checkbox" class="form-checkbox" id="rounded-corners" checked />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Conditional Logic -->
+                <div class="mb-8">
+                    <h3 class="text-lg font-semibold text-primary mb-4">المنطق الشرطي</h3>
+                    <div class="bg-secondary-50 p-4 rounded-lg">
+                        <div class="flex items-center mb-3">
+                            <svg class="w-5 h-5 text-secondary ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
+                            </svg>
+                            <span class="font-medium text-secondary">قواعد ذكية</span>
+                        </div>
+                        <p class="text-sm text-text-secondary mb-4">إظهار/إخفاء الحقول بناءً على الإجابات</p>
+                        <button class="btn-secondary w-full text-sm">
+                            <svg class="w-4 h-4 ml-1 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                            </svg>
+                            إضافة قاعدة
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Smart Suggestions -->
+                <div class="mb-8">
+                    <h3 class="text-lg font-semibold text-primary mb-4">اقتراحات ذكية</h3>
+                    <div class="space-y-3">
+                        <div class="bg-accent-50 p-3 rounded-lg border border-accent-200">
+                            <div class="flex items-start">
+                                <svg class="w-4 h-4 text-accent mt-0.5 ml-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+                                </svg>
+                                <div>
+                                    <div class="text-sm font-medium text-accent">اقتراح قانوني</div>
+                                    <div class="text-xs text-text-secondary">أضف حقل "رقم الهوية الوطنية"</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-success-50 p-3 rounded-lg border border-success-200">
+                            <div class="flex items-start">
+                                <svg class="w-4 h-4 text-success mt-0.5 ml-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                </svg>
+                                <div>
+                                    <div class="text-sm font-medium text-success">تحسين UX</div>
+                                    <div class="text-xs text-text-secondary">استخدم قائمة منسدلة للمدن</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PDF Preview -->
+                <div class="mb-8">
+                    <h3 class="text-lg font-semibold text-primary mb-4">معاينة PDF</h3>
+                    <div class="bg-gray-100 p-4 rounded-lg">
+                        <div class="aspect-w-3 aspect-h-4 bg-white rounded shadow-sm mb-3">
+                            <div class="p-4 text-xs">
+                                <div class="h-2 bg-primary rounded mb-2"></div>
+                                <div class="h-1 bg-gray-300 rounded mb-1 w-3/4"></div>
+                                <div class="h-1 bg-gray-300 rounded mb-3 w-1/2"></div>
+                                <div class="space-y-2">
+                                    <div class="h-1 bg-gray-200 rounded w-full"></div>
+                                    <div class="h-1 bg-gray-200 rounded w-2/3"></div>
+                                    <div class="h-1 bg-gray-200 rounded w-3/4"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <button class="btn-accent w-full text-sm">
+                            <svg class="w-4 h-4 ml-1 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                            </svg>
+                            معاينة PDF
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Collaboration -->
+                <div>
+                    <h3 class="text-lg font-semibold text-primary mb-4">التعاون</h3>
+                    <div class="space-y-3">
+                        <div class="flex items-center space-x-reverse space-x-3">
+                            <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=32&h=32&auto=format&fit=crop" alt="أحمد محمد" class="w-8 h-8 rounded-full" onerror="this.src='https://images.unsplash.com/photo-1584824486509-112e4181ff6b?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'; this.onerror=null;" />
+                            <div class="flex-1">
+                                <div class="text-sm font-medium">أحمد محمد</div>
+                                <div class="text-xs text-text-secondary">محرر</div>
+                            </div>
+                            <div class="w-2 h-2 bg-success rounded-full"></div>
+                        </div>
+
+                        <div class="flex items-center space-x-reverse space-x-3">
+                            <img src="https://images.pexels.com/photos/3785079/pexels-photo-3785079.jpeg?auto=compress&cs=tinysrgb&w=32&h=32" alt="فاطمة علي" class="w-8 h-8 rounded-full" onerror="this.src='https://images.unsplash.com/photo-1584824486509-112e4181ff6b?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'; this.onerror=null;" />
+                            <div class="flex-1">
+                                <div class="text-sm font-medium">فاطمة علي</div>
+                                <div class="text-xs text-text-secondary">مشاهد</div>
+                            </div>
+                            <div class="w-2 h-2 bg-gray-300 rounded-full"></div>
+                        </div>
+
+                        <button class="btn-secondary w-full text-sm">
+                            <svg class="w-4 h-4 ml-1 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                            </svg>
+                            دعوة عضو
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script>
+        // Mobile menu toggle
+        document.getElementById('mobile-menu-button').addEventListener('click', function() {
+            const mobileMenu = document.getElementById('mobile-menu');
+            mobileMenu.classList.toggle('hidden');
+        });
+
+        // Preview mode toggle
+        document.querySelectorAll('.preview-mode-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.preview-mode-btn').forEach(b => {
+                    b.classList.remove('active', 'bg-white', 'text-primary', 'shadow-sm');
+                    b.classList.add('text-gray-600');
+                });
+                this.classList.add('active', 'bg-white', 'text-primary', 'shadow-sm');
+                this.classList.remove('text-gray-600');
+                
+                const mode = this.dataset.mode;
+                const canvas = document.getElementById('form-canvas');
+                if (mode === 'mobile') {
+                    canvas.style.maxWidth = '375px';
+                    canvas.style.margin = '0 auto';
+                } else {
+                    canvas.style.maxWidth = '';
+                    canvas.style.margin = '';
+                }
+            });
+        });
+
+        // Drag and drop functionality
+        let draggedElement = null;
+
+        document.querySelectorAll('.form-element-item').forEach(item => {
+            item.addEventListener('dragstart', function(e) {
+                draggedElement = this.dataset.element;
+                this.style.opacity = '0.5';
+            });
+
+            item.addEventListener('dragend', function(e) {
+                this.style.opacity = '1';
+            });
+
+            item.setAttribute('draggable', 'true');
+        });
+
+        // Drop zone functionality
+        const dropZone = document.querySelector('.drop-zone');
+        const formElements = document.getElementById('form-elements');
+
+        dropZone.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            this.classList.add('border-secondary', 'bg-secondary-50');
+        });
+
+        dropZone.addEventListener('dragleave', function(e) {
+            this.classList.remove('border-secondary', 'bg-secondary-50');
+        });
+
+        dropZone.addEventListener('drop', function(e) {
+            e.preventDefault();
+            this.classList.remove('border-secondary', 'bg-secondary-50');
+            
+            if (draggedElement) {
+                addFormElement(draggedElement);
+                draggedElement = null;
+            }
+        });
+
+        // Add form element function
+        function addFormElement(elementType) {
+            const elementId = Date.now();
+            let elementHTML = '';
+
+            switch (elementType) {
+                case 'text':
+                    elementHTML = `
+                        <div class="form-element-container relative group" data-element-id="${elementId}">
+                            <div class="absolute -right-4 top-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <div class="flex flex-col space-y-1">
+                                    <button class="w-6 h-6 bg-secondary text-white rounded text-xs hover:bg-secondary-700 transition-colors" onclick="editElement(${elementId})">
+                                        <svg class="w-3 h-3 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2.5 2.5 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                                        </svg>
+                                    </button>
+                                    <button class="w-6 h-6 bg-error text-white rounded text-xs hover:bg-error-600 transition-colors" onclick="deleteElement(${elementId})">
+                                        <svg class="w-3 h-3 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-2 text-primary">حقل نصي جديد</label>
+                                <input type="text" class="form-input arabic-text" placeholder="أدخل النص هنا">
+                            </div>
+                        </div>
+                    `;
+                    break;
+                case 'textarea':
+                    elementHTML = `
+                        <div class="form-element-container relative group" data-element-id="${elementId}">
+                            <div class="absolute -right-4 top-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <div class="flex flex-col space-y-1">
+                                    <button class="w-6 h-6 bg-secondary text-white rounded text-xs hover:bg-secondary-700 transition-colors" onclick="editElement(${elementId})">
+                                        <svg class="w-3 h-3 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2.5 2.5 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                                        </svg>
+                                    </button>
+                                    <button class="w-6 h-6 bg-error text-white rounded text-xs hover:bg-error-600 transition-colors" onclick="deleteElement(${elementId})">
+                                        <svg class="w-3 h-3 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-2 text-primary">منطقة نص</label>
+                                <textarea class="form-input arabic-text" rows="4" placeholder="أدخل النص المتعدد الأسطر هنا"></textarea>
+                            </div>
+                        </div>
+                    `;
+                    break;
+                case 'select':
+                    elementHTML = `
+                        <div class="form-element-container relative group" data-element-id="${elementId}">
+                            <div class="absolute -right-4 top-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <div class="flex flex-col space-y-1">
+                                    <button class="w-6 h-6 bg-secondary text-white rounded text-xs hover:bg-secondary-700 transition-colors" onclick="editElement(${elementId})">
+                                        <svg class="w-3 h-3 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2.5 2.5 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                                        </svg>
+                                    </button>
+                                    <button class="w-6 h-6 bg-error text-white rounded text-xs hover:bg-error-600 transition-colors" onclick="deleteElement(${elementId})">
+                                        <svg class="w-3 h-3 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-2 text-primary">قائمة منسدلة</label>
+                                <select class="form-input arabic-text">
+                                    <option>اختر من القائمة</option>
+                                    <option>الخيار الأول</option>
+                                    <option>الخيار الثاني</option>
+                                    <option>الخيار الثالث</option>
+                                </select>
+                            </div>
+                        </div>
+                    `;
+                    break;
+                case 'checkbox':
+                    elementHTML = `
+                        <div class="form-element-container relative group" data-element-id="${elementId}">
+                            <div class="absolute -right-4 top-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <div class="flex flex-col space-y-1">
+                                    <button class="w-6 h-6 bg-secondary text-white rounded text-xs hover:bg-secondary-700 transition-colors" onclick="editElement(${elementId})">
+                                        <svg class="w-3 h-3 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2.5 2.5 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                                        </svg>
+                                    </button>
+                                    <button class="w-6 h-6 bg-error text-white rounded text-xs hover:bg-error-600 transition-colors" onclick="deleteElement(${elementId})">
+                                        <svg class="w-3 h-3 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-2 text-primary">مربعات الاختيار</label>
+                                <div class="space-y-2">
+                                    <label class="flex items-center">
+                                        <input type="checkbox" class="form-checkbox ml-2">
+                                        <span>الخيار الأول</span>
+                                    </label>
+                                    <label class="flex items-center">
+                                        <input type="checkbox" class="form-checkbox ml-2">
+                                        <span>الخيار الثاني</span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    break;
+                case 'signature':
+                    elementHTML = `
+                        <div class="form-element-container relative group" data-element-id="${elementId}">
+                            <div class="absolute -right-4 top-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <div class="flex flex-col space-y-1">
+                                    <button class="w-6 h-6 bg-secondary text-white rounded text-xs hover:bg-secondary-700 transition-colors" onclick="editElement(${elementId})">
+                                        <svg class="w-3 h-3 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2.5 2.5 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                                        </svg>
+                                    </button>
+                                    <button class="w-6 h-6 bg-error text-white rounded text-xs hover:bg-error-600 transition-colors" onclick="deleteElement(${elementId})">
+                                        <svg class="w-3 h-3 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-2 text-primary">التوقيع الرقمي</label>
+                                <div class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center bg-gray-50">
+                                    <svg class="w-8 h-8 text-gray-400 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
+                                    </svg>
+                                    <p class="text-sm text-gray-500">انقر للتوقيع</p>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    break;
+            }
+
+            // Insert before drop zone
+            dropZone.insertAdjacentHTML('beforebegin', elementHTML);
+        }
+
+        // Element management functions
+        function editElement(elementId) {
+            const element = document.querySelector(`[data-element-id="${elementId}"]`);
+            // Show properties panel for this element
+            showElementProperties(element);
+        }
+
+        function deleteElement(elementId) {
+            const element = document.querySelector(`[data-element-id="${elementId}"]`);
+            if (element && confirm('هل أنت متأكد من حذف هذا العنصر؟')) {
+                element.remove();
+            }
+        }
+
+        function showElementProperties(element) {
+            const propertiesPanel = document.getElementById('element-properties');
+            propertiesPanel.innerHTML = `
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium mb-2">تسمية الحقل</label>
+                        <input type="text" class="form-input" value="حقل جديد">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-2">النص التوضيحي</label>
+                        <input type="text" class="form-input" placeholder="أدخل النص التوضيحي">
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <label class="text-sm">حقل مطلوب</label>
+                        <input type="checkbox" class="form-checkbox">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-2">رسالة التحقق</label>
+                        <input type="text" class="form-input" placeholder="رسالة خطأ مخصصة">
+                    </div>
+                    <button class="btn-primary w-full text-sm">تطبيق التغييرات</button>
+                </div>
+            `;
+        }
+
+        // OCR Upload functionality
+        document.getElementById('ocr-upload').addEventListener('click', function() {
+            document.getElementById('ocr-file-input').click();
+        });
+
+        document.getElementById('ocr-file-input').addEventListener('change', function(e) {
+            if (e.target.files.length > 0) {
+                simulateOCRProcessing();
+            }
+        });
+
+        function simulateOCRProcessing() {
+            const uploadArea = document.getElementById('ocr-upload');
+            uploadArea.innerHTML = `
+                <svg class="w-8 h-8 text-accent-400 mx-auto mb-2 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                </svg>
+                <p class="text-sm text-accent">جاري استخراج النص...</p>
+            `;
+
+            setTimeout(() => {
+                // Simulate adding extracted fields
+                addFormElement('text');
+                addFormElement('select');
+                addFormElement('date');
+                
+                uploadArea.innerHTML = `
+                    <svg class="w-8 h-8 text-success mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    <p class="text-sm text-success">تم استخراج 3 حقول بنجاح</p>
+                `;
+            }, 2000);
+        }
+
+        // Color scheme selection
+        document.querySelectorAll('.color-option').forEach(option => {
+            option.addEventListener('click', function() {
+                const color = this.dataset.color;
+                document.querySelectorAll('.color-option').forEach(opt => {
+                    opt.classList.remove('ring-2', 'ring-offset-2', 'ring-gray-400');
+                });
+                this.classList.add('ring-2', 'ring-offset-2', 'ring-gray-400');
+                
+                // Apply color scheme to form
+                applyColorScheme(color);
+            });
+        });
+
+        function applyColorScheme(color) {
+            const canvas = document.getElementById('form-canvas');
+            const buttons = canvas.querySelectorAll('.btn-primary');
+            const labels = canvas.querySelectorAll('label');
+            
+            buttons.forEach(btn => {
+                btn.className = btn.className.replace(/bg-\w+-?\d*/, `bg-${color}`);
+            });
+            
+            labels.forEach(label => {
+                label.className = label.className.replace(/text-\w+-?\d*/, `text-${color}`);
+            });
+        }
+
+        // Auto-save functionality
+        setInterval(() => {
+            // Simulate auto-save
+            console.log('Auto-saving form...');
+        }, 30000);
+
+        // Initialize tooltips and help text
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add helpful tooltips
+            const tooltips = document.querySelectorAll('[title]');
+            tooltips.forEach(tooltip => {
+                tooltip.addEventListener('mouseenter', function() {
+                    // Show tooltip
+                });
+            });
+        });
+    </script>
+</body>
+</html>
