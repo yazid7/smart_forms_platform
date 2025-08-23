@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>منصة نماذج PDF الذكية</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Tajawal', sans-serif;
+        }
+        
+        :root {
+            --primary: #4361ee;
+            --secondary: #3a0ca3;
+            --accent: #f72585;
+            --light: #f8f9fa;
+            --dark: #212529;
+            --success: #4cc9f0;
+            --warning: #f9c74f;
+            --danger: #ef233c;
+        }
+        
+        body {
+            background-color: #f5f7f9;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+            padding: 20px 0;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            font-size: 24px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+        }
+        
+        .logo i {
+            margin-right: 10px;
+            color: var(--accent);
+        }
+        
+        nav ul {
+            display: flex;
+            list-style: none;
+        }
+        
+        nav ul li {
+            margin-left: 25px;
+        }
+        
+        nav ul li a {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            padding: 5px 10px;
+            border-radius: 4px;
+        }
+        
+        nav ul li a:hover, nav ul li a.active {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        
+        .hero {
+            text-align: center;
+            padding: 60px 0;
+            background: linear-gradient(rgba(67, 97, 238, 0.05), rgba(58, 12, 163, 0.1)), url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><rect fill="%234361ee" fill-opacity="0.1" width="100" height="100"/><path d="M0 0L100 100" stroke="%234361ee" stroke-width="1" stroke-opacity="0.2"/></svg>');
+            border-radius: 10px;
+            margin: 30px 0;
+        }
+        
+        .hero h1 {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            color: var(--secondary);
+        }
+        
+        .hero p {
+            font-size: 1.2rem;
+            max-width: 800px;
+            margin: 0 auto 30px;
+            color: var(--dark);
+        }
+        
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: var(--secondary);
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .btn-outline {
+            background: transparent;
+            color: var(--primary);
+            border: 2px solid var(--primary);
+        }
+        
+        .btn-outline:hover {
+            background: var(--primary);
+            color: white;
+        }
+        
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin: 50px 0;
+        }
+        
+        .feature-card {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .feature-icon {
+            font-size: 2.5rem;
+            color: var(--primary);
+            margin-bottom: 20px;
+        }
+        
+        .feature-card h3 {
+            margin-bottom: 15px;
+            color: var(--secondary);
+        }
+        
+        .editor-container {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 5px 25px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            margin: 40px 0;
+            display: none;
+        }
+        
+        .editor-header {
+            background: var(--primary);
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .editor-tools {
+            display: flex;
+            gap: 10px;
+            padding: 15px;
+            background: #f0f2f5;
+            border-bottom: 1px solid #e0e0e0;
+            flex-wrap: wrap;
+        }
+        
+        .tool-btn {
+            padding: 8px 15px;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: all 0.2s ease;
+        }
+        
+        .tool-btn:hover {
+            background: #f0f2f5;
+            border-color: var(--primary);
+        }
+        
+        .editor-canvas {
+            min-height: 500px;
+            padding: 20px;
+            background: #f9fafb;
+        }
+        
+        .form-field {
+            background: white;
+            border: 1px dashed #ccc;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 5px;
+            cursor: move;
+            position: relative;
+        }
+        
+        .form-field:hover {
+            border-color: var(--primary);
+        }
+        
+        .field-actions {
+            position: absolute;
+            top: 5px;
+            left: 5px;
+            display: flex;
+            gap: 5px;
+        }
+        
+        .field-action {
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            background: #f0f2f5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .field-action:hover {
+            background: var(--primary);
+            color: white;
+        }
+        
+        .templates {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 40px 0;
+        }
+        
+        .template {
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+            transition: transform 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .template:hover {
+            transform: translateY(-5px);
+        }
+        
+        .template-img {
+            height: 160px;
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+        
+        .template-info {
+            padding: 15px;
+        }
+        
+        .template-title {
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--dark);
+        }
+        
+        .template-desc {
+            font-size: 0.9rem;
+            color: #666;
+        }
+        
+        footer {
+            background: var(--dark);
+            color: white;
+            padding: 40px 0 20px;
+            margin-top: 60px;
+        }
+        
+        .footer-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .footer-section h3 {
+            margin-bottom: 20px;
+            position: relative;
+            padding-bottom: 10px;
+        }
+        
+        .footer-section h3:after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 50px;
+            height: 2px;
+            background: var(--primary);
+        }
+        
+        .footer-links {
+            list-style: none;
+        }
+        
+        .footer-links li {
+            margin-bottom: 10px;
+        }
+        
+        .footer-links a {
+            color: #ddd;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+        
+        .footer-links a:hover {
+            color: var(--primary);
+        }
+        
+        .social-icons {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .social-icons a {
+            color: white;
+            font-size: 1.2rem;
+            transition: color 0.3s ease;
+        }
+        
+        .social-icons a:hover {
+            color: var(--primary);
+        }
+        
+        .copyright {
+            text-align: center;
+            padding-top: 20px;
+            border-top: 1px solid #444;
+            font-size: 0.9rem;
+            color: #aaa;
+        }
+        
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            nav ul {
+                margin-top: 20px;
+                justify-content: center;
+                flex-wrap: wrap;
+            }
+            
+            nav ul li {
+                margin: 5px 10px;
+            }
+            
+            .hero h1 {
+                font-size: 2rem;
+            }
+            
+            .hero p {
+                font-size: 1rem;
+            }
+            
+            .features {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 10px;
+            padding: 25px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 5px 25px rgba(0, 0, 0, 0.2);
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .close-modal {
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #999;
+        }
+        
+        .close-modal:hover {
+            color: var(--dark);
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container header-content">
+            <div class="logo">
+                <i class="fas fa-file-pdf"></i>
+                <span>منصة نماذج PDF الذكية</span>
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="#" class="active">الرئيسية</a></li>
+                    <li><a href="#">القوالب</a></li>
+                    <li><a href="#">الميزات</a></li>
+                    <li><a href="#">التسعير</a></li>
+                    <li><a href="#">اتصل بنا</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <div class="container">
+        <section class="hero">
+            <h1>صمم نماذج PDF تفاعلية بكل سهولة</h1>
+            <p>منصة متكاملة لإنشاء وتصميم نماذج PDF تفاعلية قابلة للتعبئة مع إمكانية التصدير والمشاركة. أنشئ نماذجك الخاصة بدون الحاجة إلى أي خبرة تقنية.</p>
+            <button class="btn btn-primary" id="startCreating">
+                <i class="fas fa-plus-circle"></i> ابدأ الإنشاء الآن
+            </button>
+        </section>
+
+        <section class="features">
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-magic"></i>
+                </div>
+                <h3>تصميم سهل وسلس</h3>
+                <p>واجهة مستخدم بديهية تجعل عملية إنشاء النماذج تجربة ممتعة وسهلة للجميع</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-download"></i>
+                </div>
+                <h3>تصدير إلى PDF</h3>
+                <p>احفظ نماذجك كملفات PDF تفاعلية قابلة للتعبئة أو طباعتها بجودة عالية</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-share-alt"></i>
+                </div>
+                <h3>مشاركة النماذج</h3>
+                <p>شارك نماذجك مع الآخرين عبر البريد الإلكتروني أو وسائل التواصل الاجتماعي</p>
+            </div>
+        </section>
+
+        <div class="editor-container" id="editor">
+            <div class="editor-header">
+                <h3>محرر النماذج</h3>
+                <div>
+                    <button class="btn btn-outline" style="background: rgba(255,255,255,0.2); color: white; margin-left: 10px;">
+                        <i class="fas fa-download"></i> تصدير PDF
+                    </button>
+                    <button class="btn btn-outline" style="background: rgba(255,255,255,0.2); color: white;">
+                        <i class="fas fa-save"></i> حفظ
+                    </button>
+                </div>
+            </div>
+            <div class="editor-tools">
+                <button class="tool-btn" data-field="text">
+                    <i class="fas fa-font"></i> نص
+                </button>
+                <button class="tool-btn" data-field="input">
+                    <i class="fas fa-input-numeric"></i> حقل إدخال
+                </button>
+                <button class="tool-btn" data-field="textarea">
+                    <i class="fas fa-align-left"></i> منطقة نص
+                </button>
+                <button class="tool-btn" data-field="checkbox">
+                    <i class="fas fa-check-square"></i> خيار
+                </button>
+                <button class="tool-btn" data-field="radio">
+                    <i class="fas fa-dot-circle"></i> زر اختيار
+                </button>
+                <button class="tool-btn" data-field="select">
+                    <i class="fas fa-caret-down"></i> قائمة منسدلة
+                </button>
+                <button class="tool-btn" data-field="date">
+                    <i class="fas fa-calendar"></i> تاريخ
+                </button>
+                <button class="tool-btn" data-field="signature">
+                    <i class="fas fa-signature"></i> توقيع
+                </button>
+            </div>
+            <div class="editor-canvas" id="canvas">
+                <div class="form-field">
+                    <div class="field-actions">
+                        <span class="field-action"><i class="fas fa-pen"></i></span>
+                        <span class="field-action"><i class="fas fa-trash"></i></span>
+                    </div>
+                    <h3>نموذج تفاعلي</h3>
+                    <p>يمكنك البدء بإضافة حقول إلى النموذج باستخدام أدوات المحرر أعلاه</p>
+                </div>
+            </div>
+        </div>
+
+        <h2 style="text-align: center; margin: 50px 0 30px; color: var(--secondary);">قوالب جاهزة</h2>
+        <div class="templates">
+            <div class="template">
+                <div class="template-img">
+                    <i class="fas fa-file-invoice" style="font-size: 40px;"></i>
+                </div>
+                <div class="template-info">
+                    <h3 class="template-title">نموذج فاتورة</h3>
+                    <p class="template-desc">نموذج فاتورة احترافي مع حسابات تلقائية</p>
+                </div>
+            </div>
+            <div class="template">
+                <div class="template-img">
+                    <i class="fas fa-clipboard-list" style="font-size: 40px;"></i>
+                </div>
+                <div class="template-info">
+                    <h3 class="template-title">نموذج طلب توظيف</h3>
+                    <p class="template-desc">نموذج طلب توظيف متكامل مع إمكانية رفع السيرة الذاتية</p>
+                </div>
+            </div>
+            <div class="template">
+                <div class="template-img">
+                    <i class="fas fa-file-contract" style="font-size: 40px;"></i>
+                </div>
+                <div class="template-info">
+                    <h3 class="template-title">نموذج عقد</h3>
+                    <p class="template-desc">نموذج عقود قانوني مع إمكانية التوقيع الإلكتروني</p>
+                </div>
+            </div>
+            <div class="template">
+                <div class="template-img">
+                    <i class="fas fa-clipboard-check" style="font-size: 40px;"></i>
+                </div>
+                <div class="template-info">
+                    <h3 class="template-title">نموذج تقييم</h3>
+                    <p class="template-desc">نموذج تقييم أداء مع إمكانية التقييم برموز تعبيرية</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>عن المنصة</h3>
+                    <p>منصة نماذج PDF الذكية تمكنك من إنشاء نماذج PDF تفاعلية بسهولة ومشاركتها مع الآخرين أو تحميلها لاستخدامها دون الحاجة إلى اتصال بالإنترنت.</p>
+                </div>
+                <div class="footer-section">
+                    <h3>روابط سريعة</h3>
+                    <ul class="footer-links">
+                        <li><a href="#">الرئيسية</a></li>
+                        <li><a href="#">القوالب</a></li>
+                        <li><a href="#">الميزات</a></li>
+                        <li><a href="#">التسعير</a></li>
+                        <li><a href="#">اتصل بنا</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h3>اتصل بنا</h3>
+                    <p><i class="fas fa-envelope"></i> info@smartforms.com</p>
+                    <p><i class="fas fa-phone"></i> +966 12 345 6789</p>
+                    <div class="social-icons">
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                        <a href="#"><i class="fab fa-facebook"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                        <a href="#"><i class="fab fa-linkedin"></i></a>
+                    </div>
+                </div>
+            </div>
+            <div class="copyright">
+                <p>جميع الحقوق محفوظة &copy; 2023 منصة نماذج PDF الذكية</p>
+            </div>
+        </div>
+    </footer>
+
+    <div class="modal" id="templateModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>اختر قالبًا لتبدأ</h3>
+                <span class="close-modal">&times;</span>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                <button class="btn btn-outline" style="justify-content: center;">
+                    <i class="fas fa-file"></i> قالب فارغ
+                </button>
+                <button class="btn btn-outline" style="justify-content: center;">
+                    <i class="fas fa-file-invoice"></i> نموذج فاتورة
+                </button>
+                <button class="btn btn-outline" style="justify-content: center;">
+                    <i class="fas fa-clipboard-list"></i> طلب توظيف
+                </button>
+                <button class="btn btn-outline" style="justify-content: center;">
+                    <i class="fas fa-file-contract"></i> عقد
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const startButton = document.getElementById('startCreating');
+            const editor = document.getElementById('editor');
+            const canvas = document.getElementById('canvas');
+            const templateModal = document.getElementById('templateModal');
+            const closeModal = document.querySelector('.close-modal');
+            const toolButtons = document.querySelectorAll('.tool-btn');
+            
+            // افتح المحرر عند النقر على زر البدء
+            startButton.addEventListener('click', function() {
+                editor.style.display = 'block';
+                templateModal.style.display = 'flex';
+                
+                // Scroll to editor
+                editor.scrollIntoView({ behavior: 'smooth' });
+            });
+            
+            // أغلق النافذة المنبثقة
+            closeModal.addEventListener('click', function() {
+                templateModal.style.display = 'none';
+            });
+            
+            // أغلق النافذة المنبثقة عند النقر خارجها
+            window.addEventListener('click', function(event) {
+                if (event.target == templateModal) {
+                    templateModal.style.display = 'none';
+                }
+            });
+            
+            // أضف حقلاً جديداً عند النقر على أيقونة الأداة
+            toolButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const fieldType = this.getAttribute('data-field');
+                    addFieldToCanvas(fieldType);
+                });
+            });
+            
+            // وظيفة لإضافة حقل إلى لوحة الرسم
+            function addFieldToCanvas(type) {
+                const field = document.createElement('div');
+                field.className = 'form-field';
+                
+                let fieldContent = '';
+                
+                switch(type) {
+                    case 'text':
+                        fieldContent = `
+                            <div class="field-actions">
+                                <span class="field-action"><i class="fas fa-pen"></i></span>
+                                <span class="field-action"><i class="fas fa-trash"></i></span>
+                            </div>
+                            <h3>عنوان النص</h3>
+                            <p>هذا هو نص وصفي يمكنك تعديله حسب الحاجة</p>
+                        `;
+                        break;
+                    case 'input':
+                        fieldContent = `
+                            <div class="field-actions">
+                                <span class="field-action"><i class="fas fa-pen"></i></span>
+                                <span class="field-action"><i class="fas fa-trash"></i></span>
+                            </div>
+                            <label>حقل إدخال نص</label>
+                            <input type="text" style="width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #ddd; border-radius: 4px;">
+                        `;
+                        break;
+                    case 'textarea':
+                        fieldContent = `
+                            <div class="field-actions">
+                                <span class="field-action"><i class="fas fa-pen"></i></span>
+                                <span class="field-action"><i class="fas fa-trash"></i></span>
+                            </div>
+                            <label>منطقة نص</label>
+                            <textarea style="width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #ddd; border-radius: 4px; min-height: 100px;"></textarea>
+                        `;
+                        break;
+                    case 'checkbox':
+                        fieldContent = `
+                            <div class="field-actions">
+                                <span class="field-action"><i class="fas fa-pen"></i></span>
+                                <span class="field-action"><i class="fas fa-trash"></i></span>
+                            </div>
+                            <label style="display: flex; align-items: center; gap: 10px;">
+                                <input type="checkbox"> خيار الاختيار
+                            </label>
+                        `;
+                        break;
+                    default:
+                        fieldContent = `
+                            <div class="field-actions">
+                                <span class="field-action"><i class="fas fa-pen"></i></span>
+                                <span class="field-action"><i class="fas fa-trash"></i></span>
+                            </div>
+                            <p>حقل جديد من النوع: ${type}</p>
+                        `;
+                }
+                
+                field.innerHTML = fieldContent;
+                canvas.appendChild(field);
+                
+                // أضف حدث لحذف الحقل
+                const deleteBtn = field.querySelector('.fa-trash').closest('.field-action');
+                deleteBtn.addEventListener('click', function() {
+                    field.remove();
+                });
+            }
+            
+            // محاكاة تصدير PDF (لأننا لا نستطيع استخدام jsPDF في هذا السياق بدون تكامل كامل)
+            const exportButtons = document.querySelectorAll('.btn-outline');
+            exportButtons.forEach(button => {
+                if (button.textContent.includes('تصدير')) {
+                    button.addEventListener('click', function() {
+                        alert('جاري تحضير ملف PDF للتحميل...');
+                        // في التطبيق الحقيقي، هنا سيتم استدعاء jsPDF لإنشاء PDF
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html>
