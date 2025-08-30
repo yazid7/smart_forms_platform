@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نموذج احترافي مع تحويل إلى PDF</title>
+    <!-- مكتبة jsPDF لإنشاء ملفات PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <!-- مكتبة html2canvas لالتقاط الشاشة -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <!-- مكتبة QRCode.js لإنشاء رمز الاستجابة السريعة -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <!-- خطوط عربية -->
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --accent-color: #e74c3c;
+            --light-color: #ecf0f1;
+            --dark-color: #2c3e50;
+            --success-color: #27ae60;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Tajawal', sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            position: relative;
+        }
+        
+        .logo-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .logo {
+            width: 120px;
+            height: 120px;
+            background: var(--secondary-color);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-size: 24px;
+            font-weight: bold;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        h1 {
+            color: var(--primary-color);
+            margin-bottom: 10px;
+            font-size: 32px;
+        }
+        
+        .description {
+            color: var(--dark-color);
+            margin-bottom: 20px;
+            font-size: 18px;
+        }
+        
+        .form-section, .preview-section {
+            margin-bottom: 30px;
+            padding: 25px;
+            border: 1px solid #e0e0e0;
+            border-radius: 10px;
+            background: #fff;
+        }
+        
+        h2 {
+            color: var(--secondary-color);
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--accent-color);
+            font-size: 24px;
+        }
+        
+        .form-row {
+            display: flex;
+            flex-wrap: wrap;
+            margin: 0 -10px;
+        }
+        
+        .form-group {
+            flex: 1 0 calc(50% - 20px);
+            margin: 0 10px 20px;
+            min-width: 250px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: var(--dark-color);
+        }
+        
+        input[type="text"],
+        input[type="email"],
+        input[type="tel"],
+        input[type="date"],
+        input[type="number"],
+        textarea,
+        select {
+            width: 100%;
+            padding: 14px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 16px;
+            transition: border 0.3s;
+        }
+        
+        input:focus, textarea:focus, select:focus {
+            border-color: var(--secondary-color);
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+        }
+        
+        textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+        
+        .btn {
+            display: inline-block;
+            background: var(--secondary-color);
+            color: white;
+            padding: 14px 28px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.3s;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .btn:hover {
+            background: var(--primary-color);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
+        }
+        
+        .btn-generate {
+            background: var(--success-color);
+            margin-top: 20px;
+            width: 100%;
+            padding: 16px;
+        }
+        
+        .btn-generate:hover {
+            background: #219653;
+        }
+        
+        .preview-content {
+            background: var(--light-color);
+            padding: 25px;
+            border-radius: 8px;
+            min-height: 300px;
+        }
+        
+        .preview-item {
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px dashed #ddd;
+        }
+        
+        .preview-item:last-child {
+            border-bottom: none;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .actions {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 30px;
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .info-bar {
+            display: flex;
+            justify-content: space-between;
+            background: var(--light-color);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .info-item {
+            text-align: center;
+        }
+        
+        .info-item strong {
+            display: block;
+            color: var(--secondary-color);
+            font-size: 18px;
+        }
+        
+        .qr-code {
+            display: flex;
+            justify-content: center;
+            margin: 20px 0;
+        }
+        
+        #qrcode {
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+            
+            .form-group {
+                flex: 1 0 100%;
+            }
+            
+            .actions {
+                flex-direction: column;
+            }
+            
+            .btn {
+                width: 100%;
+                margin-bottom: 10px;
+            }
+            
+            .info-bar {
+                flex-direction: column;
+                gap: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo-container">
+                <div class="logo">شعارنا</div>
+            </div>
+            <h1>نموذج احترافي مع تحويل إلى PDF</h1>
+            <p class="description">املأ النموذج أدناه ثم انقر على "معاينة" لرؤية البيانات قبل تحويلها إلى PDF</p>
+            
+            <div class="info-bar">
+                <div class="info-item">
+                    <span>التاريخ: </span>
+                    <strong id="currentDate"></strong>
+                </div>
+                <div class="info-item">
+                    <span>الوقت: </span>
+                    <strong id="currentTime"></strong>
+                </div>
+                <div class="info-item">
+                    <span>رقم النموذج: </span>
+                    <strong id="formNumber">#2023001</strong>
+                </div>
+            </div>
+        </header>
+        
+        <section class="form-section">
+            <h2>النموذج الإلكتروني</h2>
+            <form id="dataForm">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="name">الاسم الكامل *</label>
+                        <input type="text" id="name" name="name" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="email">البريد الإلكتروني *</label>
+                        <input type="email" id="email" name="email" required>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="phone">رقم الهاتف *</label>
+                        <input type="tel" id="phone" name="phone" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="birthdate">تاريخ الميلاد</label>
+                        <input type="date" id="birthdate" name="birthdate">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="address">العنوان التفصيلي *</label>
+                    <textarea id="address" name="address" required></textarea>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="education">المستوى التعليمي *</label>
+                        <select id="education" name="education" required>
+                            <option value="">-- اختر --</option>
+                            <option value="ثانوية">ثانوية</option>
+                            <option value="دبلوم">دبلوم</option>
+                            <option value="بكالوريوس">بكالوريوس</option>
+                            <option value="ماجستير">ماجستير</option>
+                            <option value="دكتوراه">دكتوراه</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="specialization">التخصص *</label>
+                        <input type="text" id="specialization" name="specialization" required>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="experience">سنوات الخبرة *</label>
+                        <input type="number" id="experience" name="experience" min="0" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="job">الوظيفة المتقدم لها *</label>
+                        <input type="text" id="job" name="job" required>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="skills">المهارات *</label>
+                    <textarea id="skills" name="skills" placeholder="أذكر مهاراتك بشكل منفصل بفواصل" required></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="previousExperience">الخبرات السابقة</label>
+                    <textarea id="previousExperience" name="previousExperience" placeholder="صف خبراتك العملية السابقة..."></textarea>
+                </div>
+                
+                <button type="button" id="previewBtn" class="btn">معاينة النموذج</button>
+            </form>
+        </section>
+        
+        <section id="previewSection" class="preview-section hidden">
+            <h2>معاينة البيانات</h2>
+            <div class="qr-code">
+                <div id="qrcode"></div>
+            </div>
+            <div id="previewContent" class="preview-content">
+                <!-- سيتم ملء هذا القسم بالبيانات من النموذج -->
+            </div>
+            
+            <div class="actions">
+                <button type="button" id="editBtn" class="btn">تعديل النموذج</button>
+                <button type="button" id="generatePdf" class="btn btn-generate">تحويل إلى PDF</button>
+            </div>
+        </section>
+    </div>
+    
+    <footer>
+        <p>© 2023 جميع الحقوق محفوظة - النموذج الاحترافي</p>
+    </footer>
+
+    <script>
+        // تهيئة jsPDF
+        const { jsPDF } = window.jspdf;
+        
+        // عناصر DOM
+        const dataForm = document.getElementById('dataForm');
+        const previewSection = document.getElementById('previewSection');
+        const previewContent = document.getElementById('previewContent');
+        const previewBtn = document.getElementById('previewBtn');
+        const editBtn = document.getElementById('editBtn');
+        const generatePdfBtn = document.getElementById('generatePdf');
+        const currentDateElem = document.getElementById('currentDate');
+        const currentTimeElem = document.getElementById('currentTime');
+        
+        // تحديث التاريخ والوقت
+        function updateDateTime() {
+            const now = new Date();
+            const dateOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            const timeOptions = { hour: '2-digit', minute: '2-digit', second: '2-digit' };
+            
+            currentDateElem.textContent = now.toLocaleDateString('ar-SA', dateOptions);
+            currentTimeElem.textContent = now.toLocaleTimeString('ar-SA', timeOptions);
+        }
+        
+        // تحديث التاريخ والوقت كل ثانية
+        updateDateTime();
+        setInterval(updateDateTime, 1000);
+        
+        // معاينة النموذج
+        previewBtn.addEventListener('click', function() {
+            // التحقق من صحة النموذج
+            if (!dataForm.checkValidity()) {
+                alert('يرجى ملء جميع الحقول المطلوبة بشكل صحيح');
+                return;
+            }
+            
+            // جمع البيانات من النموذج
+            const formData = new FormData(dataForm);
+            const data = Object.fromEntries(formData.entries());
+            
+            // إنشاء محتوى المعاينة
+            let previewHTML = `
+                <div class="preview-item">
+                    <strong>الاسم الكامل:</strong> ${data.name}
+                </div>
+                <div class="preview-item">
+                    <strong>البريد الإلكتروني:</strong> ${data.email}
+                </div>
+                <div class="preview-item">
+                    <strong>رقم الهاتف:</strong> ${data.phone}
+                </div>
+                <div class="preview-item">
+                    <strong>تاريخ الميلاد:</strong> ${data.birthdate || 'غير محدد'}
+                </div>
+                <div class="preview-item">
+                    <strong>العنوان:</strong> ${data.address}
+                </div>
+                <div class="preview-item">
+                    <strong>المستوى التعليمي:</strong> ${data.education}
+                </div>
+                <div class="preview-item">
+                    <strong>التخصص:</strong> ${data.specialization}
+                </div>
+                <div class="preview-item">
+                    <strong>سنوات الخبرة:</strong> ${data.experience}
+                </div>
+                <div class="preview-item">
+                    <strong>الوظيفة المتقدم لها:</strong> ${data.job}
+                </div>
+                <div class="preview-item">
+                    <strong>المهارات:</strong> ${data.skills}
+                </div>
+                <div class="preview-item">
+                    <strong>الخبرات السابقة:</strong> ${data.previousExperience || 'غير محدد'}
+                </div>
+            `;
+            
+            // عرض المعاينة
+            previewContent.innerHTML = previewHTML;
+            previewSection.classList.remove('hidden');
+            
+            // إنشاء رمز الاستجابة السريعة
+            document.getElementById('qrcode').innerHTML = '';
+            const qrData = `
+                الاسم: ${data.name}
+                البريد: ${data.email}
+                الهاتف: ${data.phone}
+                التخصص: ${data.specialization}
+                الوظيفة: ${data.job}
+            `;
+            new QRCode(document.getElementById('qrcode'), {
+                text: qrData,
+                width: 150,
+                height: 150,
+                colorDark: '#2c3e50',
+                colorLight: '#ffffff',
+                correctLevel: QRCode.CorrectLevel.H
+            });
+        });
+        
+        // العودة إلى النموذج للتعديل
+        editBtn.addEventListener('click', function() {
+            previewSection.classList.add('hidden');
+        });
+        
+        // إنشاء PDF
+        generatePdfBtn.addEventListener('click', function() {
+            // استخدام html2canvas لالتقاط المحتوى كصورة
+            html2canvas(document.getElementById('previewSection')).then(canvas => {
+                const imgData = canvas.toDataURL('image/png');
+                
+                // إنشاء مستند PDF جديد
+                const doc = new jsPDF('p', 'mm', 'a4');
+                const width = doc.internal.pageSize.getWidth();
+                const height = doc.internal.pageSize.getHeight();
+                
+                // إضافة صورة المعاينة إلى PDF
+                doc.addImage(imgData, 'PNG', 0, 0, width, height);
+                
+                // حفظ الملف
+                doc.save('نموذج_البيانات_الاحترافي.pdf');
+            });
+        });
+    </script>
+</body>
+</html>
