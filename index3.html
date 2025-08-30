@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>النظام الإداري - إدارة الموظفين</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        .header {
+            background-color: #2c3e50;
+            color: white;
+            padding: 15px 0;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .container {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 0 15px;
+        }
+        .tabs {
+            display: flex;
+            margin-bottom: 20px;
+            background-color: white;
+            border-radius: 5px;
+            overflow: hidden;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .tab {
+            padding: 15px 20px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .tab.active {
+            background-color: #3498db;
+            color: white;
+        }
+        .tab:hover {
+            background-color: #2980b9;
+            color: white;
+        }
+        .tab-content {
+            display: none;
+            background-color: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        .btn-print {
+            background-color: #2c3e50;
+            margin-left: 10px;
+        }
+        .btn-print:hover {
+            background-color: #1a252f;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            padding: 12px;
+            text-align: right;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+        tr:hover {
+            background-color: #f5f5f5;
+        }
+        .actions {
+            display: flex;
+            gap: 10px;
+        }
+        .actions button {
+            padding: 8px 12px;
+            font-size: 14px;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            padding: 20px;
+            background-color: #2c3e50;
+            color: white;
+        }
+        @media print {
+            .tabs, button {
+                display: none;
+            }
+            .tab-content {
+                display: block;
+                box-shadow: none;
+                border: 1px solid #ddd;
+            }
+        }
+        @media (max-width: 768px) {
+            .tabs {
+                flex-direction: column;
+            }
+            .container {
+                padding: 0 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>النظام الإداري - إدارة الموظفين</h1>
+    </div>
+
+    <div class="container">
+        <div class="tabs">
+            <div class="tab active" onclick="openTab('employees')">إدارة الموظفين</div>
+            <div class="tab" onclick="openTab('departments')">إدارة الأقسام</div>
+            <div class="tab" onclick="openTab('reports')">التقارير</div>
+        </div>
+
+        <div id="employees" class="tab-content active">
+            <h2>إدارة الموظفين</h2>
+            <form id="employeeForm">
+                <div class="form-group">
+                    <label for="empName">اسم الموظف:</label>
+                    <input type="text" id="empName" required>
+                </div>
+                <div class="form-group">
+                    <label for="empDepartment">القسم:</label>
+                    <select id="empDepartment" required>
+                        <option value="">اختر القسم</option>
+                        <option value="1">الموارد البشرية</option>
+                        <option value="2">المالية</option>
+                        <option value="3">التسويق</option>
+                        <option value="4">التقنية</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="empPosition">المنصب:</label>
+                    <input type="text" id="empPosition" required>
+                </div>
+                <div class="form-group">
+                    <label for="empSalary">الراتب:</label>
+                    <input type="number" id="empSalary" required>
+                </div>
+                <div class="form-group">
+                    <label for="empHireDate">تاريخ التعيين:</label>
+                    <input type="date" id="empHireDate" required>
+                </div>
+                <button type="submit">حفظ البيانات</button>
+                <button type="button" class="btn-print" onclick="window.print()">طباعة النموذج</button>
+            </form>
+
+            <h3>قائمة الموظفين</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>اسم الموظف</th>
+                        <th>القسم</th>
+                        <th>المنصب</th>
+                        <th>الراتب</th>
+                        <th>تاريخ التعيين</th>
+                        <th>الإجراءات</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>أحمد محمد</td>
+                        <td>الموارد البشرية</td>
+                        <td>مدير</td>
+                        <td>8000</td>
+                        <td>2023-01-15</td>
+                        <td class="actions">
+                            <button>تعديل</button>
+                            <button>حذف</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>فاطمة علي</td>
+                        <td>المالية</td>
+                        <td>محاسب</td>
+                        <td>6000</td>
+                        <td>2023-03-20</td>
+                        <td class="actions">
+                            <button>تعديل</button>
+                            <button>حذف</button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div id="departments" class="tab-content">
+            <h2>إدارة الأقسام</h2>
+            <form id="departmentForm">
+                <div class="form-group">
+                    <label for="deptName">اسم القسم:</label>
+                    <input type="text" id="deptName" required>
+                </div>
+                <div class="form-group">
+                    <label for="deptManager">مدير القسم:</label>
+                    <select id="deptManager" required>
+                        <option value="">اختر المدير</option>
+                        <option value="1">أحمد محمد</option>
+                        <option value="2">فاطمة علي</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="deptDescription">وصف القسم:</label>
+                    <input type="text" id="deptDescription">
+                </div>
+                <button type="submit">حفظ البيانات</button>
+                <button type="button" class="btn-print" onclick="window.print()">طباعة النموذج</button>
+            </form>
+
+            <h3>قائمة الأقسام</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>اسم القسم</th>
+                        <th>مدير القسم</th>
+                        <th>الوصف</th>
+                        <th>الإجراءات</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>الموارد البشرية</td>
+                        <td>أحمد محمد</td>
+                        <td>قسم إدارة شؤون الموظفين</td>
+                        <td class="actions">
+                            <button>تعديل</button>
+                            <button>حذف</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>المالية</td>
+                        <td>فاطمة علي</td>
+                        <td>قسم إدارة الشؤون المالية</td>
+                        <td class="actions">
+                            <button>تعديل</button>
+                            <button>حذف</button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div id="reports" class="tab-content">
+            <h2>التقارير</h2>
+            <div class="form-group">
+                <label for="reportType">نوع التقرير:</label>
+                <select id="reportType">
+                    <option value="salary">كشف رواتب الموظفين</option>
+                    <option value="department">تقرير الموظفين حسب الأقسام</option>
+                </select>
+            </div>
+            <button>إنشاء التقرير</button>
+            <button class="btn-print" onclick="window.print()">طباعة التقرير</button>
+
+            <h3>كشف رواتب الموظفين - يناير 2023</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>اسم الموظف</th>
+                        <th>القسم</th>
+                        <th>الراتب الأساسي</th>
+                        <th>الاستقطاعات</th>
+                        <th>الصافي</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>أحمد محمد</td>
+                        <td>الموارد البشرية</td>
+                        <td>8000</td>
+                        <td>500</td>
+                        <td>7500</td>
+                    </tr>
+                    <tr>
+                        <td>فاطمة علي</td>
+                        <td>المالية</td>
+                        <td>6000</td>
+                        <td>300</td>
+                        <td>5700</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p>© 2023 النظام الإداري - إدارة الموظفين. جميع الحقوق محفوظة.</p>
+    </div>
+
+    <script>
+        function openTab(tabName) {
+            // إخفاء جميع محتويات التبويبات
+            var tabContents = document.getElementsByClassName("tab-content");
+            for (var i = 0; i < tabContents.length; i++) {
+                tabContents[i].classList.remove("active");
+            }
+
+            // إلغاء تنشيط جميع التبويبات
+            var tabs = document.getElementsByClassName("tab");
+            for (var i = 0; i < tabs.length; i++) {
+                tabs[i].classList.remove("active");
+            }
+
+            // تفعيل التبويب المحدد
+            document.getElementById(tabName).classList.add("active");
+            
+            // البحث عن التبويب المناسب وتفعيله
+            for (var i = 0; i < tabs.length; i++) {
+                if (tabs[i].getAttribute("onclick").includes(tabName)) {
+                    tabs[i].classList.add("active");
+                    break;
+                }
+            }
+        }
+
+        // إضافة مستمعي الأحداث للنماذج
+        document.getElementById('employeeForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            alert('تم حفظ بيانات الموظف بنجاح!');
+            // هنا يمكنك إضافة كود لإرسال البيانات إلى قاعدة البيانات
+        });
+
+        document.getElementById('departmentForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            alert('تم حفظ بيانات القسم بنجاح!');
+            // هنا يمكنك إضافة كود لإرسال البيانات إلى قاعدة البيانات
+        });
+    </script>
+</body>
+</html>
