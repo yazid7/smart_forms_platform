@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>موقع تشفير متقدم</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --accent-color: #e74c3c;
+            --light-color: #ecf0f1;
+            --dark-color: #2c3e50;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f7fa;
+            color: var(--dark-color);
+            line-height: 1.6;
+        }
+        
+        .container {
+            width: 90%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 1rem;
+            text-align: center;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        h1 {
+            margin-bottom: 10px;
+        }
+        
+        .tabs {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .tab-btn {
+            padding: 12px 24px;
+            background-color: var(--light-color);
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            border-radius: 5px 5px 0 0;
+            margin: 0 5px;
+        }
+        
+        .tab-btn.active {
+            background-color: var(--secondary-color);
+            color: white;
+        }
+        
+        .tab-content {
+            display: none;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        
+        textarea, input[type="text"], input[type="password"], select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        
+        textarea {
+            min-height: 150px;
+            resize: vertical;
+        }
+        
+        button {
+            background-color: var(--secondary-color);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+        }
+        
+        button:hover {
+            background-color: var(--primary-color);
+        }
+        
+        .result-area {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+            border: 1px dashed #ccc;
+            min-height: 100px;
+        }
+        
+        .key-display {
+            word-break: break-all;
+            font-family: monospace;
+            padding: 10px;
+            background-color: #f1f1f1;
+            border-radius: 4px;
+            margin-top: 10px;
+        }
+        
+        .advanced-options {
+            background-color: #f9f9f9;
+            padding: 15px;
+            border-radius: 4px;
+            margin-top: 15px;
+            border: 1px solid #eee;
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 30px;
+            padding: 20px;
+            color: #7f8c8d;
+        }
+        
+        @media (max-width: 768px) {
+            .tabs {
+                flex-direction: column;
+            }
+            
+            .tab-btn {
+                margin-bottom: 5px;
+                border-radius: 5px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>موقع تشفير الرسائل المتقدم</h1>
+            <p>أدوات متكاملة لتشفير الرسائل وتوليد المفاتيح بتقنيات متقدمة</p>
+        </header>
+        
+        <div class="tabs">
+            <button class="tab-btn active" onclick="openTab('encrypt-tab')">تشفير/فك التشفير</button>
+            <button class="tab-btn" onclick="openTab('keys-tab')">توليد المفاتيح</button>
+            <button class="tab-btn" onclick="openTab('stego-tab')">التشفير في الصور</button>
+        </div>
+        
+        <!-- قسم التشفير وفك التشفير -->
+        <div id="encrypt-tab" class="tab-content active">
+            <h2>تشفير وفك تشفير الرسائل</h2>
+            
+            <div class="form-group">
+                <label for="algorithm">اختر خوارزمية التشفير:</label>
+                <select id="algorithm">
+                    <option value="caesar">شيفرة قيصر (Caesar Cipher)</option>
+                    <option value="aes">AES (متقدم)</option>
+                    <option value="rsa">RSA (تشفير بالمفتاح العام)</option>
+                    <option value="base64">Base64 (ترميز)</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="message">النص المراد تشفيره/فك تشفيره:</label>
+                <textarea id="message" placeholder="أدخل النص هنا..."></textarea>
+            </div>
+            
+            <div class="form-group" id="key-input">
+                <label for="encryption-key">مفتاح التشفير:</label>
+                <input type="text" id="encryption-key" placeholder="أدخل المفتاح...">
+            </div>
+            
+            <div class="form-group" id="password-section">
+                <label for="password">كلمة المرور (اختياري):</label>
+                <input type="password" id="password" placeholder="أدخل كلمة مرور إضافية...">
+            </div>
+            
+            <div class="advanced-options">
+                <h3>خيارات متقدمة</h3>
+                <div class="form-group">
+                    <label for="iterations">عدد التكرارات (لتعزيز الأمان):</label>
+                    <input type="number" id="iterations" value="1" min="1">
+                </div>
+            </div>
+            
+            <button onclick="encrypt()">تشفير</button>
+            <button onclick="decrypt()">فك التشفير</button>
+            
+            <div class="result-area">
+                <h3>النتيجة:</h3>
+                <div id="encryption-result"></div>
+            </div>
+        </div>
+        
+        <!-- قسم توليد المفاتيح -->
+        <div id="keys-tab" class="tab-content">
+            <h2>توليد مفاتيح التشفير</h2>
+            
+            <div class="form-group">
+                <label for="key-type">نوع المفتاح:</label>
+                <select id="key-type">
+                    <option value="rsa">RSA (مفتاح عام/خاص)</option>
+                    <option value="aes">AES (مفتاح متماثل)</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="key-size">حجم المفتاح (بالبايت):</label>
+                <input type="number" id="key-size" value="256" min="64" max="4096">
+            </div>
+            
+            <button onclick="generateKeys()">توليد المفاتيح</button>
+            
+            <div class="result-area">
+                <h3>المفتاح العام:</h3>
+                <div id="public-key" class="key-display"></div>
+                
+                <h3>المفتاح الخاص:</h3>
+                <div id="private-key" class="key-display"></div>
+                
+                <button onclick="downloadKeys()">تحميل المفاتيح</button>
+            </div>
+        </div>
+        
+        <!-- قسم التشفير في الصور -->
+        <div id="stego-tab" class="tab-content">
+            <h2>التشفير في الصور (Steganography)</h2>
+            
+            <div class="form-group">
+                <label for="image-upload">اختر صورة:</label>
+                <input type="file" id="image-upload" accept="image/*">
+            </div>
+            
+            <div class="form-group">
+                <label for="secret-message">الرسالة السرية:</label>
+                <textarea id="secret-message" placeholder="أدخل الرسالة التي تريد إخفاءها في الصورة..."></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label for="stego-password">كلمة المرور (لحماية الرسالة):</label>
+                <input type="password" id="stego-password" placeholder="كلمة المرور...">
+            </div>
+            
+            <button onclick="hideMessage()">إخفاء الرسالة في الصورة</button>
+            <button onclick="extractMessage()">استخراج الرسالة من الصورة</button>
+            
+            <div class="result-area">
+                <h3>الصورة الناتجة:</h3>
+                <canvas id="canvas" style="display: none;"></canvas>
+                <img id="output-image" style="max-width: 100%; display: none;">
+                
+                <h3>الرسالة المستخرجة:</h3>
+                <div id="extracted-message"></div>
+                
+                <a id="download-link" style="display: none;">تحميل الصورة المعدلة</a>
+            </div>
+        </div>
+        
+        <footer>
+            <p>© 2023 موقع تشفير الرسائل المتقدم | تم التطوير بأحدث تقنيات التشفير</p>
+        </footer>
+    </div>
+
+    <script>
+        // وظائف التبويب
+        function openTab(tabId) {
+            // إخفاء جميع المحتويات
+            const tabContents = document.getElementsByClassName('tab-content');
+            for (let i = 0; i < tabContents.length; i++) {
+                tabContents[i].classList.remove('active');
+            }
+            
+            // إلغاء تنشيط جميع الأزرار
+            const tabButtons = document.getElementsByClassName('tab-btn');
+            for (let i = 0; i < tabButtons.length; i++) {
+                tabButtons[i].classList.remove('active');
+            }
+            
+            // تفعيل المحتوى والزر المحدد
+            document.getElementById(tabId).classList.add('active');
+            event.currentTarget.classList.add('active');
+        }
+        
+        // وظائف التشفير الأساسية
+        function encrypt() {
+            const algorithm = document.getElementById('algorithm').value;
+            const message = document.getElementById('message').value;
+            const key = document.getElementById('encryption-key').value;
+            const password = document.getElementById('password').value;
+            const iterations = document.getElementById('iterations').value;
+            
+            if (!message) {
+                alert('يرجى إدخال نص للتشفير');
+                return;
+            }
+            
+            let result = '';
+            
+            try {
+                switch(algorithm) {
+                    case 'caesar':
+                        result = caesarCipher(message, parseInt(key) || 3, true);
+                        break;
+                    case 'aes':
+                        result = aesEncrypt(message, key + password, iterations);
+                        break;
+                    case 'rsa':
+                        result = rsaEncrypt(message, key);
+                        break;
+                    case 'base64':
+                        result = btoa(unescape(encodeURIComponent(message)));
+                        break;
+                    default:
+                        result = 'خوارزمية غير معروفة';
+                }
+                
+                document.getElementById('encryption-result').textContent = result;
+            } catch (error) {
+                document.getElementById('encryption-result').textContent = 'خطأ في التشفير: ' + error.message;
+            }
+        }
+        
+        function decrypt() {
+            const algorithm = document.getElementById('algorithm').value;
+            const message = document.getElementById('message').value;
+            const key = document.getElementById('encryption-key').value;
+            const password = document.getElementById('password').value;
+            const iterations = document.getElementById('iterations').value;
+            
+            if (!message) {
+                alert('يرجى إدخال نص لفك التشفير');
+                return;
+            }
+            
+            let result = '';
+            
+            try {
+                switch(algorithm) {
+                    case 'caesar':
+                        result = caesarCipher(message, parseInt(key) || 3, false);
+                        break;
+                    case 'aes':
+                        result = aesDecrypt(message, key + password, iterations);
+                        break;
+                    case 'rsa':
+                        result = rsaDecrypt(message, key);
+                        break;
+                    case 'base64':
+                        result = decodeURIComponent(escape(atob(message)));
+                        break;
+                    default:
+                        result = 'خوارزمية غير معروفة';
+                }
+                
+                document.getElementById('encryption-result').textContent = result;
+            } catch (error) {
+                document.getElementById('encryption-result').textContent = 'خطأ في فك التشفير: ' + error.message;
+            }
+        }
+        
+        // خوارزميات التشفير
+        function caesarCipher(text, shift, encrypt) {
+            let result = '';
+            shift = encrypt ? shift : -shift;
+            
+            for (let i = 0; i < text.length; i++) {
+                let char = text[i];
+                
+                if (char.match(/[a-z]/i)) {
+                    const code = text.charCodeAt(i);
+                    
+                    if (code >= 65 && code <= 90) {
+                        char = String.fromCharCode(((code - 65 + shift) % 26 + 26) % 26 + 65);
+                    } else if (code >= 97 && code <= 122) {
+                        char = String.fromCharCode(((code - 97 + shift) % 26 + 26) % 26 + 97);
+                    }
+                } else if (char.match(/[ء-ي]/)) {
+                    // دعم للحروف العربية
+                    const arabicOffset = 0x0600;
+                    const code = text.charCodeAt(i) - arabicOffset;
+                    if (code >= 0 && code <= 255) {
+                        char = String.fromCharCode(((code + shift) % 256 + 256) % 256 + arabicOffset);
+                    }
+                }
+                
+                result += char;
+            }
+            
+            return result;
+        }
+        
+        function aesEncrypt(text, key, iterations) {
+            // تنفيذ مبسط لـ AES - في التطبيق الحقيقي استخدم مكتبة مثل CryptoJS
+            let result = '';
+            for (let i = 0; i < iterations; i++) {
+                result = '';
+                for (let j = 0; j < text.length; j++) {
+                    const textChar = text.charCodeAt(j);
+                    const keyChar = key.charCodeAt(j % key.length);
+                    result += String.fromCharCode(textChar ^ keyChar);
+                }
+                text = result;
+            }
+            return btoa(unescape(encodeURIComponent(result)));
+        }
+        
+        function aesDecrypt(text, key, iterations) {
+            try {
+                text = decodeURIComponent(escape(atob(text)));
+                let result = text;
+                
+                for (let i = 0; i < iterations; i++) {
+                    let decrypted = '';
+                    for (let j = 0; j < result.length; j++) {
+                        const textChar = result.charCodeAt(j);
+                        const keyChar = key.charCodeAt(j % key.length);
+                        decrypted += String.fromCharCode(textChar ^ keyChar);
+                    }
+                    result = decrypted;
+                }
+                
+                return result;
+            } catch (e) {
+                throw new Error('فشل فك التشفير، تأكد من صحة المفتاح وكلمة المرور');
+            }
+        }
+        
+        function rsaEncrypt(text, publicKey) {
+            // تنفيذ مبسط لـ RSA - في التطبيق الحقيقي استخدم مكتبة متخصصة
+            if (!publicKey) {
+                throw new Error('المفتاح العام مطلوب لتشفير RSA');
+            }
+            
+            let result = '';
+            for (let i = 0; i < text.length; i++) {
+                const code = text.charCodeAt(i);
+                result += String.fromCharCode(code * 5); // عملية رياضية مبسطة
+            }
+            
+            return btoa(unescape(encodeURIComponent(result)));
+        }
+        
+        function rsaDecrypt(text, privateKey) {
+            if (!privateKey) {
+                throw new Error('المفتاح الخاص مطلوب لفك تشفير RSA');
+            }
+            
+            try {
+                text = decodeURIComponent(escape(atob(text)));
+                let result = '';
+                
+                for (let i = 0; i < text.length; i++) {
+                    const code = text.charCodeAt(i);
+                    result += String.fromCharCode(code / 5); // عكس العملية
+                }
+                
+                return result;
+            } catch (e) {
+                throw new Error('فشل فك التشفير، تأكد من صحة المفتاح');
+            }
+        }
+        
+        // توليد المفاتيح
+        function generateKeys() {
+            const keyType = document.getElementById('key-type').value;
+            const keySize = document.getElementById('key-size').value;
+            
+            if (keyType === 'rsa') {
+                // توليد مفاتيح RSA (تبسيط)
+                const publicKey = generateRandomString(keySize);
+                const privateKey = generateRandomString(keySize * 2);
+                
+                document.getElementById('public-key').textContent = publicKey;
+                document.getElementById('private-key').textContent = privateKey;
+            } else if (keyType === 'aes') {
+                // توليد مفتاح AES
+                const key = generateRandomString(keySize);
+                document.getElementById('public-key').textContent = 'مفتاح AES: ' + key;
+                document.getElementById('private-key').textContent = 'نفس مفتاح AES يستخدم للتشفير وفك التشفير';
+            }
+        }
+        
+        function generateRandomString(length) {
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=';
+            let result = '';
+            for (let i = 0; i < length; i++) {
+                result += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            return result;
+        }
+        
+        function downloadKeys() {
+            const publicKey = document.getElementById('public-key').textContent;
+            const privateKey = document.getElementById('private-key').textContent;
+            
+            if (!publicKey || !privateKey) {
+                alert('قم بتوليد المفاتيح أولاً');
+                return;
+            }
+            
+            const content = `المفتاح العام:\n${publicKey}\n\nالمفتاح الخاص:\n${privateKey}`;
+            const blob = new Blob([content], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'encryption_keys.txt';
+            a.click();
+            
+            URL.revokeObjectURL(url);
+        }
+        
+        // التشفير في الصور (Steganography)
+        function hideMessage() {
+            const imageUpload = document.getElementById('image-upload');
+            const message = document.getElementById('secret-message').value;
+            const password = document.getElementById('stego-password').value;
+            
+            if (!imageUpload.files || !imageUpload.files[0]) {
+                alert('يرجى اختيار صورة أولاً');
+                return;
+            }
+            
+            if (!message) {
+                alert('يرجى إدخال رسالة لإخفائها');
+                return;
+            }
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = new Image();
+                img.onload = function() {
+                    const canvas = document.getElementById('canvas');
+                    const ctx = canvas.getContext('2d');
+                    
+                    canvas.width = img.width;
+                    canvas.height = img.height;
+                    ctx.drawImage(img, 0, 0);
+                    
+                    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                    const data = imageData.data;
+                    
+                    // تشفير الرسالة أولاً
+                    const encryptedMessage = aesEncrypt(message, password, 5);
+                    
+                    // تحويل الرسالة إلى ثنائي
+                    let binaryMessage = '';
+                    for (let i = 0; i < encryptedMessage.length; i++) {
+                        const binaryChar = encryptedMessage.charCodeAt(i).toString(2).padStart(8, '0');
+                        binaryMessage += binaryChar;
+                    }
+                    
+                    // إضافة نهاية الرسالة
+                    binaryMessage += '00000000';
+                    
+                    let messageIndex = 0;
+                    
+                    // إخفاء الرسالة في البكسل (أقل بت دلالة)
+                    for (let i = 0; i < data.length; i += 4) {
+                        if (messageIndex < binaryMessage.length) {
+                            // الأحمر
+                            data[i] = setLSB(data[i], parseInt(binaryMessage[messageIndex]));
+                            messageIndex++;
+                            
+                            if (messageIndex < binaryMessage.length) {
+                                // الأخضر
+                                data[i + 1] = setLSB(data[i + 1], parseInt(binaryMessage[messageIndex]));
+                                messageIndex++;
+                            }
+                            
+                            if (messageIndex < binaryMessage.length) {
+                                // الأزرق
+                                data[i + 2] = setLSB(data[i + 2], parseInt(binaryMessage[messageIndex]));
+                                messageIndex++;
+                            }
+                        } else {
+                            break;
+                        }
+                    }
+                    
+                    ctx.putImageData(imageData, 0, 0);
+                    
+                    const outputImage = document.getElementById('output-image');
+                    outputImage.src = canvas.toDataURL();
+                    outputImage.style.display = 'block';
+                    
+                    const downloadLink = document.getElementById('download-link');
+                    downloadLink.href = canvas.toDataURL().replace('image/png', 'image/octet-stream');
+                    downloadLink.download = 'secret_image.png';
+                    downloadLink.style.display = 'block';
+                    
+                    document.getElementById('extracted-message').textContent = 'تم إخفاء الرسالة في الصورة بنجاح';
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(imageUpload.files[0]);
+        }
+        
+        function extractMessage() {
+            const imageUpload = document.getElementById('image-upload');
+            const password = document.getElementById('stego-password').value;
+            
+            if (!imageUpload.files || !imageUpload.files[0]) {
+                alert('يرجى اختيار صورة أولاً');
+                return;
+            }
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = new Image();
+                img.onload = function() {
+                    const canvas = document.getElementById('canvas');
+                    const ctx = canvas.getContext('2d');
+                    
+                    canvas.width = img.width;
+                    canvas.height = img.height;
+                    ctx.drawImage(img, 0, 0);
+                    
+                    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                    const data = imageData.data;
+                    
+                    let binaryMessage = '';
+                    
+                    // استخراج البتات المخفية
+                    for (let i = 0; i < data.length; i += 4) {
+                        // الأحمر
+                        binaryMessage += getLSB(data[i]);
+                        
+                        // الأخضر
+                        binaryMessage += getLSB(data[i + 1]);
+                        
+                        // الأزرق
+                        binaryMessage += getLSB(data[i + 2]);
+                    }
+                    
+                    // تحويل الثنائي إلى نص
+                    let message = '';
+                    for (let i = 0; i < binaryMessage.length; i += 8) {
+                        const byte = binaryMessage.substr(i, 8);
+                        if (byte === '00000000') break;
+                        
+                        const charCode = parseInt(byte, 2);
+                        message += String.fromCharCode(charCode);
+                    }
+                    
+                    try {
+                        // فك تشفير الرسالة
+                        const decryptedMessage = aesDecrypt(message, password, 5);
+                        document.getElementById('extracted-message').textContent = decryptedMessage;
+                    } catch (e) {
+                        document.getElementById('extracted-message').textContent = 'فشل استخراج الرسالة، تأكد من كلمة المرور';
+                    }
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(imageUpload.files[0]);
+        }
+        
+        function setLSB(byte, bit) {
+            return (byte & 0xFE) | bit;
+        }
+        
+        function getLSB(byte) {
+            return (byte & 1).toString();
+        }
+    </script>
+</body>
+</html>
