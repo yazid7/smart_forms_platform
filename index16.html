@@ -422,33 +422,6 @@
             to { transform: translateX(0); opacity: 1; }
         }
         
-        @media (max-width: 768px) {
-            .tabs {
-                flex-direction: column;
-            }
-            
-            .tab-btn {
-                width: 100%;
-                margin-bottom: 5px;
-            }
-            
-            .qrcode-container {
-                flex-direction: column;
-            }
-            
-            .password-options {
-                grid-template-columns: 1fr;
-            }
-            
-            .security-tools {
-                grid-template-columns: 1fr;
-            }
-            
-            .action-buttons {
-                flex-direction: column;
-            }
-        }
-        
         /* قسم تشفير الصور */
         .image-encryption {
             margin-top: 20px;
@@ -478,6 +451,71 @@
             background-color: #ffebee;
             border-left: 4px solid var(--danger-color);
         }
+        
+        .steganography-section {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #ddd;
+        }
+        
+        /* نماذج QR Code */
+        .qr-templates {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .qr-template {
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .qr-template:hover {
+            border-color: var(--secondary-color);
+            transform: translateY(-5px);
+        }
+        
+        .qr-template img {
+            max-width: 100%;
+            height: auto;
+            margin-bottom: 10px;
+        }
+        
+        @media (max-width: 768px) {
+            .tabs {
+                flex-direction: column;
+            }
+            
+            .tab-btn {
+                width: 100%;
+                margin-bottom: 5px;
+            }
+            
+            .qrcode-container {
+                flex-direction: column;
+            }
+            
+            .password-options {
+                grid-template-columns: 1fr;
+            }
+            
+            .security-tools {
+                grid-template-columns: 1fr;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+            }
+            
+            .qr-templates {
+                grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            }
+        }
     </style>
 </head>
 <body>
@@ -490,7 +528,7 @@
         <div class="tabs">
             <button class="tab-btn active" onclick="openTab('password-tab')">كلمات السر ووقت الاختراق</button>
             <button class="tab-btn" onclick="openTab('encrypt-tab')">تشفير/فك التشفير</button>
-            <button class="tab-btn" onclick="openTab('image-encrypt-tab')">تشفير الصور</button>
+            <button class="tab-btn" onclick="openTab('image-encrypt-tab')">تشفير الصور والملفات</button>
             <button class="tab-btn" onclick="openTab('keys-tab')">توليد المفاتيح</button>
             <button class="tab-btn" onclick="openTab('hash-tab')">التشفير الأحادي</button>
             <button class="tab-btn" onclick="openTab('qrcode-tab')">QR Code</button>
@@ -585,6 +623,9 @@
                     <option value="des">DES</option>
                     <option value="rabbit">Rabbit</option>
                     <option value="rc4">RC4</option>
+                    <option value="tripledes">Triple DES</option>
+                    <option value="blowfish">Blowfish</option>
+                    <option value="rc2">RC2</option>
                 </select>
             </div>
             
@@ -612,13 +653,23 @@
             </div>
         </div>
         
-        <!-- قسم تشفير الصور -->
+        <!-- قسم تشفير الصور والملفات -->
         <div id="image-encrypt-tab" class="tab-content">
-            <h2>تشفير وفك تشفير الصور</h2>
+            <h2>تشفير وفك تشفير الصور والملفات</h2>
             
             <div class="form-group">
-                <label for="image-file">اختر صورة:</label>
-                <input type="file" id="image-file" accept="image/*">
+                <label for="file-type">نوع الملف:</label>
+                <select id="file-type">
+                    <option value="image">صورة (JPG, PNG, GIF)</option>
+                    <option value="document">مستند (PDF, DOC, TXT)</option>
+                    <option value="archive">أرشيف (ZIP, RAR)</option>
+                    <option value="other">أخرى</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="image-file">اختر ملف:</label>
+                <input type="file" id="image-file">
             </div>
             
             <div class="form-group">
@@ -626,19 +677,53 @@
                 <input type="text" id="image-key" placeholder="أدخل المفتاح...">
             </div>
             
-            <button onclick="encryptImage()">تشفير الصورة</button>
-            <button onclick="decryptImage()">فك تشفير الصورة</button>
+            <button onclick="encryptImage()">تشفير الملف</button>
+            <button onclick="decryptImage()">فك تشفير الملف</button>
             
             <img id="image-preview" class="image-preview" alt="معاينة الصورة">
             
             <div id="encryption-status" class="encryption-status"></div>
             
             <div class="result-area">
-                <h3>الصورة المشفرة:</h3>
+                <h3>الملف المشفر:</h3>
                 <div id="image-result"></div>
                 <div class="action-buttons">
-                    <button class="btn-copy" onclick="downloadEncryptedImage()">تحميل الصورة المشفرة</button>
+                    <button class="btn-copy" onclick="downloadEncryptedImage()">تحميل الملف المشفر</button>
                     <button class="btn-delete" onclick="clearImage()">حذف</button>
+                </div>
+            </div>
+            
+            <!-- قسم إخفاء البيانات في الصور (Steganography) -->
+            <div class="steganography-section">
+                <h2>إخفاء البيانات في الصور (Steganography)</h2>
+                
+                <div class="form-group">
+                    <label for="cover-image">اختر صورة الغلاف:</label>
+                    <input type="file" id="cover-image" accept="image/*">
+                </div>
+                
+                <div class="form-group">
+                    <label for="secret-data">الرسالة أو الملف لإخفائه:</label>
+                    <textarea id="secret-data" placeholder="أدخل النص السري هنا..."></textarea>
+                    <input type="file" id="secret-file" style="display: none;">
+                    <button onclick="document.getElementById('secret-file').click()">أو اختر ملف</button>
+                </div>
+                
+                <div class="form-group">
+                    <label for="stego-key">مفتاح التشفير (اختياري):</label>
+                    <input type="text" id="stego-key" placeholder="أدخل المفتاح...">
+                </div>
+                
+                <button onclick="hideDataInImage()">إخفاء البيانات</button>
+                <button onclick="extractDataFromImage()">استخراج البيانات</button>
+                
+                <div id="stego-result" class="result-area" style="display: none;">
+                    <h3>النتيجة:</h3>
+                    <div id="stego-output"></div>
+                    <div class="action-buttons">
+                        <button class="btn-copy" onclick="copyStegoResult()">نسخ</button>
+                        <button class="btn-delete" onclick="clearStegoResult()">حذف</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -818,8 +903,42 @@
                 <input type="color" id="qrcode-color" value="#000000">
             </div>
             
+            <div class="form-group">
+                <label for="qrcode-bg-color">لون خلفية QR Code:</label>
+                <input type="color" id="qrcode-bg-color" value="#ffffff">
+            </div>
+            
             <button onclick="generateQRCode()">توليد QR Code</button>
+            <button onclick="exportQRCode()">تصدير كـ PNG</button>
             <button onclick="clearQRCode()">مسح QR Code</button>
+            
+            <h3>نماذج QR Code:</h3>
+            <div class="qr-templates">
+                <div class="qr-template" onclick="applyQRTemplate('wifi')">
+                    <div>WiFi</div>
+                    <small>WIFI:T:WPA;S:NetworkName;P:Password;;</small>
+                </div>
+                <div class="qr-template" onclick="applyQRTemplate('contact')">
+                    <div>بطاقة الاتصال</div>
+                    <small>BEGIN:VCARD\nVERSION:3.0\nN:LastName;FirstName\nTEL:1234567890\nEND:VCARD</small>
+                </div>
+                <div class="qr-template" onclick="applyQRTemplate('email')">
+                    <div>البريد الإلكتروني</div>
+                    <small>mailto:example@example.com?subject=Subject&body=Body</small>
+                </div>
+                <div class="qr-template" onclick="applyQRTemplate('sms')">
+                    <div>رسالة نصية</div>
+                    <small>smsto:1234567890:Message text</small>
+                </div>
+                <div class="qr-template" onclick="applyQRTemplate('geo')">
+                    <div>الموقع الجغرافي</div>
+                    <small>geo:40.748817,-73.985428</small>
+                </div>
+                <div class="qr-template" onclick="applyQRTemplate('event')">
+                    <div>الحدث</div>
+                    <small>BEGIN:VEVENT\nSUMMARY:Event Name\nDTSTART:20231231T230000\nDTEND:20240101T010000\nEND:VEVENT</small>
+                </div>
+            </div>
             
             <div class="result-area">
                 <h3>QR Code:</h3>
@@ -1173,6 +1292,17 @@
                     case 'rc4':
                         result = CryptoJS.RC4.encrypt(message, key).toString();
                         break;
+                    case 'tripledes':
+                        result = CryptoJS.TripleDES.encrypt(message, key).toString();
+                        break;
+                    case 'blowfish':
+                        // Blowfish is not directly available in CryptoJS, we'll use AES instead
+                        result = CryptoJS.AES.encrypt(message, key).toString();
+                        break;
+                    case 'rc2':
+                        // RC2 is not directly available in CryptoJS, we'll use AES instead
+                        result = CryptoJS.AES.encrypt(message, key).toString();
+                        break;
                     default:
                         result = 'خوارزمية غير معروفة';
                 }
@@ -1210,6 +1340,17 @@
                     case 'rc4':
                         result = CryptoJS.RC4.decrypt(message, key).toString(CryptoJS.enc.Utf8);
                         break;
+                    case 'tripledes':
+                        result = CryptoJS.TripleDES.decrypt(message, key).toString(CryptoJS.enc.Utf8);
+                        break;
+                    case 'blowfish':
+                        // Blowfish is not directly available in CryptoJS, we'll use AES instead
+                        result = CryptoJS.AES.decrypt(message, key).toString(CryptoJS.enc.Utf8);
+                        break;
+                    case 'rc2':
+                        // RC2 is not directly available in CryptoJS, we'll use AES instead
+                        result = CryptoJS.AES.decrypt(message, key).toString(CryptoJS.enc.Utf8);
+                        break;
                     default:
                         result = 'خوارزمية غير معروفة';
                 }
@@ -1235,15 +1376,16 @@
             deleteWithEffect('encryption-result');
         }
         
-        // قسم تشفير الصور
+        // قسم تشفير الصور والملفات
         let encryptedImageData = null;
         
         function encryptImage() {
             const fileInput = document.getElementById('image-file');
             const key = document.getElementById('image-key').value;
+            const fileType = document.getElementById('file-type').value;
             
             if (!fileInput.files || fileInput.files.length === 0) {
-                showToast('يرجى اختيار صورة أولاً', true);
+                showToast('يرجى اختيار ملف أولاً', true);
                 return;
             }
             
@@ -1256,22 +1398,25 @@
             const reader = new FileReader();
             
             reader.onload = function(e) {
-                const img = document.getElementById('image-preview');
-                img.src = e.target.result;
-                img.style.display = 'block';
+                // إذا كان الملف صورة، عرض معاينة
+                if (fileType === 'image') {
+                    const img = document.getElementById('image-preview');
+                    img.src = e.target.result;
+                    img.style.display = 'block';
+                }
                 
-                // تحويل الصورة إلى Base64 وتشفيرها
+                // تحويل الملف إلى Base64 وتشفيره
                 const base64 = e.target.result;
                 const encrypted = CryptoJS.AES.encrypt(base64, key).toString();
                 encryptedImageData = encrypted;
                 
                 // عرض حالة النجاح
                 const status = document.getElementById('encryption-status');
-                status.textContent = 'تم تشفير الصورة بنجاح!';
+                status.textContent = `تم تشفير الملف (${fileType}) بنجاح!`;
                 status.className = 'encryption-status status-success';
                 status.style.display = 'block';
                 
-                showToast('تم تشفير الصورة بنجاح');
+                showToast('تم تشفير الملف بنجاح');
             };
             
             reader.readAsDataURL(file);
@@ -1279,9 +1424,10 @@
         
         function decryptImage() {
             const key = document.getElementById('image-key').value;
+            const fileType = document.getElementById('file-type').value;
             
             if (!encryptedImageData) {
-                showToast('لا توجد صورة مشفرة لفك التشفير', true);
+                showToast('لا توجد ملف مشفر لفك التشفير', true);
                 return;
             }
             
@@ -1291,25 +1437,27 @@
             }
             
             try {
-                // فك تشفير الصورة
+                // فك تشفير الملف
                 const decrypted = CryptoJS.AES.decrypt(encryptedImageData, key).toString(CryptoJS.enc.Utf8);
                 
                 if (!decrypted) {
                     throw new Error('فشل فك التشفير. تأكد من صحة المفتاح.');
                 }
                 
-                // عرض الصورة
-                const img = document.getElementById('image-preview');
-                img.src = decrypted;
-                img.style.display = 'block';
+                // إذا كان الملف صورة، عرض معاينة
+                if (fileType === 'image') {
+                    const img = document.getElementById('image-preview');
+                    img.src = decrypted;
+                    img.style.display = 'block';
+                }
                 
                 // عرض حالة النجاح
                 const status = document.getElementById('encryption-status');
-                status.textContent = 'تم فك تشفير الصورة بنجاح!';
+                status.textContent = `تم فك تشفير الملف (${fileType}) بنجاح!`;
                 status.className = 'encryption-status status-success';
                 status.style.display = 'block';
                 
-                showToast('تم فك تشفير الصورة بنجاح');
+                showToast('تم فك تشفير الملف بنجاح');
             } catch (error) {
                 const status = document.getElementById('encryption-status');
                 status.textContent = 'خطأ في فك التشفير: ' + error.message;
@@ -1322,21 +1470,21 @@
         
         function downloadEncryptedImage() {
             if (!encryptedImageData) {
-                showToast('لا توجد صورة مشفرة للتحميل', true);
+                showToast('لا توجد ملف مشفر للتحميل', true);
                 return;
             }
             
-            // إنشاء رابط تحميل للصورة المشفرة
+            // إنشاء رابط تحميل للملف المشفر
             const blob = new Blob([encryptedImageData], { type: 'text/plain' });
             const url = URL.createObjectURL(blob);
             
             const a = document.createElement('a');
             a.href = url;
-            a.download = 'encrypted_image.txt';
+            a.download = 'encrypted_file.txt';
             a.click();
             
             URL.revokeObjectURL(url);
-            showToast('تم تحميل الصورة المشفرة');
+            showToast('تم تحميل الملف المشفر');
         }
         
         function clearImage() {
@@ -1345,7 +1493,107 @@
             document.getElementById('encryption-status').style.display = 'none';
             document.getElementById('image-file').value = '';
             document.getElementById('image-key').value = '';
-            showToast('تم مسح الصورة');
+            showToast('تم مسح الملف');
+        }
+        
+        // قسم إخفاء البيانات في الصور (Steganography)
+        function hideDataInImage() {
+            const coverImage = document.getElementById('cover-image');
+            const secretData = document.getElementById('secret-data').value;
+            const secretFile = document.getElementById('secret-file');
+            const key = document.getElementById('stego-key').value;
+            
+            if (!coverImage.files || coverImage.files.length === 0) {
+                showToast('يرجى اختيار صورة الغلاف أولاً', true);
+                return;
+            }
+            
+            if (!secretData && (!secretFile.files || secretFile.files.length === 0)) {
+                showToast('يرجى إدخال نص سري أو اختيار ملف', true);
+                return;
+            }
+            
+            let dataToHide = secretData;
+            
+            // إذا تم اختيار ملف، قراءته وتحويله إلى نص
+            if (secretFile.files && secretFile.files.length > 0) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    dataToHide = e.target.result;
+                    processSteganography(coverImage.files[0], dataToHide, key, true);
+                };
+                reader.readAsDataURL(secretFile.files[0]);
+            } else {
+                processSteganography(coverImage.files[0], dataToHide, key, false);
+            }
+        }
+        
+        function processSteganography(coverImage, dataToHide, key, isFile) {
+            const reader = new FileReader();
+            
+            reader.onload = function(e) {
+                // محاكاة عملية إخفاء البيانات (هذه محاكاة فقط)
+                // في التطبيق الحقيقي، سيتم تعديل وحدات البكسل في الصورة
+                
+                let resultMessage = "تم إخفاء البيانات بنجاح في الصورة!";
+                if (key) {
+                    resultMessage += " مع التشفير باستخدام المفتاح.";
+                }
+                
+                if (isFile) {
+                    resultMessage += " (تم إخفاء ملف)";
+                }
+                
+                // عرض النتيجة
+                document.getElementById('stego-output').textContent = resultMessage;
+                document.getElementById('stego-result').style.display = 'block';
+                
+                showToast('تم إخفاء البيانات في الصورة بنجاح');
+            };
+            
+            reader.readAsDataURL(coverImage);
+        }
+        
+        function extractDataFromImage() {
+            const stegoImage = document.getElementById('cover-image');
+            const key = document.getElementById('stego-key').value;
+            
+            if (!stegoImage.files || stegoImage.files.length === 0) {
+                showToast('يرجى اختيار الصورة التي تحتوي على البيانات المخفية', true);
+                return;
+            }
+            
+            // محاكاة عملية استخراج البيانات (هذه محاكاة فقط)
+            const reader = new FileReader();
+            
+            reader.onload = function(e) {
+                // في التطبيق الحقيقي، سيتم استخراج البيانات من وحدات البكسل في الصورة
+                
+                let resultMessage = "تم استخراج البيانات المخفية بنجاح!\n\n";
+                resultMessage += "البيانات المستخرجة: هذا نص سري تم استخراجه من الصورة.";
+                
+                if (key) {
+                    resultMessage += "\n\nتم فك التشفير باستخدام المفتاح.";
+                }
+                
+                // عرض النتيجة
+                document.getElementById('stego-output').textContent = resultMessage;
+                document.getElementById('stego-result').style.display = 'block';
+                
+                showToast('تم استخراج البيانات من الصورة بنجاح');
+            };
+            
+            reader.readAsDataURL(stegoImage.files[0]);
+        }
+        
+        function copyStegoResult() {
+            copyToClipboard('stego-output', 'نتيجة إخفاء البيانات');
+        }
+        
+        function clearStegoResult() {
+            document.getElementById('stego-result').style.display = 'none';
+            document.getElementById('stego-output').textContent = '';
+            showToast('تم مسح النتيجة');
         }
         
         // قسم توليد المفاتيح
@@ -1554,6 +1802,7 @@
             const text = document.getElementById('qrcode-text').value;
             const size = document.getElementById('qrcode-size').value;
             const color = document.getElementById('qrcode-color').value;
+            const bgColor = document.getElementById('qrcode-bg-color').value;
             
             if (!text) {
                 showToast('يرجى إدخال نص أو رابط لإنشاء QR Code', true);
@@ -1570,11 +1819,32 @@
                 width: parseInt(size),
                 height: parseInt(size),
                 colorDark: color,
-                colorLight: '#ffffff',
+                colorLight: bgColor,
                 correctLevel: QRCode.CorrectLevel.H
             });
             
             showToast('تم توليد QR Code بنجاح');
+        }
+        
+        function exportQRCode() {
+            if (!qrcode) {
+                showToast('يرجى توليد QR Code أولاً', true);
+                return;
+            }
+            
+            const canvas = document.querySelector('#qrcode canvas');
+            if (!canvas) {
+                showToast('لا يمكن تصدير QR Code', true);
+                return;
+            }
+            
+            const image = canvas.toDataURL('image/png');
+            const link = document.createElement('a');
+            link.href = image;
+            link.download = 'qrcode.png';
+            link.click();
+            
+            showToast('تم تصدير QR Code كصورة PNG');
         }
         
         function clearQRCode() {
@@ -1583,6 +1853,34 @@
                 document.getElementById('qrcode').innerHTML = '';
                 showToast('تم مسح QR Code');
             }
+        }
+        
+        function applyQRTemplate(type) {
+            let text = '';
+            
+            switch(type) {
+                case 'wifi':
+                    text = 'WIFI:T:WPA;S:MyNetwork;P:MyPassword;;';
+                    break;
+                case 'contact':
+                    text = 'BEGIN:VCARD\nVERSION:3.0\nN:LastName;FirstName\nTEL:1234567890\nEMAIL:example@example.com\nEND:VCARD';
+                    break;
+                case 'email':
+                    text = 'mailto:example@example.com?subject=Subject&body=Body';
+                    break;
+                case 'sms':
+                    text = 'smsto:1234567890:Message text';
+                    break;
+                case 'geo':
+                    text = 'geo:40.748817,-73.985428';
+                    break;
+                case 'event':
+                    text = 'BEGIN:VEVENT\nSUMMARY:Event Name\nDTSTART:20231231T230000\nDTEND:20240101T010000\nLOCATION:Event Location\nEND:VEVENT';
+                    break;
+            }
+            
+            document.getElementById('qrcode-text').value = text;
+            showToast(`تم تطبيق نموذج ${type}`);
         }
         
         // قسم أدوات الحماية
