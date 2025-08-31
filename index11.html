@@ -1,0 +1,834 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>موقع تشفير متقدم - إصلاح وإضافات</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --accent-color: #e74c3c;
+            --light-color: #ecf0f1;
+            --dark-color: #2c3e50;
+            --success-color: #2ecc71;
+            --warning-color: #f39c12;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f7fa;
+            color: var(--dark-color);
+            line-height: 1.6;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        
+        header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 2rem;
+            text-align: center;
+        }
+        
+        h1 {
+            margin-bottom: 15px;
+            font-size: 2.5rem;
+        }
+        
+        .tabs {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            background: #f8f9fa;
+            padding: 10px;
+        }
+        
+        .tab-btn {
+            padding: 12px 24px;
+            background-color: var(--light-color);
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            border-radius: 5px;
+            margin: 5px;
+        }
+        
+        .tab-btn.active {
+            background-color: var(--secondary-color);
+            color: white;
+        }
+        
+        .tab-content {
+            display: none;
+            padding: 30px;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+        
+        input, textarea, select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+        
+        textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+        
+        button {
+            background-color: var(--secondary-color);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        
+        button:hover {
+            background-color: var(--primary-color);
+        }
+        
+        .result-area {
+            margin-top: 20px;
+            padding: 20px;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+            border: 1px dashed #ccc;
+        }
+        
+        .key-display {
+            word-break: break-all;
+            font-family: monospace;
+            padding: 15px;
+            background-color: #f1f1f1;
+            border-radius: 4px;
+            margin-top: 10px;
+            position: relative;
+        }
+        
+        .key-actions {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            display: flex;
+            gap: 5px;
+        }
+        
+        .key-action-btn {
+            background: rgba(0, 0, 0, 0.1);
+            border: none;
+            width: 30px;
+            height: 30px;
+            border-radius: 4px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .key-action-btn:hover {
+            background: rgba(0, 0, 0, 0.2);
+        }
+        
+        .qrcode-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        #qrcode {
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .hash-result {
+            padding: 10px;
+            background: #f1f1f1;
+            border-radius: 4px;
+            margin-top: 10px;
+            font-family: monospace;
+            word-break: break-all;
+        }
+        
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        
+        .comparison-table th, .comparison-table td {
+            padding: 12px;
+            text-align: right;
+            border: 1px solid #ddd;
+        }
+        
+        .comparison-table th {
+            background-color: var(--secondary-color);
+            color: white;
+        }
+        
+        .comparison-table tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        
+        .password-strength {
+            height: 10px;
+            border-radius: 5px;
+            margin-top: 5px;
+            background: #eee;
+            overflow: hidden;
+        }
+        
+        .password-strength-fill {
+            height: 100%;
+            transition: all 0.3s ease;
+        }
+        
+        .crack-time {
+            margin-top: 10px;
+            padding: 10px;
+            background: #fff4e6;
+            border-radius: 4px;
+            border-left: 4px solid var(--warning-color);
+        }
+        
+        @media (max-width: 768px) {
+            .tabs {
+                flex-direction: column;
+            }
+            
+            .tab-btn {
+                width: 100%;
+                margin-bottom: 5px;
+            }
+            
+            .qrcode-container {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>موقع تشفير متقدم - إصلاح وإضافات</h1>
+            <p>أدوات متكاملة لتشفير الرسائل وتوليد المفاتيح مع ميزات جديدة</p>
+        </header>
+        
+        <div class="tabs">
+            <button class="tab-btn active" onclick="openTab('encrypt-tab')">تشفير/فك التشفير</button>
+            <button class="tab-btn" onclick="openTab('keys-tab')">توليد المفاتيح</button>
+            <button class="tab-btn" onclick="openTab('hash-tab')">التشفير الأحادي</button>
+            <button class="tab-btn" onclick="openTab('qrcode-tab')">QR Code</button>
+            <button class="tab-btn" onclick="openTab('crack-time-tab')">وقت اختراق كلمة السر</button>
+        </div>
+        
+        <!-- قسم التشفير وفك التشفير -->
+        <div id="encrypt-tab" class="tab-content active">
+            <h2>تشفير وفك تشفير الرسائل</h2>
+            
+            <div class="form-group">
+                <label for="algorithm">اختر خوارزمية التشفير:</label>
+                <select id="algorithm">
+                    <option value="aes">AES (مستحسن)</option>
+                    <option value="des">DES</option>
+                    <option value="rabbit">Rabbit</option>
+                    <option value="rc4">RC4</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="message">النص المراد تشفيره/فك تشفيره:</label>
+                <textarea id="message" placeholder="أدخل النص هنا..."></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label for="encryption-key">مفتاح التشفير:</label>
+                <input type="text" id="encryption-key" placeholder="أدخل المفتاح...">
+            </div>
+            
+            <button onclick="encrypt()">تشفير</button>
+            <button onclick="decrypt()">فك التشفير</button>
+            
+            <div class="result-area">
+                <h3>النتيجة:</h3>
+                <div id="encryption-result" class="hash-result"></div>
+            </div>
+        </div>
+        
+        <!-- قسم توليد المفاتيح -->
+        <div id="keys-tab" class="tab-content">
+            <h2>توليد مفاتيح التشفير</h2>
+            
+            <div class="form-group">
+                <label for="key-type">نوع المفتاح:</label>
+                <select id="key-type">
+                    <option value="rsa">RSA (مفتاح عام/خاص)</option>
+                    <option value="aes">AES (مفتاح متماثل)</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="key-size">حجم المفتاح:</label>
+                <select id="key-size">
+                    <option value="128">128-بت (AES)</option>
+                    <option value="256">256-بت (AES)</option>
+                    <option value="2048">2048-بت (RSA)</option>
+                    <option value="4096">4096-بت (RSA)</option>
+                </select>
+            </div>
+            
+            <button onclick="generateKeys()">توليد المفاتيح</button>
+            
+            <div class="result-area">
+                <h3>المفتاح العام:</h3>
+                <div class="key-display">
+                    <div class="key-actions">
+                        <button class="key-action-btn" onclick="copyKey('public-key')" title="نسخ">
+                            📋
+                        </button>
+                        <button class="key-action-btn" onclick="clearKey('public-key')" title="حذف">
+                            🗑️
+                        </button>
+                    </div>
+                    <div id="public-key"></div>
+                </div>
+                
+                <h3>المفتاح الخاص:</h3>
+                <div class="key-display">
+                    <div class="key-actions">
+                        <button class="key-action-btn" onclick="copyKey('private-key')" title="نسخ">
+                            📋
+                        </button>
+                        <button class="key-action-btn" onclick="clearKey('private-key')" title="حذف">
+                            🗑️
+                        </button>
+                    </div>
+                    <div id="private-key"></div>
+                </div>
+                
+                <button onclick="downloadKeys()">تحميل المفاتيح</button>
+            </div>
+        </div>
+        
+        <!-- قسم التشفير الأحادي -->
+        <div id="hash-tab" class="tab-content">
+            <h2>التشفير الأحادي (Hash)</h2>
+            
+            <div class="form-group">
+                <label for="hash-text">النص المراد تشفيره:</label>
+                <textarea id="hash-text" placeholder="أدخل النص هنا..."></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label for="hash-algorithm">اختر خوارزمية التشفير الأحادي:</label>
+                <select id="hash-algorithm">
+                    <option value="MD5">MD5</option>
+                    <option value="SHA1">SHA1</option>
+                    <option value="SHA256">SHA256</option>
+                    <option value="SHA512">SHA512</option>
+                    <option value="SHA3">SHA3</option>
+                    <option value="RIPEMD160">RIPEMD160</option>
+                </select>
+            </div>
+            
+            <button onclick="calculateHash()">حساب التشفير</button>
+            
+            <div class="result-area">
+                <h3>النتيجة:</h3>
+                <div id="hash-result" class="hash-result"></div>
+            </div>
+            
+            <h3 style="margin-top: 30px;">مقارنة بين خوارزميات التشفير الأحادي</h3>
+            <table class="comparison-table">
+                <thead>
+                    <tr>
+                        <th>الخوارزمية</th>
+                        <th>طول المخرجات (بت)</th>
+                        <th>مستوى الأمان</th>
+                        <th>السرعة</th>
+                        <th>شائع الاستخدام</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>MD5</td>
+                        <td>128</td>
+                        <td>منخفض (مكسور)</td>
+                        <td>سريع</td>
+                        <td>فحص integrity</td>
+                    </tr>
+                    <tr>
+                        <td>SHA1</td>
+                        <td>160</td>
+                        <td>منخفض (مكسور)</td>
+                        <td>سريع</td>
+                        <td>شهادات SSL قديمة</td>
+                    </tr>
+                    <tr>
+                        <td>SHA256</td>
+                        <td>256</td>
+                        <td>عالي</td>
+                        <td>متوسط</td>
+                        <td>Blockchain، تشفير كلمات السر</td>
+                    </tr>
+                    <tr>
+                        <td>SHA512</td>
+                        <td>512</td>
+                        <td>عالي جدًا</td>
+                        <td>أبطأ</td>
+                        <td>تطبيقات أمنية عالية</td>
+                    </tr>
+                    <tr>
+                        <td>SHA3</td>
+                        <td>مختلفة</td>
+                        <td>عالي جدًا</td>
+                        <td>يعتمد على الطول</td>
+                        <td>التطبيقات الحديثة</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- قسم QR Code -->
+        <div id="qrcode-tab" class="tab-content">
+            <h2>توليد وقراءة QR Code</h2>
+            
+            <div class="form-group">
+                <label for="qrcode-text">النص أو الرابط لإنشاء QR Code:</label>
+                <textarea id="qrcode-text" placeholder="أدخل النص أو الرابط هنا..."></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label for="qrcode-size">حجم QR Code:</label>
+                <input type="range" id="qrcode-size" min="100" max="300" value="200">
+                <span id="qrcode-size-value">200x200</span>
+            </div>
+            
+            <div class="form-group">
+                <label for="qrcode-color">لون QR Code:</label>
+                <input type="color" id="qrcode-color" value="#000000">
+            </div>
+            
+            <button onclick="generateQRCode()">توليد QR Code</button>
+            <button onclick="clearQRCode()">مسح QR Code</button>
+            
+            <div class="result-area">
+                <h3>QR Code:</h3>
+                <div class="qrcode-container">
+                    <div id="qrcode"></div>
+                    <div>
+                        <p>يمكنك استخدام هذا QR Code بمجرد توليده.</p>
+                        <p>لقراءة QR Code، استخدم كاميرا هاتفك أو تطبيق قارئ QR Code.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- قسم وقت اختراق كلمة السر -->
+        <div id="crack-time-tab" class="tab-content">
+            <h2>تقدير وقت اختراق كلمة السر</h2>
+            
+            <div class="form-group">
+                <label for="password-to-check">كلمة السر لفحصها:</label>
+                <input type="text" id="password-to-check" placeholder="أدخل كلمة السر...">
+            </div>
+            
+            <button onclick="calculateCrackTime()">احسب وقت الاختراق</button>
+            
+            <div class="result-area">
+                <h3>قوة كلمة السر:</h3>
+                <div class="password-strength">
+                    <div id="password-strength-bar" class="password-strength-fill" style="width: 0%; background: red;"></div>
+                </div>
+                
+                <h3>وقت الاختراق المتوقع:</h3>
+                <div id="crack-time-result" class="crack-time"></div>
+                
+                <h3>نصائح لتحسين كلمة السر:</h3>
+                <ul id="password-tips">
+                    <li>استخدم 12 حرفًا على الأقل</li>
+                    <li>أضف أرقامًا ورموزًا خاصة</li>
+                    <li>تجنب استخدام الكلمات الشائعة</li>
+                    <li>لا تستخدم معلومات شخصية</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // وظائف التبويب
+        function openTab(tabId) {
+            const tabContents = document.getElementsByClassName('tab-content');
+            for (let i = 0; i < tabContents.length; i++) {
+                tabContents[i].classList.remove('active');
+            }
+            
+            const tabButtons = document.getElementsByClassName('tab-btn');
+            for (let i = 0; i < tabButtons.length; i++) {
+                tabButtons[i].classList.remove('active');
+            }
+            
+            document.getElementById(tabId).classList.add('active');
+            event.currentTarget.classList.add('active');
+        }
+        
+        // إعداد حجم QR Code
+        document.getElementById('qrcode-size').addEventListener('input', function() {
+            document.getElementById('qrcode-size-value').textContent = this.value + 'x' + this.value;
+        });
+        
+        // قسم التشفير وفك التشفير
+        function encrypt() {
+            const algorithm = document.getElementById('algorithm').value;
+            const message = document.getElementById('message').value;
+            const key = document.getElementById('encryption-key').value;
+            
+            if (!message) {
+                alert('يرجى إدخال نص للتشفير');
+                return;
+            }
+            
+            let result = '';
+            try {
+                switch(algorithm) {
+                    case 'aes':
+                        result = CryptoJS.AES.encrypt(message, key).toString();
+                        break;
+                    case 'des':
+                        result = CryptoJS.DES.encrypt(message, key).toString();
+                        break;
+                    case 'rabbit':
+                        result = CryptoJS.Rabbit.encrypt(message, key).toString();
+                        break;
+                    case 'rc4':
+                        result = CryptoJS.RC4.encrypt(message, key).toString();
+                        break;
+                    default:
+                        result = 'خوارزمية غير معروفة';
+                }
+                
+                document.getElementById('encryption-result').textContent = result;
+            } catch (error) {
+                document.getElementById('encryption-result').textContent = 'خطأ في التشفير: ' + error.message;
+            }
+        }
+        
+        function decrypt() {
+            const algorithm = document.getElementById('algorithm').value;
+            const message = document.getElementById('message').value;
+            const key = document.getElementById('encryption-key').value;
+            
+            if (!message) {
+                alert('يرجى إدخال نص لفك التشفير');
+                return;
+            }
+            
+            let result = '';
+            try {
+                switch(algorithm) {
+                    case 'aes':
+                        result = CryptoJS.AES.decrypt(message, key).toString(CryptoJS.enc.Utf8);
+                        break;
+                    case 'des':
+                        result = CryptoJS.DES.decrypt(message, key).toString(CryptoJS.enc.Utf8);
+                        break;
+                    case 'rabbit':
+                        result = CryptoJS.Rabbit.decrypt(message, key).toString(CryptoJS.enc.Utf8);
+                        break;
+                    case 'rc4':
+                        result = CryptoJS.RC4.decrypt(message, key).toString(CryptoJS.enc.Utf8);
+                        break;
+                    default:
+                        result = 'خوارزمية غير معروفة';
+                }
+                
+                if (!result) {
+                    result = 'فشل فك التشفير. تأكد من صحة المفتاح والنص المشفر.';
+                }
+                
+                document.getElementById('encryption-result').textContent = result;
+            } catch (error) {
+                document.getElementById('encryption-result').textContent = 'خطأ في فك التشفير: ' + error.message;
+            }
+        }
+        
+        // قسم توليد المفاتيح
+        function generateKeys() {
+            const keyType = document.getElementById('key-type').value;
+            const keySize = parseInt(document.getElementById('key-size').value);
+            
+            if (keyType === 'rsa') {
+                // محاكاة لتوليد مفاتيح RSA (في الواقع الفعلي، تحتاج إلى مكتبة متخصصة)
+                const publicKey = generateRandomString(keySize / 8);
+                const privateKey = generateRandomString(keySize / 4);
+                
+                document.getElementById('public-key').textContent = publicKey;
+                document.getElementById('private-key').textContent = privateKey;
+            } else if (keyType === 'aes') {
+                // توليد مفتاح AES
+                const key = generateRandomString(keySize / 8);
+                document.getElementById('public-key').textContent = 'مفتاح AES: ' + key;
+                document.getElementById('private-key').textContent = 'نفس مفتاح AES يستخدم للتشفير وفك التشفير';
+            }
+        }
+        
+        function generateRandomString(length) {
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=';
+            let result = '';
+            for (let i = 0; i < length; i++) {
+                result += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            return result;
+        }
+        
+        function copyKey(keyId) {
+            const keyText = document.getElementById(keyId).textContent;
+            if (!keyText) {
+                alert('لا يوجد مفتاح للنسخ');
+                return;
+            }
+            
+            navigator.clipboard.writeText(keyText)
+                .then(() => {
+                    alert('تم نسخ المفتاح');
+                })
+                .catch(err => {
+                    alert('فشل نسخ المفتاح');
+                });
+        }
+        
+        function clearKey(keyId) {
+            if (confirm('هل تريد حذف هذا المفتاح؟')) {
+                document.getElementById(keyId).textContent = '';
+            }
+        }
+        
+        function downloadKeys() {
+            const publicKey = document.getElementById('public-key').textContent;
+            const privateKey = document.getElementById('private-key').textContent;
+            
+            if (!publicKey || !privateKey) {
+                alert('قم بتوليد المفاتيح أولاً');
+                return;
+            }
+            
+            const content = `المفتاح العام:\n${publicKey}\n\nالمفتاح الخاص:\n${privateKey}`;
+            const blob = new Blob([content], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'encryption_keys.txt';
+            a.click();
+            
+            URL.revokeObjectURL(url);
+        }
+        
+        // قسم التشفير الأحادي
+        function calculateHash() {
+            const text = document.getElementById('hash-text').value;
+            const algorithm = document.getElementById('hash-algorithm').value;
+            
+            if (!text) {
+                alert('يرجى إدخال نص لحساب التشفير الأحادي');
+                return;
+            }
+            
+            let hash = '';
+            switch(algorithm) {
+                case 'MD5':
+                    hash = CryptoJS.MD5(text).toString();
+                    break;
+                case 'SHA1':
+                    hash = CryptoJS.SHA1(text).toString();
+                    break;
+                case 'SHA256':
+                    hash = CryptoJS.SHA256(text).toString();
+                    break;
+                case 'SHA512':
+                    hash = CryptoJS.SHA512(text).toString();
+                    break;
+                case 'SHA3':
+                    hash = CryptoJS.SHA3(text).toString();
+                    break;
+                case 'RIPEMD160':
+                    hash = CryptoJS.RIPEMD160(text).toString();
+                    break;
+                default:
+                    hash = 'خوارزمية غير معروفة';
+            }
+            
+            document.getElementById('hash-result').textContent = hash;
+        }
+        
+        // قسم QR Code
+        let qrcode = null;
+        
+        function generateQRCode() {
+            const text = document.getElementById('qrcode-text').value;
+            const size = document.getElementById('qrcode-size').value;
+            const color = document.getElementById('qrcode-color').value;
+            
+            if (!text) {
+                alert('يرجى إدخال نص أو رابط لإنشاء QR Code');
+                return;
+            }
+            
+            // مسح QR Code القديم إذا existed
+            if (qrcode) {
+                qrcode.clear();
+                document.getElementById('qrcode').innerHTML = '';
+            }
+            
+            // إنشاء QR Code جديد
+            qrcode = new QRCode(document.getElementById('qrcode'), {
+                text: text,
+                width: parseInt(size),
+                height: parseInt(size),
+                colorDark: color,
+                colorLight: '#ffffff',
+                correctLevel: QRCode.CorrectLevel.H
+            });
+        }
+        
+        function clearQRCode() {
+            if (qrcode) {
+                qrcode.clear();
+                document.getElementById('qrcode').innerHTML = '';
+            }
+        }
+        
+        // قسم وقت اختراق كلمة السر
+        function calculateCrackTime() {
+            const password = document.getElementById('password-to-check').value;
+            
+            if (!password) {
+                alert('يرجى إدخال كلمة السر لفحصها');
+                return;
+            }
+            
+            // حساب قوة كلمة السر
+            let strength = 0;
+            let tips = [];
+            
+            // اختبار طول كلمة السر
+            if (password.length >= 12) strength += 30;
+            else if (password.length >= 8) strength += 15;
+            else tips.push('جعل كلمة السر أطول (12 حرفًا على الأقل)');
+            
+            // اختبار وجود أحرف كبيرة وصغيرة
+            if (/[a-z]/.test(password) && /[A-Z]/.test(password)) strength += 20;
+            else tips.push('إضافة أحرف كبيرة وصغيرة');
+            
+            // اختبار وجود أرقام
+            if (/[0-9]/.test(password)) strength += 20;
+            else tips.push('إضافة أرقام');
+            
+            // اختبار وجود رموز خاصة
+            if (/[^A-Za-z0-9]/.test(password)) strength += 30;
+            else tips.push('إضافة رموز خاصة (!@#$%^&*)');
+            
+            // تحديث شريط القوة
+            const strengthBar = document.getElementById('password-strength-bar');
+            strengthBar.style.width = strength + '%';
+            
+            if (strength < 40) {
+                strengthBar.style.background = 'red';
+            } else if (strength < 70) {
+                strengthBar.style.background = 'orange';
+            } else {
+                strengthBar.style.background = 'green';
+            }
+            
+            // حساب وقت الاختراق التقريبي
+            const entropy = calculatePasswordEntropy(password);
+            const crackTime = calculateCrackTimeFromEntropy(entropy);
+            
+            // تحديث النصائح
+            const tipsElement = document.getElementById('password-tips');
+            if (tips.length === 0) {
+                tipsElement.innerHTML = '<li>كلمة السر قوية جدًا!</li>';
+            } else {
+                tipsElement.innerHTML = tips.map(tip => `<li>${tip}</li>`).join('');
+            }
+            
+            // عرض وقت الاختراق
+            document.getElementById('crack-time-result').textContent = crackTime;
+        }
+        
+        function calculatePasswordEntropy(password) {
+            let poolSize = 0;
+            
+            if (/[a-z]/.test(password)) poolSize += 26;
+            if (/[A-Z]/.test(password)) poolSize += 26;
+            if (/[0-9]/.test(password)) poolSize += 10;
+            if (/[^A-Za-z0-9]/.test(password)) poolSize += 32;
+            
+            return password.length * Math.log2(poolSize);
+        }
+        
+        function calculateCrackTimeFromEntropy(entropy) {
+            // افتراض أن المهاجم يمكنه تجربة 10^9 كلمات سر في الثانية
+            const guessesPerSecond = 1e9;
+            const seconds = Math.pow(2, entropy) / guessesPerSecond;
+            
+            if (seconds < 60) {
+                return `يستغرق الاختراق أقل من دقيقة`;
+            } else if (seconds < 3600) {
+                return `يستغرق الاختراق حوالي ${Math.round(seconds/60)} دقيقة`;
+            } else if (seconds < 86400) {
+                return `يستغرق الاختراق حوالي ${Math.round(seconds/3600)} ساعة`;
+            } else if (seconds < 31536000) {
+                return `يستغرق الاختراق حوالي ${Math.round(seconds/86400)} يوم`;
+            } else {
+                return `يستغرق الاختراق حوالي ${Math.round(seconds/31536000)} سنة`;
+            }
+        }
+    </script>
+</body>
+</html>
