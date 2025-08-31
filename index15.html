@@ -1,1 +1,507 @@
 
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>موقع تشفير متقدم - فحص تسرب البيانات</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --accent-color: #e74c3c;
+            --light-color: #ecf0f1;
+            --dark-color: #2c3e50;
+            --success-color: #2ecc71;
+            --warning-color: #f39c12;
+            --danger-color: #e74c3c;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f7fa;
+            color: var(--dark-color);
+            line-height: 1.6;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        
+        header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 2rem;
+            text-align: center;
+        }
+        
+        h1 {
+            margin-bottom: 15px;
+            font-size: 2.2rem;
+        }
+        
+        .tab-content {
+            padding: 30px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+        
+        input, textarea, select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+        
+        button {
+            background-color: var(--secondary-color);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        
+        button:hover {
+            background-color: var(--primary-color);
+        }
+        
+        .btn-check {
+            background-color: var(--success-color);
+        }
+        
+        .btn-clear {
+            background-color: var(--danger-color);
+        }
+        
+        .result-area {
+            margin-top: 20px;
+            padding: 20px;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+            border: 1px dashed #ccc;
+        }
+        
+        .breach-result {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 4px;
+        }
+        
+        .breach-safe {
+            background-color: #e8f5e9;
+            border-left: 4px solid var(--success-color);
+        }
+        
+        .breach-warning {
+            background-color: #fff8e1;
+            border-left: 4px solid var(--warning-color);
+        }
+        
+        .breach-danger {
+            background-color: #ffebee;
+            border-left: 4px solid var(--danger-color);
+        }
+        
+        .breach-list {
+            margin-top: 15px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .breach-item {
+            padding: 12px;
+            border-bottom: 1px solid #eee;
+            background: white;
+            margin-bottom: 8px;
+            border-radius: 4px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .breach-title {
+            font-weight: bold;
+            color: var(--primary-color);
+            margin-bottom: 5px;
+        }
+        
+        .breach-details {
+            font-size: 14px;
+            color: #666;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 20px 0;
+        }
+        
+        .loading-spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid var(--secondary-color);
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .note {
+            background-color: #e3f2fd;
+            padding: 15px;
+            border-radius: 4px;
+            margin-top: 20px;
+            border-left: 4px solid var(--secondary-color);
+        }
+        
+        .stat-box {
+            display: flex;
+            justify-content: space-around;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+        
+        .stat-item {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            min-width: 150px;
+            margin: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--secondary-color);
+        }
+        
+        .stat-label {
+            font-size: 14px;
+            color: #666;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        @media (max-width: 768px) {
+            .stat-box {
+                flex-direction: column;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>فحص تسرب البيانات عبر البريد الإلكتروني</h1>
+            <p>اكتشف إذا كان بريدك الإلكتروني قد ظهر في انتهاكات البيانات</p>
+        </header>
+        
+        <div class="tab-content">
+            <div class="form-group">
+                <label for="email-to-check">البريد الإلكتروني للفحص:</label>
+                <input type="email" id="email-to-check" placeholder="أدخل بريدك الإلكتروني للتحقق...">
+                <small>لن نقوم بتخزين أو مشاركة بريدك الإلكتروني مع أي طرف ثالث</small>
+            </div>
+            
+            <button onclick="checkEmailBreach()" class="btn-check">فحص البريد الإلكتروني</button>
+            <button onclick="clearEmailResults()" class="btn-clear">مسح النتائج</button>
+            
+            <div class="loading" id="loading">
+                <div class="loading-spinner"></div>
+                <p>جاري التحقق من البريد الإلكتروني...</p>
+            </div>
+            
+            <div class="result-area">
+                <h3>نتيجة الفحص:</h3>
+                <div id="email-breach-result" class="breach-result">
+                    <p>لم يتم إجراء فحص بعد. أدخل بريدك الإلكتروني وانقر على "فحص البريد الإلكتروني".</p>
+                </div>
+                
+                <div id="breach-stats" class="stat-box" style="display: none;">
+                    <div class="stat-item">
+                        <div class="stat-value" id="total-breaches">0</div>
+                        <div class="stat-label">مجموع الانتهاكات</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="sensitive-breaches">0</div>
+                        <div class="stat-label">انتهاكات حساسة</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="recent-breaches">0</div>
+                        <div class="stat-label">انتهاكات حديثة</div>
+                    </div>
+                </div>
+                
+                <div id="breach-list" class="breach-list" style="display: none;">
+                    <h4>الانتهاكات المكتشفة:</h4>
+                    <div id="breach-items"></div>
+                </div>
+                
+                <div id="protection-tips" style="display: none; margin-top: 20px;">
+                    <h4>نصائح للحماية:</h4>
+                    <ul>
+                        <li>غير كلمات السر للحسابات المتأثرة فوراً</li>
+                        <li>استخدم كلمات سر فريدة وقوية لكل حساب</li>
+                        <li>فعّل المصادقة الثنائية (2FA) عندما تكون متاحة</li>
+                        <li>راجع إعدادات الخصوصية لحساباتك بانتظام</li>
+                        <li>احذر من رسائل البريد الإلكتروني المشبوهة أو رسائل التصيد</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="note">
+                <h4>معلومات مهمة:</h4>
+                <p>هذه الأداة تحاكي عملية التحقق من خلال خدمة <strong>Have I Been Pwned</strong> الشهيرة للكشف عن انتهاكات البيانات.</p>
+                <p>في التطبيق الحقيقي، سيتم استخدام API خاص للتحقق من وجود بريدك الإلكتروني في قواعد البيانات المسربة دون الكشف عن بريدك الكامل.</p>
+                <p>ينصح دائماً باستخدام كلمات سر فريدة وقوية لكل حساب من حساباتك على الإنترنت وتفعيل المصادقة الثنائية.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // عناصر DOM
+        const emailInput = document.getElementById('email-to-check');
+        const breachResult = document.getElementById('email-breach-result');
+        const breachStats = document.getElementById('breach-stats');
+        const breachList = document.getElementById('breach-list');
+        const breachItems = document.getElementById('breach-items');
+        const loading = document.getElementById('loading');
+        const protectionTips = document.getElementById('protection-tips');
+        const totalBreaches = document.getElementById('total-breaches');
+        const sensitiveBreaches = document.getElementById('sensitive-breaches');
+        const recentBreaches = document.getElementById('recent-breaches');
+        
+        // بيانات انتهاكات محاكاة (لأغراض العرض)
+        const sampleBreaches = [
+            { 
+                name: 'LinkedIn 2012', 
+                date: '2012-06-05', 
+                records: '165 مليون',
+                data: 'عنوان البريد الإلكتروني، كلمات السر، البيانات الشخصية',
+                sensitivity: 'عالية',
+                description: 'واحدة من أكبر انتهاكات البيانات في التاريخ، حيث تم اختراق خوادم لينكدإن وتسريب بيانات المستخدمين.'
+            },
+            { 
+                name: 'Yahoo 2013', 
+                date: '2013-08-01', 
+                records: '3 مليار',
+                data: 'عنوان البريد الإلكتروني، كلمات السر، الأسئلة الأمنية، تواريخ الميلاد',
+                sensitivity: 'عالية جداً',
+                description: 'أكبر انتهاك للبيانات في التاريخ، حيث影響 جميع حسابات ياهو تقريباً.'
+            },
+            { 
+                name: 'Adobe 2013', 
+                date: '2013-10-04', 
+                records: '153 مليون',
+                data: 'عنوان البريد الإلكتروني، كلمات السر، أسماء المستخدمين',
+                sensitivity: 'عالية',
+                description: 'اختراق كبير لأدوبي نتج عنه تسريب بيانات millions of users.'
+            },
+            { 
+                name: 'Dropbox 2012', 
+                date: '2012-07-01', 
+                records: '68 مليون',
+                data: 'عنوان البريد الإلكتروني، كلمات السر',
+                sensitivity: 'عالية',
+                description: 'تم اختراق Dropbox وتسريب بيانات المستخدمين بما في ذلك كلمات السر المشفرة.'
+            },
+            { 
+                name: 'Facebook 2019', 
+                date: '2019-04-03', 
+                records: '533 مليون',
+                data: 'عنوان البريد الإلكتروني، أرقام الهواتف، البيانات الشخصية',
+                sensitivity: 'متوسطة',
+                description: 'تعرضت بيانات مستخدمي فيسبوك للتسريب على منصة عامة.'
+            },
+            { 
+                name: 'Marriott International 2018', 
+                date: '2018-09-10', 
+                records: '500 مليون',
+                data: 'عنوان البريد الإلكتروني، أرقام جوازات السفر، تفاصيل الحجز',
+                sensitivity: 'عالية جداً',
+                description: 'اختراق لنظام حجز الفنادق التابع لشركة ماريوت الدولية.'
+            },
+            { 
+                name: 'Twitter 2018', 
+                date: '2018-05-03', 
+                records: '330 مليون',
+                data: 'عنوان البريد الإلكتروني، أرقام الهواتف',
+                sensitivity: 'متوسطة',
+                description: 'عطل في نظام تويتر أدى إلى تخزين كلمات السر بشكل نص plain text.'
+            },
+            { 
+                name: 'Canva 2019', 
+                date: '2019-05-24', 
+                records: '137 مليون',
+                data: 'عنوان البريد الإلكتروني، أسماء المستخدمين، الأسماء، المدن',
+                sensitivity: 'متوسطة',
+                description: 'اختراق لمنصة التصميم كانفا Canva.'
+            }
+        ];
+        
+        // فحص البريد الإلكتروني
+        function checkEmailBreach() {
+            const email = emailInput.value;
+            
+            if (!email) {
+                alert('يرجى إدخال بريد إلكتروني أولاً');
+                return;
+            }
+            
+            if (!isValidEmail(email)) {
+                alert('يرجى إدخال بريد إلكتروني صحيح');
+                return;
+            }
+            
+            // إظهار مؤشر التحميل
+            loading.style.display = 'block';
+            breachResult.innerHTML = '<p>جاري التحقق من البريد الإلكتروني...</p>';
+            breachStats.style.display = 'none';
+            breachList.style.display = 'none';
+            protectionTips.style.display = 'none';
+            
+            // محاكاة وقت الانتظار للطلب
+            setTimeout(() => {
+                // التحقق من البريد الإلكتروني (محاكاة للـ API)
+                checkEmailWithAPI(email);
+                
+                // إخفاء مؤشر التحميل
+                loading.style.display = 'none';
+            }, 2500);
+        }
+        
+        // التحقق من صحة البريد الإلكتروني
+        function isValidEmail(email) {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return emailRegex.test(email);
+        }
+        
+        // محاكاة التحقق من خلال API
+        function checkEmailWithAPI(email) {
+            // في التطبيق الحقيقي، هنا سيتم إرسال طلب إلى API
+            // لكن لأسباب أمنية، سنقوم بمحاكاة الاستجابة
+            
+            // استخراج اسم النطاق من البريد الإلكتروني
+            const domain = email.split('@')[1];
+            
+            // محاكاة نتيجة الاستجابة بناءً على النطاق
+            const isBreached = Math.random() < 0.7; // 70% احتمال أن يكون البريد مسرباً
+            
+            if (isBreached) {
+                const breachCount = Math.floor(Math.random() * 5) + 1;
+                const sensitiveCount = Math.floor(breachCount / 2) + 1;
+                const recentCount = Math.floor(breathCount / 3) + 1;
+                
+                breachResult.className = 'breach-result breach-danger';
+                breachResult.innerHTML = `
+                    <h4>⚠️ تحذير: تم العثور على البريد الإلكتروني في انتهاكات البيانات</h4>
+                    <p>ظهر البريد الإلكتروني <strong>${email}</strong> في <strong>${breachCount}</strong> خروقات للبيانات.</p>
+                    <p>يوصى بشدة بتغيير كلمات السر للحسابات المتأثرة ومراجعة إعدادات الخصوصية.</p>
+                `;
+                
+                // تحديث الإحصائيات
+                totalBreaches.textContent = breachCount;
+                sensitiveBreaches.textContent = sensitiveCount;
+                recentBreaches.textContent = recentCount;
+                breachStats.style.display = 'flex';
+                
+                // عرض بعض الخروقات المحتملة (محاكاة)
+                breachList.style.display = 'block';
+                breachItems.innerHTML = '';
+                
+                const selectedBreaches = sampleBreaches
+                    .sort(() => 0.5 - Math.random())
+                    .slice(0, breachCount);
+                
+                selectedBreaches.forEach(breach => {
+                    const breachElement = document.createElement('div');
+                    breachElement.className = 'breach-item';
+                    breachElement.innerHTML = `
+                        <div class="breach-title">${breach.name}</div>
+                        <div class="breach-details">
+                            <strong>التاريخ:</strong> ${breach.date}<br>
+                            <strong>عدد السجلات المسربة:</strong> ${breach.records}<br>
+                            <strong>البيانات المسربة:</strong> ${breach.data}<br>
+                            <strong>مستوى الحساسية:</strong> ${breach.sensitivity}<br>
+                            <strong>الوصف:</strong> ${breach.description}
+                        </div>
+                    `;
+                    breachItems.appendChild(breachElement);
+                });
+                
+                // عرض نصائح الحماية
+                protectionTips.style.display = 'block';
+            } else {
+                breachResult.className = 'breach-result breach-safe';
+                breachResult.innerHTML = `
+                    <h4>✓ جيد - لم يتم العثور على البريد الإلكتروني في الانتهاكات المعروفة</h4>
+                    <p>البريد الإلكتروني <strong>${email}</strong> لم يظهر في أي خروقات للبيانات حتى الآن.</p>
+                    <p>مع ذلك، ينصح دائماً باتخاذ إجراءات وقائية واستخدام كلمات سر فريدة وقوية لكل حساب.</p>
+                `;
+                breachStats.style.display = 'none';
+                breachList.style.display = 'none';
+                protectionTips.style.display = 'none';
+            }
+        }
+        
+        // مسح النتائج
+        function clearEmailResults() {
+            emailInput.value = '';
+            breachResult.className = 'breach-result';
+            breachResult.innerHTML = '<p>لم يتم إجراء فحص بعد. أدخل بريدك الإلكتروني وانقر على "فحص البريد الإلكتروني".</p>';
+            breachStats.style.display = 'none';
+            breachList.style.display = 'none';
+            protectionTips.style.display = 'none';
+        }
+        
+        // إضافة إمكانية الضغط على Enter للفحص
+        emailInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                checkEmailBreach();
+            }
+        });
+    </script>
+</body>
+</html>
