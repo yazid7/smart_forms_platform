@@ -9,122 +9,47 @@
         * {
             box-sizing: border-box;
             margin: 0;
-            padding: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            padding: 0,0,0.1);
         }
-        
-        body {
-            background-color: #f5f5f5;
-            color: #333;
-            line-height: 1.6;
-        }
-        
-        .container {
-            width: 90%;
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-        
-        header {
-            background-color: #2c3e50;
-            color: white;
-            padding: 1rem 0;
-            text-align: center;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-        
         h1, h2, h3 {
             margin-bottom: 1rem;
             color: #2c3e50;
         }
-        
         /* أنماط النموذج */
         .complaint-form {
             background: white;
             padding: 2rem;
             border-radius: 8px;
+            box-shadow: 0 2px 10px rgba padding: 2rem;
+            border-radius: 8px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
             margin-bottom: 2rem;
         }
-        
-        .form-group {
-            margin-bottom: 1.5rem;
-        }
-        
-        label {
-            display: block;
-            margin-bottom: 0.5rem;
-            font-weight: bold;
-        }
-        
-        input, textarea, select {
-            width: 100%;
-            padding: 0.8rem;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            font-size: 1rem;
-        }
-        
-        textarea {
-            min-height: 150px;
-            resize: vertical;
-        }
-        
-        button {
-            background-color: #2c3e50;
-            color: white;
-            border: none;
-            padding: 0.8rem 1.5rem;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 1rem;
-            transition: background-color 0.3s;
-        }
-        
-        button:hover {
-            background-color: #1a252f;
-        }
-        
-        /* أنماط قائمة الشكاوى */
-        .complaints-list {
-            background: white;
-            padding: 2rem;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-        
         .complaint-item {
             border-bottom: 1px solid #eee;
             padding: 1.5rem 0;
         }
-        
         .complaint-item:last-child {
             border-bottom: none;
         }
-        
         .complaint-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
             margin-bottom: 1rem;
         }
-        
         .complaint-title {
             font-size: 1.2rem;
             color: #2c3e50;
         }
-        
         .complaint-date {
             color: #7f8c8d;
             font-size: 0.9rem;
         }
-        
         .complaint-description {
             margin-bottom: 1rem;
             color: #34495e;
         }
-        
         .complaint-status {
             display: inline-block;
             padding: 0.3rem 0.8rem;
@@ -132,22 +57,18 @@
             font-size: 0.8rem;
             font-weight: bold;
         }
-        
         .status-pending {
             background-color: #ffeaa7;
             color: #d35400;
         }
-        
         .status-in-progress {
             background-color: #81ecec;
             color: #00b894;
         }
-        
         .status-resolved {
             background-color: #55efc4;
             color: #00b894;
         }
-        
         /* تنبيهات */
         .alert {
             padding: 1rem;
@@ -155,19 +76,16 @@
             border-radius: 4px;
             font-weight: bold;
         }
-        
         .alert-success {
             background-color: #d4edda;
             color: #155724;
             border: 1px solid #c3e6cb;
         }
-        
         .alert-error {
             background-color: #f8d7da;
             color: #721c24;
             border: 1px solid #f5c6cb;
         }
-        
         /* تذييل الصفحة */
         footer {
             text-align: center;
@@ -176,17 +94,22 @@
             color: #7f8c8d;
             border-top: 1px solid #eee;
         }
-        
         /* تصميم متجاوب */
         @media (max-width: 768px) {
             .complaint-header {
                 flex-direction: column;
                 align-items: flex-start;
             }
-            
             .complaint-date {
                 margin-top: 0.5rem;
             }
+        }
+        /* واجهة الإدارة */
+        .complaints-admin textarea {
+            min-height: 60px;
+        }
+        .complaints-admin select, .complaints-admin button {
+            margin-top: 0.4rem;
         }
     </style>
 </head>
@@ -206,12 +129,10 @@
                     <label for="name">الاسم:</label>
                     <input type="text" id="name" required>
                 </div>
-                
                 <div class="form-group">
                     <label for="email">البريد الإلكتروني:</label>
                     <input type="email" id="email" required>
                 </div>
-                
                 <div class="form-group">
                     <label for="category">نوع الشكوى:</label>
                     <select id="category" required>
@@ -223,17 +144,14 @@
                         <option value="أخرى">أخرى</option>
                     </select>
                 </div>
-                
                 <div class="form-group">
                     <label for="title">عنوان الشكوى:</label>
                     <input type="text" id="title" required>
                 </div>
-                
                 <div class="form-group">
                     <label for="description">وصف الشكوى:</label>
                     <textarea id="description" required></textarea>
                 </div>
-                
                 <button type="submit">إرسال الشكوى</button>
             </form>
         </section>
@@ -242,6 +160,13 @@
             <h2>الشكاوى المقدمة</h2>
             <div id="complaintsContainer">
                 <!-- سيتم عرض الشكاوى هنا ديناميكيًا -->
+            </div>
+        </section>
+        
+        <section class="complaints-admin">
+            <h2>معالجة الشكاوى (لوحة الإدارة)</h2>
+            <div id="adminComplaintsContainer">
+                <!-- يتم عرض الشكاوى هنا مع خيارات تعديل الحالة والرد -->
             </div>
         </section>
     </main>
@@ -255,46 +180,95 @@
     <script>
         // إدارة حالة التطبيق
         let complaints = JSON.parse(localStorage.getItem('complaints')) || [];
-        
+
         // عناصر DOM
         const complaintForm = document.getElementById('complaintForm');
         const complaintsContainer = document.getElementById('complaintsContainer');
         const alertContainer = document.getElementById('alert-container');
-        
-        // عرض الشكاوى
+        const adminComplaintsContainer = document.getElementById('adminComplaintsContainer');
+
+        // توليد كود شكوى فريد (مثلاً رقم عشوائي 6 أرقام يبدأ بحرف C)
+        function generateComplaintCode() {
+            return 'C' + Math.floor(100000 + Math.random() * 900000);
+        }
+
+        // عرض الشكاوى للمستخدم
         function displayComplaints() {
             complaintsContainer.innerHTML = '';
-            
             if (complaints.length === 0) {
                 complaintsContainer.innerHTML = '<p>لا توجد شكاوى مرفوعة حتى الآن.</p>';
                 return;
             }
-            
             complaints.forEach((complaint, index) => {
                 const complaintElement = document.createElement('div');
                 complaintElement.classList.add('complaint-item');
-                
-                // تحويل التاريخ إلى تنسيق مقروء
                 const complaintDate = new Date(complaint.date).toLocaleString('ar-SA');
-                
                 complaintElement.innerHTML = `
                     <div class="complaint-header">
                         <h3 class="complaint-title">${complaint.title}</h3>
                         <span class="complaint-date">${complaintDate}</span>
                     </div>
                     <div class="complaint-details">
+                        <p><strong>كود الشكوى:</strong> ${complaint.code}</p>
                         <p><strong>الاسم:</strong> ${complaint.name}</p>
                         <p><strong>البريد الإلكتروني:</strong> ${complaint.email}</p>
                         <p><strong>نوع الشكوى:</strong> ${complaint.category}</p>
                     </div>
                     <p class="complaint-description"><strong>وصف الشكوى:</strong> ${complaint.description}</p>
                     <span class="complaint-status status-${complaint.status}">${getStatusText(complaint.status)}</span>
+                    ${complaint.reply ? `<p style="color:green"><strong>رد الإدارة:</strong> ${complaint.reply}</p>` : ''}
                 `;
-                
                 complaintsContainer.appendChild(complaintElement);
             });
         }
-        
+
+        // عرض الشكاوى للوحة الإدارة
+        function displayAdminComplaints() {
+            adminComplaintsContainer.innerHTML = '';
+            if (complaints.length === 0) {
+                adminComplaintsContainer.innerHTML = '<p>لا توجد شكاوى.</p>';
+                return;
+            }
+            complaints.forEach((complaint, index) => {
+                const adminElement = document.createElement('div');
+                adminElement.classList.add('complaint-item');
+                adminElement.innerHTML = `
+                    <div>
+                        <p><strong>الكود:</strong> ${complaint.code}</p>
+                        <p><strong>العنوان:</strong> ${complaint.title}</p>
+                        <p><strong>الوصف:</strong> ${complaint.description}</p>
+                        <p><strong>الحالة:</strong>
+                            <select data-index="${index}" class="status-select">
+                                <option value="pending" ${complaint.status === 'pending' ? 'selected' : ''}>قيد المراجعة</option>
+                                <option value="in-progress" ${complaint.status === 'in-progress' ? 'selected' : ''}>قيد المعالجة</option>
+                                <option value="resolved" ${complaint.status === 'resolved' ? 'selected' : ''}>تم الحل</option>
+                            </select>
+                        </p>
+                        <p><strong>رد الإدارة:</strong></p>
+                        <textarea data-index="${index}" class="reply-text" placeholder="اكتب الرد هنا...">${complaint.reply || ''}</textarea>
+                        <button data-index="${index}" class="save-admin-btn">حفظ التغييرات</button>
+                    </div>
+                    <hr>
+                `;
+                adminComplaintsContainer.appendChild(adminElement);
+            });
+
+            // التعامل مع تغيير الحالة والرد
+            document.querySelectorAll('.save-admin-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const i = this.getAttribute('data-index');
+                    const status = document.querySelector(`.status-select[data-index="${i}"]`).value;
+                    const reply = document.querySelector(`.reply-text[data-index="${i}"]`).value;
+                    complaints[i].status = status;
+                    complaints[i].reply = reply;
+                    localStorage.setItem('complaints', JSON.stringify(complaints));
+                    displayComplaints();
+                    displayAdminComplaints();
+                    showAlert('تم تحديث الشكوى بنجاح', 'success');
+                });
+            });
+        }
+
         // تحويل حالة الشكوى إلى نص عربي
         function getStatusText(status) {
             const statusMap = {
@@ -304,55 +278,44 @@
             };
             return statusMap[status] || status;
         }
-        
+
         // عرض تنبيه
         function showAlert(message, type) {
             const alertElement = document.createElement('div');
             alertElement.classList.add('alert', `alert-${type}`);
             alertElement.textContent = message;
-            
             alertContainer.appendChild(alertElement);
-            
-            // إزالة التنبيه بعد 5 ثوان
             setTimeout(() => {
                 alertElement.remove();
             }, 5000);
         }
-        
+
         // معالجة إرسال النموذج
         complaintForm.addEventListener('submit', function(e) {
             e.preventDefault();
-            
-            // جمع بيانات النموذج
             const complaint = {
+                code: generateComplaintCode(),
                 name: document.getElementById('name').value,
                 email: document.getElementById('email').value,
                 category: document.getElementById('category').value,
                 title: document.getElementById('title').value,
                 description: document.getElementById('description').value,
                 date: new Date().toISOString(),
-                status: 'pending' // حالة افتراضية
+                status: 'pending',
+                reply: ''
             };
-            
-            // إضافة الشكوى إلى القائمة
             complaints.push(complaint);
-            
-            // حفظ في localStorage
             localStorage.setItem('complaints', JSON.stringify(complaints));
-            
-            // تحديث العرض
             displayComplaints();
-            
-            // إظهار رسالة نجاح
+            displayAdminComplaints();
             showAlert('تم تقديم شكواك بنجاح، وسيتم مراجعتها في أقرب وقت ممكن.', 'success');
-            
-            // إعادة تعيين النموذج
             complaintForm.reset();
         });
-        
+
         // تهيئة التطبيق
         document.addEventListener('DOMContentLoaded', function() {
             displayComplaints();
+            displayAdminComplaints();
         });
     </script>
 </body>
