@@ -5,22 +5,76 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>نظام معالجة الشكاوى</title>
     <style>
-        /* أنماط عامة */
         * {
             box-sizing: border-box;
             margin: 0;
-            padding: 0,0,0.1);
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        body {
+            background-color: #f5f5f5;
+            color: #333;
+            line-height: 1.6;
+        }
+        .container {
+            width: 90%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        header {
+            background-color: #2c3e50;
+            color: white;
+            padding: 1rem 0;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
         h1, h2, h3 {
             margin-bottom: 1rem;
             color: #2c3e50;
         }
-        /* أنماط النموذج */
         .complaint-form {
             background: white;
             padding: 2rem;
             border-radius: 8px;
-            box-shadow: 0 2px 10px rgba padding: 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+        }
+        input, textarea, select {
+            width: 100%;
+            padding: 0.8rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+        textarea {
+            min-height: 150px;
+            resize: vertical;
+        }
+        button {
+            background-color: #2c3e50;
+            color: white;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #1a252f;
+        }
+        .complaints-list, .complaints-admin, .admin-login-box {
+            background: white;
+            padding: 2rem;
             border-radius: 8px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
             margin-bottom: 2rem;
@@ -69,7 +123,6 @@
             background-color: #55efc4;
             color: #00b894;
         }
-        /* تنبيهات */
         .alert {
             padding: 1rem;
             margin-bottom: 1rem;
@@ -86,7 +139,6 @@
             color: #721c24;
             border: 1px solid #f5c6cb;
         }
-        /* تذييل الصفحة */
         footer {
             text-align: center;
             padding: 2rem 0;
@@ -94,7 +146,6 @@
             color: #7f8c8d;
             border-top: 1px solid #eee;
         }
-        /* تصميم متجاوب */
         @media (max-width: 768px) {
             .complaint-header {
                 flex-direction: column;
@@ -104,12 +155,19 @@
                 margin-top: 0.5rem;
             }
         }
-        /* واجهة الإدارة */
         .complaints-admin textarea {
             min-height: 60px;
         }
         .complaints-admin select, .complaints-admin button {
             margin-top: 0.4rem;
+        }
+        .admin-login-box {
+            text-align: center;
+        }
+        .admin-login-box input[type="password"] {
+            max-width: 250px;
+            margin: 0 auto 10px auto;
+            display: block;
         }
     </style>
 </head>
@@ -119,7 +177,6 @@
             <h1>نظام معالجة الشكاوى</h1>
         </div>
     </header>
-    
     <main class="container">
         <section class="complaint-form">
             <h2>تقديم شكوى جديدة</h2>
@@ -155,44 +212,50 @@
                 <button type="submit">إرسال الشكوى</button>
             </form>
         </section>
-        
         <section class="complaints-list">
             <h2>الشكاوى المقدمة</h2>
-            <div id="complaintsContainer">
-                <!-- سيتم عرض الشكاوى هنا ديناميكيًا -->
-            </div>
+            <div id="complaintsContainer"></div>
         </section>
-        
-        <section class="complaints-admin">
+        <!-- واجهة تسجيل الدخول للإدارة -->
+        <section class="admin-login-box" id="adminLoginBox">
+            <h2>لوحة الإدارة</h2>
+            <p>يرجى إدخال كلمة المرور للوصول إلى لوحة معالجة الشكاوى</p>
+            <input type="password" id="adminPassword" placeholder="كلمة المرور">
+            <button id="adminLoginBtn">دخول</button>
+            <div id="adminLoginAlert"></div>
+        </section>
+        <!-- لوحة الإدارة لمعالجة الشكاوى -->
+        <section class="complaints-admin" id="adminSection" style="display:none;">
             <h2>معالجة الشكاوى (لوحة الإدارة)</h2>
-            <div id="adminComplaintsContainer">
-                <!-- يتم عرض الشكاوى هنا مع خيارات تعديل الحالة والرد -->
-            </div>
+            <div id="adminComplaintsContainer"></div>
+            <button id="adminLogoutBtn" style="margin-top:20px;">تسجيل خروج</button>
         </section>
     </main>
-    
     <footer>
         <div class="container">
             <p>© 2023 نظام معالجة الشكاوى. جميع الحقوق محفوظة.</p>
         </div>
     </footer>
-
     <script>
-        // إدارة حالة التطبيق
         let complaints = JSON.parse(localStorage.getItem('complaints')) || [];
-
-        // عناصر DOM
         const complaintForm = document.getElementById('complaintForm');
         const complaintsContainer = document.getElementById('complaintsContainer');
         const alertContainer = document.getElementById('alert-container');
         const adminComplaintsContainer = document.getElementById('adminComplaintsContainer');
+        const adminSection = document.getElementById('adminSection');
+        const adminLoginBox = document.getElementById('adminLoginBox');
+        const adminLoginBtn = document.getElementById('adminLoginBtn');
+        const adminPassword = document.getElementById('adminPassword');
+        const adminLoginAlert = document.getElementById('adminLoginAlert');
+        const adminLogoutBtn = document.getElementById('adminLogoutBtn');
 
-        // توليد كود شكوى فريد (مثلاً رقم عشوائي 6 أرقام يبدأ بحرف C)
+        // كلمة مرور الإدارة (يمكنك تغييرها هنا)
+        const ADMIN_PASS = "admin1234";
+
         function generateComplaintCode() {
             return 'C' + Math.floor(100000 + Math.random() * 900000);
         }
 
-        // عرض الشكاوى للمستخدم
         function displayComplaints() {
             complaintsContainer.innerHTML = '';
             if (complaints.length === 0) {
@@ -222,7 +285,6 @@
             });
         }
 
-        // عرض الشكاوى للوحة الإدارة
         function displayAdminComplaints() {
             adminComplaintsContainer.innerHTML = '';
             if (complaints.length === 0) {
@@ -253,7 +315,6 @@
                 adminComplaintsContainer.appendChild(adminElement);
             });
 
-            // التعامل مع تغيير الحالة والرد
             document.querySelectorAll('.save-admin-btn').forEach(btn => {
                 btn.addEventListener('click', function() {
                     const i = this.getAttribute('data-index');
@@ -269,7 +330,6 @@
             });
         }
 
-        // تحويل حالة الشكوى إلى نص عربي
         function getStatusText(status) {
             const statusMap = {
                 'pending': 'قيد المراجعة',
@@ -279,7 +339,6 @@
             return statusMap[status] || status;
         }
 
-        // عرض تنبيه
         function showAlert(message, type) {
             const alertElement = document.createElement('div');
             alertElement.classList.add('alert', `alert-${type}`);
@@ -290,7 +349,6 @@
             }, 5000);
         }
 
-        // معالجة إرسال النموذج
         complaintForm.addEventListener('submit', function(e) {
             e.preventDefault();
             const complaint = {
@@ -307,15 +365,33 @@
             complaints.push(complaint);
             localStorage.setItem('complaints', JSON.stringify(complaints));
             displayComplaints();
-            displayAdminComplaints();
+            if (adminSection.style.display !== "none") displayAdminComplaints();
             showAlert('تم تقديم شكواك بنجاح، وسيتم مراجعتها في أقرب وقت ممكن.', 'success');
             complaintForm.reset();
         });
 
-        // تهيئة التطبيق
+        // إدارة الدخول للوحة الإدارة
+        adminLoginBtn.addEventListener('click', function() {
+            if (adminPassword.value === ADMIN_PASS) {
+                adminLoginBox.style.display = "none";
+                adminSection.style.display = "block";
+                displayAdminComplaints();
+                adminPassword.value = "";
+                adminLoginAlert.innerHTML = "";
+            } else {
+                adminLoginAlert.innerHTML = '<div class="alert alert-error">كلمة المرور غير صحيحة!</div>';
+                adminPassword.value = "";
+            }
+        });
+
+        // تسجيل خروج من لوحة الإدارة
+        adminLogoutBtn.addEventListener('click', function() {
+            adminSection.style.display = "none";
+            adminLoginBox.style.display = "block";
+        });
+
         document.addEventListener('DOMContentLoaded', function() {
             displayComplaints();
-            displayAdminComplaints();
         });
     </script>
 </body>
