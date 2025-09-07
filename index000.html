@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>مجموعة أدوات التوليد والتشفير</title>
+    
+    <style>
+        body {
+            font-family: 'Tajawal', sans-serif; /* خط عربي جميل */
+            background-color: #f0f2f5;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 800px;
+            background: #fff;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        h1, h2 {
+            text-align: center;
+            color: #0056b3;
+        }
+
+        .tool-card {
+            background: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .output-container, .key-container {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        input[type="text"], input[type="password"], textarea, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+            background: #fff;
+            transition: border-color 0.3s;
+        }
+
+        input:focus, textarea:focus {
+            border-color: #007bff;
+            outline: none;
+        }
+
+        .options {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            margin: 15px 0;
+        }
+
+        .generate-btn, .copy-btn, .clear-btn {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .generate-btn {
+            background-color: #007bff;
+        }
+
+        .copy-btn {
+            background-color: #28a745;
+            margin-right: 10px;
+        }
+
+        .clear-btn {
+            background-color: #dc3545;
+        }
+
+        /* تأثيرات الأزرار */
+        .generate-btn:hover {
+            background-color: #0056b3;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+        .copy-btn:active::after, .clear-btn:active::after {
+            content: 'تم!';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-weight: bold;
+            background-color: rgba(0,0,0,0.5);
+            padding: 5px 10px;
+            border-radius: 5px;
+        }
+
+        #password-check-result {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 5px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        #morse-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        #morse-table th, #morse-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center;
+        }
+
+        #morse-table th {
+            background-color: #007bff;
+            color: white;
+        }
+    </style>
+    </head>
+<body>
+
+    <div class="container">
+        <h1>مجموعة أدوات التوليد والتشفير</h1>
+
+        <div class="tool-card">
+            <h2>مولد كلمات السر</h2>
+            <div class="output-container">
+                <input type="text" id="password-output" readonly>
+                <button class="copy-btn" data-target="password-output">نسخ</button>
+            </div>
+            <div class="options">
+                <label for="password-length">طول الكلمة:</label>
+                <input type="number" id="password-length" value="12" min="4" max="128">
+                <label><input type="checkbox" id="include-uppercase" checked> أحرف كبيرة</label>
+                <label><input type="checkbox" id="include-numbers" checked> أرقام</label>
+                <label><input type="checkbox" id="include-symbols" checked> رموز</label>
+            </div>
+            <button class="generate-btn" id="generate-password">توليد</button>
+            <button class="clear-btn" data-target="password-output">حذف</button>
+        </div>
+
+        <div class="tool-card">
+            <h2>مولد جمل المرور</h2>
+            <div class="output-container">
+                <input type="text" id="passphrase-output" readonly>
+                <button class="copy-btn" data-target="passphrase-output">نسخ</button>
+            </div>
+            <div class="options">
+                <label for="passphrase-words">عدد الكلمات:</label>
+                <input type="number" id="passphrase-words" value="4" min="2" max="10">
+            </div>
+            <button class="generate-btn" id="generate-passphrase">توليد</button>
+            <button class="clear-btn" data-target="passphrase-output">حذف</button>
+        </div>
+
+        <div class="tool-card">
+            <h2>مولد الأسماء العشوائية</h2>
+            <div class="output-container">
+                <input type="text" id="name-output" readonly>
+                <button class="copy-btn" data-target="name-output">نسخ</button>
+            </div>
+            <button class="generate-btn" id="generate-name">توليد</button>
+            <button class="clear-btn" data-target="name-output">حذف</button>
+        </div>
+
+        <div class="tool-card">
+            <h2>مولد البريد الإلكتروني المؤقت</h2>
+            <div class="output-container">
+                <input type="text" id="email-output" readonly>
+                <button class="copy-btn" data-target="email-output">نسخ</button>
+            </div>
+            <button class="generate-btn" id="generate-email">توليد</button>
+            <button class="clear-btn" data-target="email-output">حذف</button>
+        </div>
+
+        <div class="tool-card">
+            <h2>مولد مفاتيح التشفير (عام وخاص)</h2>
+            <div class="key-container">
+                <label>المفتاح العام:</label>
+                <textarea id="public-key-output" readonly rows="4"></textarea>
+                <button class="copy-btn" data-target="public-key-output">نسخ</button>
+                <label>المفتاح الخاص:</label>
+                <textarea id="private-key-output" readonly rows="4"></textarea>
+                <button class="copy-btn" data-target="private-key-output">نسخ</button>
+            </div>
+            <button class="generate-btn" id="generate-keys">توليد</button>
+            <div class="clear-group">
+                <button class="clear-btn" data-target="public-key-output">حذف العام</button>
+                <button class="clear-btn" data-target="private-key-output">حذف الخاص</button>
+            </div>
+        </div>
+        
+        <div class="tool-card">
+            <h2>مولد التشفير الأحادي (Hashing)</h2>
+            <textarea id="hash-input" placeholder="أدخل النص هنا..."></textarea>
+            <div class="options">
+                <label for="hash-algorithm">اختر الخوارزمية:</label>
+                <select id="hash-algorithm">
+                    <option value="SHA-256">SHA-256</option>
+                    <option value="SHA-512">SHA-512</option>
+                    <option value="MD5">MD5 (غير آمن)</option>
+                </select>
+            </div>
+            <div class="output-container">
+                <input type="text" id="hash-output" readonly>
+                <button class="copy-btn" data-target="hash-output">نسخ</button>
+            </div>
+            <button class="generate-btn" id="generate-hash">توليد</button>
+            <button class="clear-btn" data-target="hash-output">حذف</button>
+        </div>
+
+        <div class="tool-card">
+            <h2>شيفرة موريس</h2>
+            <textarea id="morse-input" placeholder="أدخل النص أو شيفرة موريس..."></textarea>
+            <div class="output-container">
+                <input type="text" id="morse-output" readonly>
+                <button class="copy-btn" data-target="morse-output">نسخ</button>
+            </div>
+            <div class="button-group">
+                <button class="generate-btn" id="text-to-morse">تحويل إلى موريس</button>
+                <button class="generate-btn" id="morse-to-text">تحويل إلى نص</button>
+            </div>
+            <button class="clear-btn" data-target="morse-output">حذف</button>
+            
+            <h3>جدول رموز شيفرة موريس</h3>
+            <table id="morse-table">
+                </table>
+        </div>
+
+        <div class="tool-card">
+            <h2>التحقق من تسريب كلمة السر</h2>
+            <input type="password" id="password-check-input" placeholder="أدخل كلمة السر للتحقق...">
+            <button class="generate-btn" id="check-password">تحقق الآن</button>
+            <div id="password-check-result"></div>
+        </div>
+
+        <div class="tool-card">
+            <h2>تشفير ملف</h2>
+            <input type="file" id="file-encrypt-input">
+            <input type="password" id="file-encrypt-password" placeholder="كلمة سر التشفير...">
+            <button class="generate-btn" id="encrypt-file">تشفير وتنزيل</button>
+        </div>
+
+        <div class="tool-card">
+            <h2>إخفاء رسالة في صورة (Steganography)</h2>
+            <label>اختر الصورة:</label>
+            <input type="file" id="steg-image-input" accept="image/*">
+            <textarea id="steg-message-input" placeholder="الرسالة السرية..."></textarea>
+            <div class="button-group">
+                <button class="generate-btn" id="encode-steg">إخفاء الرسالة</button>
+                <button class="generate-btn" id="decode-steg">كشف الرسالة</button>
+            </div>
+            <canvas id="steg-canvas" style="display:none;"></canvas>
+            <div id="steg-result"></div>
+        </div>
+
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+
+            // مولد كلمات السر
+            const passwordOutput = document.getElementById('password-output');
+            document.getElementById('generate-password').addEventListener('click', () => {
+                const length = document.getElementById('password-length').value;
+                const includeUppercase = document.getElementById('include-uppercase').checked;
+                const includeNumbers = document.getElementById('include-numbers').checked;
+                const includeSymbols = document.getElementById('include-symbols').checked;
+                passwordOutput.value = generatePassword(length, includeUppercase, includeNumbers, includeSymbols);
+            });
+
+            function generatePassword(length, upper, nums, syms) {
+                const lowerChars = 'abcdefghijklmnopqrstuvwxyz';
+                const upperChars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+                const numberChars = '0123456789';
+                const symbolChars = '!@#$%^&*()_+[]{}|;:,.<>?';
+                let allChars = lowerChars;
+                if (upper) allChars += upperChars;
+                if (nums) allChars += numberChars;
+                if (syms) allChars += symbolChars;
+                let password = '';
+                for (let i = 0; i < length; i++) {
+                    password += allChars.charAt(Math.floor(Math.random() * allChars.length));
+                }
+                return password;
+            }
+
+            // مولد جمل المرور
+            document.getElementById('generate-passphrase').addEventListener('click', () => {
+                const wordCount = document.getElementById('passphrase-words').value;
+                // قائمة كلمات بسيطة كمثال. يمكن توسيعها.
+                const words = ['تفاحة', 'موز', 'سماء', 'بحر', 'جبل', 'نهر', 'شمس', 'قمر', 'نجمة', 'سحاب'];
+                let passphrase = '';
+                for (let i = 0; i < wordCount; i++) {
+                    passphrase += words[Math.floor(Math.random() * words.length)] + (i === wordCount - 1 ? '' : '-');
+                }
+                document.getElementById('passphrase-output').value = passphrase;
+            });
+
+            // مولد الأسماء
+            document.getElementById('generate-name').addEventListener('click', () => {
+                const firstNames = ['أحمد', 'محمد', 'علي', 'خالد', 'فاطمة', 'زينب', 'مريم', 'عائشة'];
+                const lastNames = ['الغامدي', 'الشهري', 'القحطاني', 'العتيبي', 'المصري', 'السوري'];
+                const firstName = firstNames[Math.floor(Math.random() * firstNames.length)];
+                const lastName = lastNames[Math.floor(Math.random() * lastNames.length)];
+                document.getElementById('name-output').value = `${firstName} ${lastName}`;
+            });
+
+            // مولد البريد الإلكتروني
+            document.getElementById('generate-email').addEventListener('click', () => {
+                const randomString = Math.random().toString(36).substring(7);
+                const domains = ['example.com', 'mail-temp.org', 'test.net'];
+                const domain = domains[Math.floor(Math.random() * domains.length)];
+                document.getElementById('email-output').value = `${randomString}@${domain}`;
+            });
+
+            // مولد مفاتيح التشفير
+            document.getElementById('generate-keys').addEventListener('click', async () => {
+                try {
+                    const keyPair = await window.crypto.subtle.generateKey(
+                        { name: 'RSA-OAEP', modulusLength: 2048, publicExponent: new Uint8Array([1, 0, 1]), hash: 'SHA-256' },
+                        true,
+                        ['encrypt', 'decrypt']
+                    );
+                    // تصدير المفتاح العام
+                    const publicKey = await window.crypto.subtle.exportKey('spki', keyPair.publicKey);
+                    document.getElementById('public-key-output').value = `-----BEGIN PUBLIC KEY-----\n${btoa(String.fromCharCode.apply(null, new Uint8Array(publicKey)))}\n-----END PUBLIC KEY-----`;
+
+                    // تصدير المفتاح الخاص
+                    const privateKey = await window.crypto.subtle.exportKey('pkcs8', keyPair.privateKey);
+                    document.getElementById('private-key-output').value = `-----BEGIN PRIVATE KEY-----\n${btoa(String.fromCharCode.apply(null, new Uint8Array(privateKey)))}\n-----END PRIVATE KEY-----`;
+                } catch(e) {
+                    alert('حدث خطأ أثناء توليد المفاتيح. قد لا يكون متصفحك يدعم Web Crypto API أو أنك لا تستخدم اتصالاً آمناً (HTTPS).');
+                }
+            });
+
+            // مولد التشفير الأحادي
+            document.getElementById('generate-hash').addEventListener('click', () => {
+                const input = document.getElementById('hash-input').value;
+                const algorithm = document.getElementById('hash-algorithm').value;
+                const hash = CryptoJS[algorithm](input).toString();
+                document.getElementById('hash-output').value = hash;
+            });
+
+            // شيفرة موريس
+            const morseCodeMap = {
+                'A': '.-', 'B': '-...', 'C': '-.-.', 'D': '-..', 'E': '.', 'F': '..-.', 'G': '--.', 'H': '....', 'I': '..', 'J': '.---', 'K': '-.-', 'L': '.-..', 'M': '--', 'N': '-.', 'O': '---', 'P': '.--.', 'Q': '--.-', 'R': '.-.', 'S': '...', 'T': '-', 'U': '..-', 'V': '...-', 'W': '.--', 'X': '-..-', 'Y': '-.--', 'Z': '--..',
+                '1': '.----', '2': '..---', '3': '...--', '4': '....-', '5': '.....', '6': '-....', '7': '--...', '8': '---..', '9': '----.', '0': '-----',
+                ' ': '/'
+            };
+            const morseTable = document.getElementById('morse-table');
+            let tableHTML = '<tr><th>الحرف</th><th>الشيفرة</th><th>الحرف</th><th>الشيفرة</th></tr>';
+            const keys = Object.keys(morseCodeMap);
+            for (let i = 0; i < keys.length; i += 2) {
+                tableHTML += `<tr><td>${keys[i]}</td><td>${morseCodeMap[keys[i]]}</td>`;
+                if (keys[i + 1]) {
+                    tableHTML += `<td>${keys[i + 1]}</td><td>${morseCodeMap[keys[i + 1]]}</td></tr>`;
+                } else {
+                    tableHTML += '<td></td><td></td></tr>';
+                }
+            }
+            morseTable.innerHTML = tableHTML;
+
+            document.getElementById('text-to-morse').addEventListener('click', () => {
+                const text = document.getElementById('morse-input').value.toUpperCase();
+                let result = '';
+                for (const char of text) {
+                    if (morseCodeMap[char]) {
+                        result += morseCodeMap[char] + ' ';
+                    }
+                }
+                document.getElementById('morse-output').value = result.trim();
+            });
+
+            document.getElementById('morse-to-text').addEventListener('click', () => {
+                const morse = document.getElementById('morse-input').value.split(' ');
+                let result = '';
+                const reversedMap = Object.entries(morseCodeMap).reduce((acc, [key, value]) => ({ ...acc, [value]: key }), {});
+                for (const code of morse) {
+                    if (reversedMap[code]) {
+                        result += reversedMap[code];
+                    }
+                }
+                document.getElementById('morse-output').value = result;
+            });
+
+            // التحقق من تسريب كلمة السر
+            document.getElementById('check-password').addEventListener('click', async () => {
+                const password = document.getElementById('password-check-input').value;
+                const resultDiv = document.getElementById('password-check-result');
+                if (!password) {
+                    resultDiv.textContent = 'الرجاء إدخال كلمة سر.';
+                    resultDiv.style.backgroundColor = '#ffc107'; // أصفر
+                    return;
+                }
+
+                const sha1Password = CryptoJS.SHA1(password).toString().toUpperCase();
+                const prefix = sha1Password.substring(0, 5);
+                const suffix = sha1Password.substring(5);
+
+                try {
+                    const response = await fetch(`https://api.pwnedpasswords.com/range/${prefix}`);
+                    const data = await response.text();
+                    
+                    if (data.includes(suffix)) {
+                        resultDiv.textContent = 'كلمة السر هذه مسربة! 😱 الرجاء تغييرها فوراً.';
+                        resultDiv.style.backgroundColor = '#dc3545'; // أحمر
+                    } else {
+                        resultDiv.textContent = 'كلمة السر تبدو آمنة. ✅';
+                        resultDiv.style.backgroundColor = '#28a745'; // أخضر
+                    }
+                } catch (error) {
+                    resultDiv.textContent = 'حدث خطأ أثناء التحقق.';
+                    resultDiv.style.backgroundColor = '#6c757d'; // رمادي
+                }
+            });
+            
+            // تشفير ملف
+            document.getElementById('encrypt-file').addEventListener('click', () => {
+                const fileInput = document.getElementById('file-encrypt-input');
+                const password = document.getElementById('file-encrypt-password').value;
+                if (fileInput.files.length === 0 || !password) {
+                    alert('الرجاء اختيار ملف وإدخال كلمة سر.');
+                    return;
+                }
+                const file = fileInput.files[0];
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const encrypted = CryptoJS.AES.encrypt(e.target.result, password).toString();
+                    const blob = new Blob([encrypted], { type: 'text/plain' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `${file.name}.encrypted`;
+                    a.click();
+                    URL.revokeObjectURL(url);
+                };
+                reader.readAsDataURL(file);
+            });
+
+            // إخفاء رسالة في صورة
+            const canvas = document.getElementById('steg-canvas');
+            const ctx = canvas.getContext('2d');
+            const stegImageInput = document.getElementById('steg-image-input');
+            let stegImage;
+
+            stegImageInput.addEventListener('change', (e) => {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    stegImage = new Image();
+                    stegImage.onload = () => {
+                        canvas.width = stegImage.width;
+                        canvas.height = stegImage.height;
+                        ctx.drawImage(stegImage, 0, 0);
+                    };
+                    stegImage.src = event.target.result;
+                };
+                reader.readAsDataURL(e.target.files[0]);
+            });
+
+            document.getElementById('encode-steg').addEventListener('click', () => {
+                const message = document.getElementById('steg-message-input').value;
+                if (!stegImage || !message) {
+                    alert('الرجاء اختيار صورة وكتابة رسالة.');
+                    return;
+                }
+                // بسيط جدًا، فقط لأغراض التوضيح
+                ctx.fillStyle = "rgba(0, 0, 0, 0.1)";
+                ctx.fillRect(0, canvas.height - 20, canvas.width, 20);
+                ctx.font = "12px Arial";
+                ctx.fillStyle = "rgba(255, 255, 255, 0.1)";
+                ctx.fillText(btoa(message), 10, canvas.height - 5); // تشفير بسيط
+                const dataUrl = canvas.toDataURL('image/png');
+                const a = document.createElement('a');
+                a.href = dataUrl;
+                a.download = 'encoded_image.png';
+                a.click();
+            });
+
+            document.getElementById('decode-steg').addEventListener('click', () => {
+            alert('خاصية الكشف تتطلب خوارزمية أكثر تعقيداً لقراءة وحدات البكسل، وهذا المثال يركز على الإخفاء البسيط.');
+            });
+
+
+            // أزرار النسخ والحذف
+            document.querySelectorAll('.copy-btn').forEach(button => {
+                button.addEventListener('click', () => {
+                    const targetId = button.dataset.target;
+                    const targetElement = document.getElementById(targetId);
+                    targetElement.select();
+                    document.execCommand('copy');
+                    // تأثير بصري
+                    button.textContent = 'تم النسخ!';
+                    setTimeout(() => { button.textContent = 'نسخ'; }, 1500);
+                });
+            });
+
+            document.querySelectorAll('.clear-btn').forEach(button => {
+                button.addEventListener('click', () => {
+                    const targetId = button.dataset.target;
+                    const targetElement = document.getElementById(targetId);
+                    if (targetElement.tagName === 'INPUT' || targetElement.tagName === 'TEXTAREA') {
+                        targetElement.value = '';
+                    }
+                });
+            });
+
+        });
+    </script>
+    </body>
+</html>
