@@ -3,396 +3,699 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>نظام معالجة الشكاوى</title>
+    <title>موقع تشفير متقدم - إصدار مُحسَّن</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --accent-color: #e74c3c;
+            --light-color: #ecf0f1;
+            --dark-color: #2c3e50;
+            --success-color: #2ecc71;
+            --warning-color: #f39c12;
+            --danger-color: #e74c3c;
+        }
+        
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
+        
         body {
-            background-color: #f5f5f5;
-            color: #333;
+            background-color: #f5f7fa;
+            color: var(--dark-color);
             line-height: 1.6;
-        }
-        .container {
-            width: 90%;
-            max-width: 1200px;
-            margin: 0 auto;
             padding: 20px;
         }
-        header {
-            background-color: #2c3e50;
-            color: white;
-            padding: 1rem 0;
-            text-align: center;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-        h1, h2, h3 {
-            margin-bottom: 1rem;
-            color: #2c3e50;
-        }
-        .complaint-form {
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
             background: white;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        
+        header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
             padding: 2rem;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            margin-bottom: 2rem;
+            text-align: center;
         }
-        .form-group {
-            margin-bottom: 1.5rem;
+        
+        h1, h2, h3 {
+            margin-bottom: 15px;
         }
+        
+        h1 { font-size: 2.5rem; }
+        
+        .tabs {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            background: #f8f9fa;
+            padding: 10px;
+        }
+        
+        .tab-btn {
+            padding: 12px 24px;
+            background-color: var(--light-color);
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            border-radius: 5px;
+            margin: 5px;
+        }
+        
+        .tab-btn.active {
+            background-color: var(--secondary-color);
+            color: white;
+        }
+        
+        .tab-content {
+            display: none;
+            padding: 30px;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .tab-content.active { display: block; }
+        
+        .form-group { margin-bottom: 20px; }
+        
         label {
             display: block;
-            margin-bottom: 0.5rem;
+            margin-bottom: 8px;
             font-weight: bold;
+            color: var(--primary-color);
         }
+        
         input, textarea, select {
             width: 100%;
-            padding: 0.8rem;
+            padding: 12px;
             border: 1px solid #ddd;
             border-radius: 4px;
-            font-size: 1rem;
+            font-size: 16px;
+            margin-bottom: 10px;
         }
+        
         textarea {
-            min-height: 150px;
+            min-height: 120px;
             resize: vertical;
         }
+        
         button {
-            background-color: #2c3e50;
+            background-color: var(--secondary-color);
             color: white;
             border: none;
-            padding: 0.8rem 1.5rem;
+            padding: 12px 20px;
             border-radius: 4px;
             cursor: pointer;
-            font-size: 1rem;
-            transition: background-color 0.3s;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+            margin-right: 10px;
+            margin-bottom: 10px;
         }
-        button:hover {
-            background-color: #1a252f;
+        
+        button:hover { background-color: #2980b9; }
+        
+        .btn-copy { background-color: var(--success-color); }
+        .btn-delete { background-color: var(--danger-color); }
+        .btn-check { background-color: var(--success-color); }
+        
+        .result-area {
+            margin-top: 20px;
+            padding: 20px;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+            border: 1px dashed #ccc;
         }
-        .complaints-list, .complaints-admin, .admin-login-box {
+        
+        .key-display, .hash-result, .password-text {
+            word-break: break-all;
+            font-family: monospace;
+            padding: 15px;
+            background-color: #e9ecef;
+            border-radius: 4px;
+            margin-top: 10px;
+            position: relative;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+        
+        #qrcode {
+            padding: 15px;
             background: white;
-            padding: 2rem;
             border-radius: 8px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            margin-bottom: 2rem;
-        }
-        .complaint-item {
-            border-bottom: 1px solid #eee;
-            padding: 1.5rem 0;
-        }
-        .complaint-item:last-child {
-            border-bottom: none;
-        }
-        .complaint-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1rem;
-        }
-        .complaint-title {
-            font-size: 1.2rem;
-            color: #2c3e50;
-        }
-        .complaint-date {
-            color: #7f8c8d;
-            font-size: 0.9rem;
-        }
-        .complaint-description {
-            margin-bottom: 1rem;
-            color: #34495e;
-        }
-        .complaint-status {
             display: inline-block;
-            padding: 0.3rem 0.8rem;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            font-weight: bold;
         }
-        .status-pending {
-            background-color: #ffeaa7;
-            color: #d35400;
+        
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
         }
-        .status-in-progress {
-            background-color: #81ecec;
-            color: #00b894;
+        
+        .comparison-table th, .comparison-table td {
+            padding: 12px;
+            text-align: right;
+            border: 1px solid #ddd;
         }
-        .status-resolved {
-            background-color: #55efc4;
-            color: #00b894;
+        
+        .comparison-table th {
+            background-color: var(--secondary-color);
+            color: white;
         }
-        .alert {
-            padding: 1rem;
-            margin-bottom: 1rem;
+        
+        .password-strength {
+            height: 10px;
+            border-radius: 5px;
+            margin-top: 5px;
+            background: #eee;
+            overflow: hidden;
+        }
+        
+        .password-strength-fill {
+            height: 100%;
+            transition: all 0.3s ease;
+        }
+        
+        .note {
+            background-color: #e3f2fd;
+            padding: 15px;
             border-radius: 4px;
-            font-weight: bold;
+            margin-top: 20px;
+            border-left: 4px solid var(--secondary-color);
         }
-        .alert-success {
-            background-color: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
+        
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: var(--success-color);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 4px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            z-index: 1000;
+            opacity: 0;
+            transform: translateY(100px);
+            transition: all 0.3s ease;
         }
-        .alert-error {
-            background-color: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
+        
+        .toast.show {
+            opacity: 1;
+            transform: translateY(0);
         }
-        footer {
-            text-align: center;
-            padding: 2rem 0;
-            margin-top: 2rem;
-            color: #7f8c8d;
-            border-top: 1px solid #eee;
+        
+        .toast.error { background-color: var(--danger-color); }
+        
+        /* قسم تشفير الملفات */
+        .image-preview {
+            max-width: 100%;
+            max-height: 300px;
+            margin: 15px 0;
+            border-radius: 4px;
+            display: none;
+            border: 2px dashed #ccc;
+            padding: 5px;
         }
-        @media (max-width: 768px) {
-            .complaint-header {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-            .complaint-date {
-                margin-top: 0.5rem;
-            }
+        
+        .encryption-status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            display: none;
         }
-        .complaints-admin textarea {
-            min-height: 60px;
+        
+        .status-success {
+            background-color: #e8f5e9;
+            border-left: 4px solid var(--success-color);
         }
-        .complaints-admin select, .complaints-admin button {
-            margin-top: 0.4rem;
+        
+        .status-error {
+            background-color: #ffebee;
+            border-left: 4px solid var(--danger-color);
         }
-        .admin-login-box {
-            text-align: center;
+
+        /* جدول شفرة مورس */
+        .morse-table-container {
+            max-height: 400px;
+            overflow-y: auto;
+            margin-top: 20px;
         }
-        .admin-login-box input[type="password"] {
-            max-width: 250px;
-            margin: 0 auto 10px auto;
-            display: block;
+
+        /* شرح تشفير قيصر */
+        #caesar-explanation {
+            display: none;
+            background-color: #eef7ff;
+            border: 1px solid #b3d7ff;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 15px;
+        }
+        #caesar-explanation code {
+            background-color: #d1e7fd;
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-family: monospace;
         }
     </style>
 </head>
 <body>
-    <header>
-        <div class="container">
-            <h1>نظام معالجة الشكاوى</h1>
+    <div class="container">
+        <header>
+            <h1>موقع تشفير متقدم - إصدار مُحسَّن</h1>
+            <p>أدوات متكاملة لتشفير الرسائل والملفات، توليد كلمات السر، وحماية البيانات</p>
+        </header>
+        
+        <div class="tabs">
+            <button class="tab-btn active" onclick="openTab(event, 'password-tab')">كلمات السر</button>
+            <button class="tab-btn" onclick="openTab(event, 'encrypt-tab')">تشفير/فك تشفير النصوص</button>
+            <button class="tab-btn" onclick="openTab(event, 'file-encrypt-tab')">تشفير/فك تشفير الملفات</button>
+            <button class="tab-btn" onclick="openTab(event, 'keys-tab')">توليد المفاتيح وشفرة مورس</button>
+            <button class="tab-btn" onclick="openTab(event, 'hash-tab')">التشفير الأحادي (Hash)</button>
+            <button class="tab-btn" onclick="openTab(event, 'qrcode-tab')">QR Code</button>
         </div>
-    </header>
-    <main class="container">
-        <section class="complaint-form">
-            <h2>تقديم شكوى جديدة</h2>
-            <div id="alert-container"></div>
-            <form id="complaintForm">
-                <div class="form-group">
-                    <label for="name">الاسم:</label>
-                    <input type="text" id="name" required>
+        
+        <div id="password-tab" class="tab-content active">
+            <h2>توليد كلمات السر وتحليل قوتها</h2>
+            <button onclick="generatePassword()">توليد كلمة سر</button>
+            <button onclick="generatePassphrase()">توليد جملة سر (Passphrase)</button>
+
+            <div class="result-area">
+                <h3>كلمة السر المولدة:</h3>
+                <div class="password-text" id="generated-password"></div>
+                <div class="action-buttons">
+                    <button class="btn-copy" onclick="copyToClipboard('generated-password', 'كلمة السر')">نسخ</button>
                 </div>
-                <div class="form-group">
-                    <label for="email">البريد الإلكتروني:</label>
-                    <input type="email" id="email" required>
+
+                <h3>جملة السر المولدة (Passphrase):</h3>
+                <div class="password-text" id="generated-passphrase"></div>
+                <div class="action-buttons">
+                    <button class="btn-copy" onclick="copyToClipboard('generated-passphrase', 'جملة السر')">نسخ</button>
                 </div>
-                <div class="form-group">
-                    <label for="category">نوع الشكوى:</label>
-                    <select id="category" required>
-                        <option value="">اختر نوع الشكوى</option>
-                        <option value="تقنية">تقنية</option>
-                        <option value="إدارية">إدارية</option>
-                        <option value="مالية">مالية</option>
-                        <option value="خدمة العملاء">خدمة العملاء</option>
-                        <option value="أخرى">أخرى</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label for="title">عنوان الشكوى:</label>
-                    <input type="text" id="title" required>
-                </div>
-                <div class="form-group">
-                    <label for="description">وصف الشكوى:</label>
-                    <textarea id="description" required></textarea>
-                </div>
-                <button type="submit">إرسال الشكوى</button>
-            </form>
-        </section>
-        <section class="complaints-list">
-            <h2>الشكاوى المقدمة</h2>
-            <div id="complaintsContainer"></div>
-        </section>
-        <!-- واجهة تسجيل الدخول للإدارة -->
-        <section class="admin-login-box" id="adminLoginBox">
-            <h2>لوحة الإدارة</h2>
-            <p>يرجى إدخال كلمة المرور للوصول إلى لوحة معالجة الشكاوى</p>
-            <input type="password" id="adminPassword" placeholder="كلمة المرور">
-            <button id="adminLoginBtn">دخول</button>
-            <div id="adminLoginAlert"></div>
-        </section>
-        <!-- لوحة الإدارة لمعالجة الشكاوى -->
-        <section class="complaints-admin" id="adminSection" style="display:none;">
-            <h2>معالجة الشكاوى (لوحة الإدارة)</h2>
-            <div id="adminComplaintsContainer"></div>
-            <button id="adminLogoutBtn" style="margin-top:20px;">تسجيل خروج</button>
-        </section>
-    </main>
-    <footer>
-        <div class="container">
-            <p>© 2023 نظام معالجة الشكاوى. جميع الحقوق محفوظة.</p>
+            </div>
         </div>
-    </footer>
+        
+        <div id="encrypt-tab" class="tab-content">
+            <h2>تشفير وفك تشفير الرسائل</h2>
+            
+            <div class="form-group">
+                <label for="algorithm">اختر خوارزمية التشفير:</label>
+                <select id="algorithm" onchange="toggleCaesarExplanation()">
+                    <option value="aes">AES (مستحسن)</option>
+                    <option value="des">DES</option>
+                    <option value="tripledes">Triple DES</option>
+                    <option value="rabbit">Rabbit</option>
+                    <option value="rc4">RC4</option>
+                    <option value="caesar">شفرة قيصر (Caesar Cipher)</option>
+                </select>
+            </div>
+            
+            <div id="caesar-explanation">
+                <h3>شرح شفرة قيصر</h3>
+                <p>
+                    شفرة قيصر هي واحدة من أبسط وأقدم تقنيات التشفير. تعتمد على إزاحة كل حرف في النص الأصلي بعدد ثابت من المواضع في الأبجدية.
+                </p>
+                <p><strong>المفتاح:</strong> هو عدد صحيح يمثل مقدار الإزاحة (مثلاً: 3).</p>
+                <p><strong>قانون التشفير:</strong> <code>C = (P + K) mod 26</code></p>
+                <p><strong>قانون فك التشفير:</strong> <code>P = (C - K) mod 26</code></p>
+                <p>حيث <code>C</code> هو الحرف المشفر، <code>P</code> هو الحرف الأصلي، و <code>K</code> هو المفتاح (مقدار الإزاحة).</p>
+            </div>
+
+            <div class="form-group">
+                <label for="message">النص:</label>
+                <textarea id="message" placeholder="أدخل النص هنا..."></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label for="encryption-key">مفتاح التشفير / مقدار الإزاحة:</label>
+                <input type="text" id="encryption-key" placeholder="أدخل المفتاح أو رقم الإزاحة...">
+            </div>
+            
+            <button onclick="encrypt()">تشفير</button>
+            <button onclick="decrypt()">فك التشفير</button>
+            
+            <div class="result-area">
+                <h3>النتيجة:</h3>
+                <textarea id="encryption-result" readonly style="width: 100%; min-height: 120px; background-color: #e9ecef; border: none;"></textarea>
+                <div class="action-buttons">
+                    <button class="btn-copy" onclick="copyToClipboard('encryption-result', 'النتيجة')">نسخ</button>
+                </div>
+            </div>
+        </div>
+        
+        <div id="file-encrypt-tab" class="tab-content">
+            <h2>تشفير وفك تشفير الملفات</h2>
+            <p class="note">
+                <strong>للتشفير:</strong> اختر ملفًا، أدخل مفتاحًا، ثم انقر "تشفير". سيتم تنزيل ملف نصي مشفر.
+                <br>
+                <strong>لفك التشفير:</strong> اختر الملف النصي المشفر الذي قمت بتنزيله، أدخل نفس المفتاح، ثم انقر "فك التشفير".
+            </p>
+            
+            <div class="form-group">
+                <label for="file-input">اختر ملفًا:</label>
+                <input type="file" id="file-input">
+            </div>
+            
+            <div class="form-group">
+                <label for="file-key">مفتاح التشفير:</label>
+                <input type="password" id="file-key" placeholder="أدخل مفتاحًا قويًا...">
+            </div>
+            
+            <button onclick="encryptFile()">تشفير الملف</button>
+            <button onclick="decryptFile()">فك تشفير الملف</button>
+            
+            <div id="encryption-status" class="encryption-status"></div>
+
+            <div class="result-area">
+                <h3>معاينة الملف بعد فك التشفير (للصور فقط):</h3>
+                <img id="image-preview" class="image-preview" alt="معاينة الصورة">
+                <p id="decryption-download-placeholder">سيظهر رابط تنزيل الملف بعد فك التشفير هنا.</p>
+                <div id="decryption-result" class="action-buttons"></div>
+            </div>
+        </div>
+        
+        <div id="keys-tab" class="tab-content">
+            <h2>توليد مفاتيح التشفير</h2>
+            <p>هذه المفاتيح هي أمثلة عشوائية لأغراض العرض التوضيحي فقط.</p>
+            <hr style="margin: 30px 0;">
+
+            <h2>جدول شفرة مورس (Morse Code)</h2>
+            <div class="morse-table-container">
+                <table class="comparison-table">
+                    <thead>
+                        <tr><th>الحرف</th><th>الكود</th><th>الحرف</th><th>الكود</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>A</td><td><code>.-</code></td><td>N</td><td><code>-.</code></td></tr>
+                        <tr><td>B</td><td><code>-...</code></td><td>O</td><td><code>---</code></td></tr>
+                        <tr><td>C</td><td><code>-.-.</code></td><td>P</td><td><code>.--.</code></td></tr>
+                        <tr><td>D</td><td><code>-..</code></td><td>Q</td><td><code>--.-</code></td></tr>
+                        <tr><td>E</td><td><code>.</code></td><td>R</td><td><code>.-.</code></td></tr>
+                        <tr><td>F</td><td><code>..-.</code></td><td>S</td><td><code>...</code></td></tr>
+                        <tr><td>G</td><td><code>--.</code></td><td>T</td><td><code>-</code></td></tr>
+                        <tr><td>H</td><td><code>....</code></td><td>U</td><td><code>..-</code></td></tr>
+                        <tr><td>I</td><td><code>..</code></td><td>V</td><td><code>...-</code></td></tr>
+                        <tr><td>J</td><td><code>.---</code></td><td>W</td><td><code>.--</code></td></tr>
+                        <tr><td>K</td><td><code>-.-</code></td><td>X</td><td><code>-..-</code></td></tr>
+                        <tr><td>L</td><td><code>.-..</code></td><td>Y</td><td><code>-.--</code></td></tr>
+                        <tr><td>M</td><td><code>--</code></td><td>Z</td><td><code>--..</code></td></tr>
+                        <tr><td>1</td><td><code>.----</code></td><td>6</td><td><code>-....</code></td></tr>
+                        <tr><td>2</td><td><code>..---</code></td><td>7</td><td><code>--...</code></td></tr>
+                        <tr><td>3</td><td><code>...--</code></td><td>8</td><td><code>---..</code></td></tr>
+                        <tr><td>4</td><td><code>....-</code></td><td>9</td><td><code>----.</code></td></tr>
+                        <tr><td>5</td><td><code>.....</code></td><td>0</td><td><code>-----</code></td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <div id="hash-tab" class="tab-content">
+             </div>
+
+        <div id="qrcode-tab" class="tab-content">
+            </div>
+    </div>
+
+    <div id="toast" class="toast"></div>
+
     <script>
-        let complaints = JSON.parse(localStorage.getItem('complaints')) || [];
-        const complaintForm = document.getElementById('complaintForm');
-        const complaintsContainer = document.getElementById('complaintsContainer');
-        const alertContainer = document.getElementById('alert-container');
-        const adminComplaintsContainer = document.getElementById('adminComplaintsContainer');
-        const adminSection = document.getElementById('adminSection');
-        const adminLoginBox = document.getElementById('adminLoginBox');
-        const adminLoginBtn = document.getElementById('adminLoginBtn');
-        const adminPassword = document.getElementById('adminPassword');
-        const adminLoginAlert = document.getElementById('adminLoginAlert');
-        const adminLogoutBtn = document.getElementById('adminLogoutBtn');
-
-        // كلمة مرور الإدارة (يمكنك تغييرها هنا)
-        const ADMIN_PASS = "admin1234";
-
-        function generateComplaintCode() {
-            return 'C' + Math.floor(100000 + Math.random() * 900000);
+        // وظائف التبويب
+        function openTab(evt, tabId) {
+            const tabContents = document.getElementsByClassName('tab-content');
+            for (let i = 0; i < tabContents.length; i++) {
+                tabContents[i].classList.remove('active');
+            }
+            const tabButtons = document.getElementsByClassName('tab-btn');
+            for (let i = 0; i < tabButtons.length; i++) {
+                tabButtons[i].classList.remove('active');
+            }
+            document.getElementById(tabId).classList.add('active');
+            evt.currentTarget.classList.add('active');
+        }
+        
+        // عرض رسائل التبليغ
+        function showToast(message, isError = false) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = isError ? 'toast show error' : 'toast show';
+            setTimeout(() => { toast.classList.remove('show'); }, 3000);
         }
 
-        function displayComplaints() {
-            complaintsContainer.innerHTML = '';
-            if (complaints.length === 0) {
-                complaintsContainer.innerHTML = '<p>لا توجد شكاوى مرفوعة حتى الآن.</p>';
+        // وظيفة النسخ
+        function copyToClipboard(elementId, type) {
+            const element = document.getElementById(elementId);
+            const text = element.tagName === 'TEXTAREA' || element.tagName === 'INPUT' ? element.value : element.textContent;
+            if (!text) {
+                showToast(`لا يوجد ${type} للنسخ`, true);
                 return;
             }
-            complaints.forEach((complaint, index) => {
-                const complaintElement = document.createElement('div');
-                complaintElement.classList.add('complaint-item');
-                const complaintDate = new Date(complaint.date).toLocaleString('ar-SA');
-                complaintElement.innerHTML = `
-                    <div class="complaint-header">
-                        <h3 class="complaint-title">${complaint.title}</h3>
-                        <span class="complaint-date">${complaintDate}</span>
-                    </div>
-                    <div class="complaint-details">
-                        <p><strong>كود الشكوى:</strong> ${complaint.code}</p>
-                        <p><strong>الاسم:</strong> ${complaint.name}</p>
-                        <p><strong>البريد الإلكتروني:</strong> ${complaint.email}</p>
-                        <p><strong>نوع الشكوى:</strong> ${complaint.category}</p>
-                    </div>
-                    <p class="complaint-description"><strong>وصف الشكوى:</strong> ${complaint.description}</p>
-                    <span class="complaint-status status-${complaint.status}">${getStatusText(complaint.status)}</span>
-                    ${complaint.reply ? `<p style="color:green"><strong>رد الإدارة:</strong> ${complaint.reply}</p>` : ''}
-                `;
-                complaintsContainer.appendChild(complaintElement);
+            navigator.clipboard.writeText(text)
+                .then(() => showToast(`تم نسخ ${type}`))
+                .catch(() => showToast(`فشل نسخ ${type}`, true));
+        }
+
+        // --- قسم كلمات السر ---
+        function generatePassword() {
+            const length = 16;
+            const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+-=';
+            let password = '';
+            for (let i = 0; i < length; i++) {
+                password += characters.charAt(Math.floor(Math.random() * characters.length));
+            }
+            document.getElementById('generated-password').textContent = password;
+        }
+
+        function generatePassphrase() {
+            const words = ['كتاب', 'مشرق', 'سحابة', 'سريع', 'بستان', 'جبل', 'أزرق', 'نهر', 'هادئ', 'مفتاح', 'قمر', 'أمل'];
+            let passphrase = '';
+            for (let i = 0; i < 4; i++) {
+                passphrase += words[Math.floor(Math.random() * words.length)] + (i < 3 ? '-' : '');
+            }
+            document.getElementById('generated-passphrase').textContent = passphrase;
+        }
+
+        // --- قسم تشفير النصوص ---
+        function toggleCaesarExplanation() {
+            const algorithm = document.getElementById('algorithm').value;
+            const explanation = document.getElementById('caesar-explanation');
+            explanation.style.display = (algorithm === 'caesar') ? 'block' : 'none';
+        }
+
+        function caesarCipher(text, shift, decrypt = false) {
+            if (decrypt) {
+                shift = (26 - shift) % 26;
+            }
+            return text.replace(/[a-zA-Z]/g, (char) => {
+                const base = char.toLowerCase() === char ? 'a'.charCodeAt(0) : 'A'.charCodeAt(0);
+                return String.fromCharCode(((char.charCodeAt(0) - base + shift) % 26) + base);
             });
         }
 
-        function displayAdminComplaints() {
-            adminComplaintsContainer.innerHTML = '';
-            if (complaints.length === 0) {
-                adminComplaintsContainer.innerHTML = '<p>لا توجد شكاوى.</p>';
+        function encrypt() {
+            const algorithm = document.getElementById('algorithm').value;
+            const message = document.getElementById('message').value;
+            const key = document.getElementById('encryption-key').value;
+            const resultElement = document.getElementById('encryption-result');
+            
+            if (!message || !key) {
+                showToast('الرجاء إدخال النص والمفتاح', true);
                 return;
             }
-            complaints.forEach((complaint, index) => {
-                const adminElement = document.createElement('div');
-                adminElement.classList.add('complaint-item');
-                adminElement.innerHTML = `
-                    <div>
-                        <p><strong>الكود:</strong> ${complaint.code}</p>
-                        <p><strong>العنوان:</strong> ${complaint.title}</p>
-                        <p><strong>الوصف:</strong> ${complaint.description}</p>
-                        <p><strong>الحالة:</strong>
-                            <select data-index="${index}" class="status-select">
-                                <option value="pending" ${complaint.status === 'pending' ? 'selected' : ''}>قيد المراجعة</option>
-                                <option value="in-progress" ${complaint.status === 'in-progress' ? 'selected' : ''}>قيد المعالجة</option>
-                                <option value="resolved" ${complaint.status === 'resolved' ? 'selected' : ''}>تم الحل</option>
-                            </select>
-                        </p>
-                        <p><strong>رد الإدارة:</strong></p>
-                        <textarea data-index="${index}" class="reply-text" placeholder="اكتب الرد هنا...">${complaint.reply || ''}</textarea>
-                        <button data-index="${index}" class="save-admin-btn">حفظ التغييرات</button>
-                    </div>
-                    <hr>
-                `;
-                adminComplaintsContainer.appendChild(adminElement);
-            });
 
-            document.querySelectorAll('.save-admin-btn').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    const i = this.getAttribute('data-index');
-                    const status = document.querySelector(`.status-select[data-index="${i}"]`).value;
-                    const reply = document.querySelector(`.reply-text[data-index="${i}"]`).value;
-                    complaints[i].status = status;
-                    complaints[i].reply = reply;
-                    localStorage.setItem('complaints', JSON.stringify(complaints));
-                    displayComplaints();
-                    displayAdminComplaints();
-                    showAlert('تم تحديث الشكوى بنجاح', 'success');
-                });
-            });
-        }
-
-        function getStatusText(status) {
-            const statusMap = {
-                'pending': 'قيد المراجعة',
-                'in-progress': 'قيد المعالجة',
-                'resolved': 'تم الحل'
-            };
-            return statusMap[status] || status;
-        }
-
-        function showAlert(message, type) {
-            const alertElement = document.createElement('div');
-            alertElement.classList.add('alert', `alert-${type}`);
-            alertElement.textContent = message;
-            alertContainer.appendChild(alertElement);
-            setTimeout(() => {
-                alertElement.remove();
-            }, 5000);
-        }
-
-        complaintForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            const complaint = {
-                code: generateComplaintCode(),
-                name: document.getElementById('name').value,
-                email: document.getElementById('email').value,
-                category: document.getElementById('category').value,
-                title: document.getElementById('title').value,
-                description: document.getElementById('description').value,
-                date: new Date().toISOString(),
-                status: 'pending',
-                reply: ''
-            };
-            complaints.push(complaint);
-            localStorage.setItem('complaints', JSON.stringify(complaints));
-            displayComplaints();
-            if (adminSection.style.display !== "none") displayAdminComplaints();
-            showAlert('تم تقديم شكواك بنجاح، وسيتم مراجعتها في أقرب وقت ممكن.', 'success');
-            complaintForm.reset();
-        });
-
-        // إدارة الدخول للوحة الإدارة
-        adminLoginBtn.addEventListener('click', function() {
-            if (adminPassword.value === ADMIN_PASS) {
-                adminLoginBox.style.display = "none";
-                adminSection.style.display = "block";
-                displayAdminComplaints();
-                adminPassword.value = "";
-                adminLoginAlert.innerHTML = "";
-            } else {
-                adminLoginAlert.innerHTML = '<div class="alert alert-error">كلمة المرور غير صحيحة!</div>';
-                adminPassword.value = "";
+            try {
+                let result = '';
+                if (algorithm === 'caesar') {
+                    const shift = parseInt(key);
+                    if (isNaN(shift)) {
+                        showToast('مفتاح شفرة قيصر يجب أن يكون رقمًا', true);
+                        return;
+                    }
+                    result = caesarCipher(message, shift);
+                } else {
+                    const lib = {
+                        'aes': CryptoJS.AES, 'des': CryptoJS.DES, 'tripledes': CryptoJS.TripleDES,
+                        'rabbit': CryptoJS.Rabbit, 'rc4': CryptoJS.RC4
+                    };
+                    result = lib[algorithm].encrypt(message, key).toString();
+                }
+                resultElement.value = result;
+                showToast('تم التشفير بنجاح');
+            } catch (e) {
+                resultElement.value = 'خطأ: ' + e.message;
+                showToast('حدث خطأ أثناء التشفير', true);
             }
-        });
+        }
+        
+        function decrypt() {
+            const algorithm = document.getElementById('algorithm').value;
+            const message = document.getElementById('message').value;
+            const key = document.getElementById('encryption-key').value;
+            const resultElement = document.getElementById('encryption-result');
 
-        // تسجيل خروج من لوحة الإدارة
-        adminLogoutBtn.addEventListener('click', function() {
-            adminSection.style.display = "none";
-            adminLoginBox.style.display = "block";
-        });
+            if (!message || !key) {
+                showToast('الرجاء إدخال النص والمفتاح', true);
+                return;
+            }
+            
+            try {
+                let result = '';
+                 if (algorithm === 'caesar') {
+                    const shift = parseInt(key);
+                    if (isNaN(shift)) {
+                        showToast('مفتاح شفرة قيصر يجب أن يكون رقمًا', true);
+                        return;
+                    }
+                    result = caesarCipher(message, shift, true);
+                } else {
+                    const lib = {
+                        'aes': CryptoJS.AES, 'des': CryptoJS.DES, 'tripledes': CryptoJS.TripleDES,
+                        'rabbit': CryptoJS.Rabbit, 'rc4': CryptoJS.RC4
+                    };
+                    const bytes = lib[algorithm].decrypt(message, key);
+                    result = bytes.toString(CryptoJS.enc.Utf8);
+                }
 
-        document.addEventListener('DOMContentLoaded', function() {
-            displayComplaints();
-        });
+                if (!result) throw new Error("فشل فك التشفير. تأكد من صحة المفتاح.");
+
+                resultElement.value = result;
+                showToast('تم فك التشفير بنجاح');
+            } catch (e) {
+                resultElement.value = 'خطأ: ' + e.message;
+                showToast('فشل فك التشفير، تأكد من صحة المفتاح والنص المشفر', true);
+            }
+        }
+
+        // --- قسم تشفير وفك تشفير الملفات (تم الإصلاح) ---
+        function setStatus(message, type) {
+            const statusEl = document.getElementById('encryption-status');
+            statusEl.textContent = message;
+            statusEl.className = `encryption-status status-${type}`;
+            statusEl.style.display = 'block';
+        }
+
+        function encryptFile() {
+            const fileInput = document.getElementById('file-input');
+            const key = document.getElementById('file-key').value;
+
+            if (fileInput.files.length === 0) {
+                showToast("الرجاء اختيار ملف أولاً", true);
+                return;
+            }
+            if (!key) {
+                showToast("الرجاء إدخال مفتاح تشفير", true);
+                return;
+            }
+
+            const file = fileInput.files[0];
+            const reader = new FileReader();
+
+            reader.onload = function(e) {
+                try {
+                    const base64String = e.target.result;
+                    const encrypted = CryptoJS.AES.encrypt(base64String, key).toString();
+                    
+                    const blob = new Blob([encrypted], { type: 'text/plain' });
+                    const url = URL.createObjectURL(blob);
+                    
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = file.name + '.encrypted.txt';
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                    
+                    setStatus(`تم تشفير الملف "${file.name}" وتنزيله بنجاح.`, 'success');
+                } catch (err) {
+                    setStatus(`فشل تشفير الملف: ${err.message}`, 'error');
+                }
+            };
+            
+            reader.onerror = () => setStatus('فشل في قراءة الملف.', 'error');
+            reader.readAsDataURL(file);
+        }
+
+        async function decryptFile() {
+            const fileInput = document.getElementById('file-input');
+            const key = document.getElementById('file-key').value;
+
+            if (fileInput.files.length === 0) {
+                showToast("الرجاء اختيار ملف مشفر أولاً", true);
+                return;
+            }
+            if (!key) {
+                showToast("الرجاء إدخال مفتاح فك التشفير", true);
+                return;
+            }
+            
+            const file = fileInput.files[0];
+            const reader = new FileReader();
+
+            reader.onload = async function(e) {
+                try {
+                    const encryptedContent = e.target.result;
+                    const bytes = CryptoJS.AES.decrypt(encryptedContent, key);
+                    const decryptedBase64 = bytes.toString(CryptoJS.enc.Utf8);
+
+                    if (!decryptedBase64) {
+                        throw new Error("فشل فك التشفير. تأكد من صحة المفتاح أو الملف.");
+                    }
+                    
+                    // تحويل Base64 إلى Blob
+                    const response = await fetch(decryptedBase64);
+                    const blob = await response.blob();
+                    const url = URL.createObjectURL(blob);
+
+                    // عرض رابط التنزيل
+                    const resultContainer = document.getElementById('decryption-result');
+                    const originalFileName = file.name.replace('.encrypted.txt', '');
+                    resultContainer.innerHTML = `<a href="${url}" download="${originalFileName}" class="button">تحميل الملف الأصلي (${originalFileName})</a>`;
+                    document.getElementById('decryption-download-placeholder').style.display = 'none';
+
+                    // عرض معاينة إذا كان الملف صورة
+                    const preview = document.getElementById('image-preview');
+                    if (decryptedBase64.startsWith('data:image')) {
+                        preview.src = decryptedBase64;
+                        preview.style.display = 'block';
+                    } else {
+                        preview.style.display = 'none';
+                    }
+
+                    setStatus(`تم فك تشفير الملف "${file.name}" بنجاح.`, 'success');
+
+                } catch (err) {
+                    setStatus(`فشل فك التشفير: ${err.message}`, 'error');
+                    document.getElementById('image-preview').style.display = 'none';
+                    document.getElementById('decryption-result').innerHTML = '';
+                    document.getElementById('decryption-download-placeholder').style.display = 'block';
+                }
+            };
+            
+            reader.onerror = () => setStatus('فشل في قراءة الملف المشفر.', 'error');
+            reader.readAsText(file);
+        }
+
     </script>
 </body>
 </html>
