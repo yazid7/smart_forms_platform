@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>موقع تشفير متقدم - إصلاح كامل</title>
+    <title>منصة التشفير الذكية - أدوات متقدمة</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
     <style>
-        body {background:#f5box-shadow:0 0 20px #0001;padding:24px;}
+        body {background:#f5f7fa;font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;}
+        .container {max-width:1100px;margin:0 auto;background:white;border-radius:10px;box-shadow:0 0 20px #0001;padding:24px;}
         header {background:linear-gradient(135deg,#2c3e50,#3498db);color:white;padding:2rem;text-align:center;}
-        h1 {margin-bottom:10px;}
         .tabs {display:flex;justify-content:center;flex-wrap:wrap;margin:18px 0;}
         .tab-btn {padding:11px 24px;border:none;background:#ecf0f1;margin:4px;font-size:16px;border-radius:6px;cursor:pointer;font-weight:bold;}
         .tab-btn.active {background:#3498db;color:white;}
@@ -37,13 +37,16 @@
         .password-strength {height:9px;background:#eee;border-radius:5px;margin-top:4px;}
         .password-strength-fill {height:100%;width:0%;background:red;transition:all 0.3s;}
         .crack-time {margin-top:7px;}
+        @media (max-width:900px) {
+            .pw-options, .security-tools {grid-template-columns:1fr;}
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <header>
-            <h1>موقع تشفير متقدم - إصلاح كامل</h1>
-            <p>أدوات متكاملة لتشفير الرسائل، توليد كلمات السر، وحماية البيانات</p>
+            <h1>منصة التشفير الذكية - أدوات متقدمة</h1>
+            <p>كل أدوات الأمان والتوليد والتشفير في صفحة واحدة</p>
         </header>
         <div class="tabs">
             <button class="tab-btn active" onclick="openTab('pw-tab')">توليد كلمات السر</button>
@@ -182,10 +185,7 @@
             </div>
             <h3>جدول رموز موريس</h3>
             <table class="morse-table">
-                <tr>
-                    <th>الحرف</th>
-                    <th>رمز موريس</th>
-                </tr>
+                <tr><th>الحرف</th><th>رمز موريس</th></tr>
                 <tr><td>A</td><td>.-</td></tr><tr><td>B</td><td>-...</td></tr>
                 <tr><td>C</td><td>-.-.</td></tr><tr><td>D</td><td>-..</td></tr>
                 <tr><td>E</td><td>.</td></tr><tr><td>F</td><td>..-.</td></tr>
@@ -268,7 +268,8 @@
     </div>
     <script>
         // التبويبات
-        function openTab('.tab-content').forEach(e=>e.classList.remove('active'));
+        function openTab(tab) {
+            document.querySelectorAll('.tab-content').forEach(e=>e.classList.remove('active'));
             document.getElementById(tab).classList.add('active');
             document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
             [...document.querySelectorAll('.tabs .tab-btn')].forEach(btn=>{
@@ -311,8 +312,8 @@
         function generateEmail() {
             let user = document.getElementById('email-user').value.trim();
             let domain = document.getElementById('email-domain').value;
-            if(!user){let chars="abcdefghijklmnopqrstuvwxyz0123456789";user="";}
-            for(let i=0;i<10&&!user;i++) user+=chars[Math.floor(Math.random()*chars.length)];
+            let chars="abcdefghijklmnopqrstuvwxyz0123456789";
+            if(!user){user="";for(let i=0;i<10;i++)user+=chars[Math.floor(Math.random()*chars.length)];}
             document.getElementById('email-text').textContent = user + "@" + domain;
         }
         function copyText(id) {
@@ -436,7 +437,7 @@
         // موريس
         const morseMap = {
             'A':'.-','B':'-...','C':'-.-.','D':'-..','E':'.','F':'..-.','G':'--.','H':'....','I':'..','J':'.---',
-            '':'.-..','M':'--','N':'-.','O':'---','P':'.--.','Q':'--.-','R':'.-.','S':'...','T':'-',
+            'K':'-.-','L':'.-..','M':'--','N':'-.','O':'---','P':'.--.','Q':'--.-','R':'.-.','S':'...','T':'-',
             'U':'..-','V':'...-','W':'.--','X':'-..-','Y':'-.--','Z':'--..',
             '0':'-----','1':'.----','2':'..---','3':'...--','4':'....-','5':'.....','6':'-....','7':'--...','8':'---..','9':'----.'
         };
@@ -447,7 +448,39 @@
                 let c=txt[i];
                 res.push(morseMap[c]||' ');
             }
- checkStrength() {
+            document.getElementById('morse-result').textContent = res.join(' ');
+        }
+        // قيصر
+        function caesarEncrypt() {
+            let txt = document.getElementById('caesar-text').value;
+            let shift = +document.getElementById('caesar-shift').value;
+            let result = "";
+            for(let i=0;i<txt.length;i++){
+                let c=txt[i];
+                if(/[A-Za-z]/.test(c)){
+                    let code=txt.charCodeAt(i);
+                    let base=(code>=97)?97:65;
+                    result+=String.fromCharCode(((code-base+shift)%26)+base);
+                }else result+=c;
+            }
+            document.getElementById('caesar-result').textContent = result;
+        }
+        function caesarDecrypt() {
+            let txt = document.getElementById('caesar-text').value;
+            let shift = +document.getElementById('caesar-shift').value;
+            let result = "";
+            for(let i=0;i<txt.length;i++){
+                let c=txt[i];
+                if(/[A-Za-z]/.test(c)){
+                    let code=txt.charCodeAt(i);
+                    let base=(code>=97)?97:65;
+                    result+=String.fromCharCode(((code-base+26-shift)%26)+base);
+                }else result+=c;
+            }
+            document.getElementById('caesar-result').textContent = result;
+        }
+        // فحص قوة كلمة المرور
+        function checkStrength() {
             let pwd = document.getElementById('check-password').value;
             let score = 0;
             if (!pwd) {document.getElementById('check-strength-bar').style.width="0%";return;}
