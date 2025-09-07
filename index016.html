@@ -3,512 +3,126 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>منصة التشفير الذكية - أدوات متقدمة</title>
+    <title>تشفير الصور واسترداد البيانات</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
     <style>
         body {background:#f5f7fa;font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;}
-        .container {max-width:1100px;margin:0 auto;background:white;border-radius:10px;box-shadow:0 0 20px #0001;padding:24px;}
-        header {background:linear-gradient(135deg,#2c3e50,#3498db);color:white;padding:2rem;text-align:center;}
-        .tabs {display:flex;justify-content:center;flex-wrap:wrap;margin:18px 0;}
-        .tab-btn {padding:11px 24px;border:none;background:#ecf0f1;margin:4px;font-size:16px;border-radius:6px;cursor:pointer;font-weight:bold;}
-        .tab-btn.active {background:#3498db;color:white;}
-        .tab-content {display:none;padding:20px;}
-        .tab-content.active {display:block;}
-        .form-group {margin-bottom:14px;}
-        label {font-weight:bold;display:block;margin-bottom:6px;}
-        input,select,textarea {width:100%;padding:9px;border-radius:4px;border:1px solid #ddd;margin-bottom:4px;}
-        button {background:#3498db;color:white;border:none;padding:11px 20px;border-radius:4px;cursor:pointer;font-size:15px;margin:4px 2px;}
-        button:hover {background:#2c3e50;}
-        .result-area {background:#f8f9fa;padding:14px;border-radius:6px;margin-top:10px;}
-        .action-buttons {margin-top:7px;}
-        .pw-options {display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px;}
-        .pw-card {background:#f6f8fa;padding:14px;border-radius:8px;box-shadow:0 2px 10px #00000011;}
-        .pw-result {padding:7px 0;}
-        .pw-text {background:#f1f1f1;padding:8px;border-radius:4px;word-break:break-all;font-family:monospace;}
-        .image-preview {max-width:100%;max-height:220px;display:none;margin:10px 0;border-radius:6px;}
-        .encryption-status {padding:8px;border-radius:4px;margin:7px 0;display:none;}
-        .status-success {background:#e8f5e9;border-left:4px solid #2ecc71;}
-        .status-error {background:#ffebee;border-left:4px solid #e74c3c;}
-        .morse-table, .caesar-table {width:100%;border-collapse:collapse;margin-top:10px;}
-        .morse-table th,.morse-table td, .caesar-table th,.caesar-table td {border:1px solid #ddd;padding:7px;text-align:center;}
-        .morse-table th, .caesar-table th {background:#3498db;color:white;}
-        .security-tools {display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:16px;margin-top:20px;}
-        .tool-card {background:white;border-radius:8px;padding:16px;box-shadow:0 2px 10px #0001;}
-        .password-strength {height:9px;background:#eee;border-radius:5px;margin-top:4px;}
-        .password-strength-fill {height:100%;width:0%;background:red;transition:all 0.3s;}
-        .crack-time {margin-top:7px;}
-        @media (max-width:900px) {
-            .pw-options, .security-tools {grid-template-columns:1fr;}
-        }
+        .container {max-width:600px;margin:30px auto;background:white;border-radius:10px;box-shadow:0 0 20px #0001;padding:24px;}
+        .section {margin-bottom:32px;}
+        label {font-weight:bold;display:block;margin-bottom:5px;}
+        input,button {padding:7px;font-size:15px;margin-bottom:10px;}
+        .result {background:#f8f9fa;padding:12px;border-radius:6px;margin-top:10px;}
+        .status {padding:7px;margin-top:10px;border-radius:4px;}
+        .success {background:#e8f5e9;border-left:4px solid #2ecc71;}
+        .error {background:#ffebee;border-left:4px solid #e74c3c;}
+        img {max-width:100%;margin-top:10px;border-radius:6px;}
     </style>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>منصة التشفير الذكية - أدوات متقدمة</h1>
-            <p>كل أدوات الأمان والتوليد والتشفير في صفحة واحدة</p>
-        </header>
-        <div class="tabs">
-            <button class="tab-btn active" onclick="openTab('pw-tab')">توليد كلمات السر</button>
-            <button class="tab-btn" onclick="openTab('encrypt-tab')">تشفير/فك التشفير</button>
-            <button class="tab-btn" onclick="openTab('image-tab')">تشفير الصور/إخفاء البيانات</button>
-            <button class="tab-btn" onclick="openTab('morse-tab')">رموز موريس</button>
-            <button class="tab-btn" onclick="openTab('caesar-tab')">تشفير قيصر</button>
-            <button class="tab-btn" onclick="openTab('security-tab')">أدوات الحماية</button>
-        </div>
-        <!-- توليد كلمات السر -->
-        <div id="pw-tab" class="tab-content active">
-            <h2>توليد كلمات مرور متقدمة</h2>
-            <div class="pw-options">
-                <div class="pw-card">
-                    <label>عدد الحروف الكبيرة:</label>
-                    <input type="number" id="pw-upper" value="2" min="0" max="32">
-                    <label>عدد الحروف الصغيرة:</label>
-                    <input type="number" id="pw-lower" value="4" min="0" max="32">
-                    <label>عدد الأرقام:</label>
-                    <input type="number" id="pw-num" value="3" min="0" max="32">
-                    <label>عدد الرموز:</label>
-                    <input type="number" id="pw-symbol" value="3" min="0" max="32">
-                    <label>الطول الكلي:</label>
-                    <input type="number" id="pw-len" value="12" min="8" max="32">
-                    <button onclick="generatePassword()">توليد كلمة مرور</button>
-                    <div class="pw-result">
-                        <div id="pw-text" class="pw-text"></div>
-                        <button onclick="copyText('pw-text')">نسخ</button>
-                    </div>
-                </div>
-                <div class="pw-card">
-                    <label>جملة سر (Passphrase):</label>
-                    <button onclick="generatePassphrase()">توليد جملة سر</button>
-                    <div class="pw-result">
-                        <div id="passphrase-text" class="pw-text"></div>
-                        <button onclick="copyText('passphrase-text')">نسخ</button>
-                    </div>
-                </div>
-                <div class="pw-card">
-                    <label>اسم مستخدم:</label>
-                    <button onclick="generateUsername()">توليد اسم مستخدم</button>
-                    <div class="pw-result">
-                        <div id="username-text" class="pw-text"></div>
-                        <button onclick="copyText('username-text')">نسخ</button>
-                    </div>
-                </div>
-                <div class="pw-card">
-                    <label>توليد بريد إلكتروني</label>
-                    <input type="text" id="email-user" placeholder="اسم الإيميل أو يترك فارغ للعشوائي">
-                    <select id="email-domain">
-                        <option value="gmail.com">gmail.com</option>
-                        <option value="outlook.com">outlook.com</option>
-                        <option value="yahoo.com">yahoo.com</option>
-                        <option value="protonmail.com">protonmail.com</option>
-                    </select>
-                    <button onclick="generateEmail()">توليد بريد إلكتروني</button>
-                    <div class="pw-result">
-                        <div id="email-text" class="pw-text"></div>
-                        <button onclick="copyText('email-text')">نسخ</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <!-- تشفير/فك التشفير -->
-        <div id="encrypt-tab" class="tab-content">
-            <h2>تشفير وفك تشفير الرسائل</h2>
-            <div class="form-group">
-                <label>النص:</label>
-                <textarea id="enc-msg" placeholder="أدخل النص هنا..."></textarea>
-            </div>
-            <div class="form-group">
-                <label>المفتاح:</label>
-                <input type="text" id="enc-key" placeholder="أدخل المفتاح...">
-            </div>
-            <button onclick="encrypt()">تشفير</button>
-            <button onclick="decrypt()">فك التشفير</button>
-            <div class="result-area">
-                <h3>النتيجة:</h3>
-                <div id="enc-result" class="pw-text"></div>
-                <button onclick="copyText('enc-result')">نسخ</button>
-            </div>
-        </div>
-        <!-- قسم الصور وإخفاء البيانات -->
-        <div id="image-tab" class="tab-content">
-            <h2>تشفير الصور والملفات وإخفاء البيانات</h2>
-            <div class="form-group">
-                <label>اختر ملف:</label>
-                <input type="file" id="img-file">
-            </div>
-            <div class="form-group">
-                <label>مفتاح التشفير:</label>
-                <input type="text" id="img-key" placeholder="أدخل المفتاح...">
-            </div>
-            <button onclick="encryptImage()">تشفير الملف</button>
-            <button onclick="decryptImage()">فك تشفير الملف</button>
-            <img id="img-preview" class="image-preview" alt="معاينة الصورة">
-            <div id="img-status" class="encryption-status"></div>
-            <div class="result-area">
-                <h3>النتيجة:</h3>
-                <div id="img-result" class="pw-text"></div>
-                <button onclick="copyText('img-result')">نسخ</button>
-            </div>
-            <hr>
-            <h3>إخفاء البيانات بالنص داخل صورة (Steganography)</h3>
-            <div class="form-group">
-                <label>اختر صورة الغلاف:</label>
-                <input type="file" id="stego-cover" accept="image/*">
-            </div>
-            <div class="form-group">
-                <label>النص أو الملف لإخفائه:</label>
-                <textarea id="stego-secret" placeholder="أدخل النص السري هنا..."></textarea>
-            </div>
-            <div class="form-group">
-                <label>مفتاح تشفير السري (اختياري):</label>
-                <input type="text" id="stego-key" placeholder="أدخل المفتاح...">
-            </div>
-            <button onclick="hideDataInImage()">إخفاء البيانات</button>
-            <button onclick="extractDataFromImage()">استخراج البيانات</button>
-            <div class="result-area" id="stego-area" style="display:none;">
-                <h3>النتيجة:</h3>
-                <div id="stego-result" class="pw-text"></div>
-                <button onclick="copyText('stego-result')">نسخ</button>
-            </div>
-        </div>
-        <!-- رموز موريس -->
-        <div id="morse-tab" class="tab-content">
-            <h2>كتابة وتحويل رموز موريس</h2>
-            <div class="form-group">
-                <label>النص للتحويل إلى موريس:</label>
-                <input type="text" id="morse-text" placeholder="أدخل النص الإنجليزي فقط">
-            </div>
-            <button onclick="toMorse()">تحويل إلى موريس</button>
-            <div class="result-area">
-                <h3>رموز موريس:</h3>
-                <div id="morse-result" class="pw-text"></div>
-            </div>
-            <h3>جدول رموز موريس</h3>
-            <table class="morse-table">
-                <tr><th>الحرف</th><th>رمز موريس</th></tr>
-                <tr><td>A</td><td>.-</td></tr><tr><td>B</td><td>-...</td></tr>
-                <tr><td>C</td><td>-.-.</td></tr><tr><td>D</td><td>-..</td></tr>
-                <tr><td>E</td><td>.</td></tr><tr><td>F</td><td>..-.</td></tr>
-                <tr><td>G</td><td>--.</td></tr><tr><td>H</td><td>....</td></tr>
-                <tr><td>I</td><td>..</td></tr><tr><td>J</td><td>.---</td></tr>
-                <tr><td>K</td><td>-.-</td></tr><tr><td>L</td><td>.-..</td></tr>
-                <tr><td>M</td><td>--</td></tr><tr><td>N</td><td>-.</td></tr>
-                <tr><td>O</td><td>---</td></tr><tr><td>P</td><td>.--.</td></tr>
-                <tr><td>Q</td><td>--.-</td></tr><tr><td>R</td><td>.-.</td></tr>
-                <tr><td>S</td><td>...</td></tr><tr><td>T</td><td>-</td></tr>
-                <tr><td>U</td><td>..-</td></tr><tr><td>V</td><td>...-</td></tr>
-                <tr><td>W</td><td>.--</td></tr><tr><td>X</td><td>-..-</td></tr>
-                <tr><td>Y</td><td>-.--</td></tr><tr><td>Z</td><td>--..</td></tr>
-                <tr><td>1</td><td>.----</td></tr><tr><td>2</td><td>..---</td></tr>
-                <tr><td>3</td><td>...--</td></tr><tr><td>4</td><td>....-</td></tr>
-                <tr><td>5</td><td>.....</td></tr><tr><td>6</td><td>-....</td></tr>
-                <tr><td>7</td><td>--...</td></tr><tr><td>8</td><td>---..</td></tr>
-                <tr><td>9</td><td>----.</td></tr><tr><td>0</td><td>-----</td></tr>
-            </table>
-        </div>
-        <!-- قيصر -->
-        <div id="caesar-tab" class="tab-content">
-            <h2>تشفير وفك تشفير قيصر (Caesar Cipher)</h2>
-            <div class="form-group">
-                <label>النص:</label>
-                <input type="text" id="caesar-text" placeholder="أدخل النص الإنجليزي">
-            </div>
-            <div class="form-group">
-                <label>قيمة التحريك (Shift):</label>
-                <input type="number" id="caesar-shift" min="1" max="25" value="3">
-            </div>
-            <button onclick="caesarEncrypt()">تشفير قيصر</button>
-            <button onclick="caesarDecrypt()">فك تشفير قيصر</button>
-            <div class="result-area">
-                <h3>النتيجة:</h3>
-                <div id="caesar-result" class="pw-text"></div>
-            </div>
-            <h3>شرح وقوانين قيصر</h3>
-            <table class="caesar-table">
-                <tr><th>الحرف الأصلي</th><th>الحرف المشفر</th><th>القانون</th></tr>
-                <tr><td>A</td><td>D (Shift=3)</td><td>(index + shift) % 26</td></tr>
-                <tr><td>B</td><td>E</td><td>(index + shift) % 26</td></tr>
-                <tr><td>Z</td><td>C</td><td>(index + shift) % 26</td></tr>
-            </table>
-            <div class="result-area">
-                <ul>
-                    <li>يتم تحويل كل حرف إلى رقمه في الأبجدية الإنجليزية.</li>
-                    <li>يتم زيادة قيمة التحريك (Shift) ثم إعادة تحويل الرقم إلى حرف.</li>
-                    <li>مثال: لو Shift=3، A تصبح D، B تصبح E، إلخ.</li>
-                </ul>
-            </div>
-        </div>
-        <!-- أدوات الحماية -->
-        <div id="security-tab" class="tab-content">
-            <h2>أدوات الحماية الإضافية</h2>
-            <div class="security-tools">
-                <div class="tool-card">
-                    <h3>فحص قوة كلمة المرور</h3>
-                    <div class="form-group">
-                        <label>كلمة المرور:</label>
-                        <input type="text" id="check-password" placeholder="أدخل كلمة المرور...">
-                    </div>
-                    <button onclick="checkStrength()">فحص القوة</button>
-                    <div class="password-strength">
-                        <div id="check-strength-bar" class="password-strength-fill"></div>
-                    </div>
-                    <div id="check-crack-time" class="crack-time"></div>
-                </div>
-                <div class="tool-card">
-                    <h3>التحقق من كلمات المرور المسربة</h3>
-                    <div class="form-group">
-                        <label>كلمة المرور:</label>
-                        <input type="password" id="breached-password" placeholder="أدخل كلمة المرور...">
-                    </div>
-                    <button onclick="checkBreachedPassword()">تحقق</button>
-                    <div id="breach-result"></div>
-                </div>
-            </div>
-        </div>
+<div class="container">
+    <h2>تشفير صورة وتحميلها (تحميل ملف مشفر)</h2>
+    <div class="section">
+        <label>اختر صورة لتشفيرها:</label>
+        <input type="file" id="encrypt-image-file" accept="image/*">
+        <label>أدخل مفتاح التشفير:</label>
+        <input type="text" id="encrypt-image-key" placeholder="مفتاح التشفير">
+        <button onclick="encryptImageAndDownload()">تشفير وتحميل الصورة</button>
+        <div id="encrypt-status" class="status"></div>
     </div>
-    <script>
-        // التبويبات
-        function openTab(tab) {
-            document.querySelectorAll('.tab-content').forEach(e=>e.classList.remove('active'));
-            document.getElementById(tab).classList.add('active');
-            document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
-            [...document.querySelectorAll('.tabs .tab-btn')].forEach(btn=>{
-                if(btn.getAttribute('onclick').includes(tab)) btn.classList.add('active');
-            });
+
+    <h2>رفع صورة مشفرة وفك تشفيرها</h2>
+    <div class="section">
+        <label>اختر ملف صورة مشفرة (بصيغة txt):</label>
+        <input type="file" id="decrypt-image-file" accept=".txt">
+        <label>أدخل مفتاح فك التشفير:</label>
+        <input type="text" id="decrypt-image-key" placeholder="مفتاح التشفير">
+        <button onclick="decryptImageAndShow()">فك تشفير وعرض الصورة</button>
+        <div id="decrypt-status" class="status"></div>
+        <div id="decrypted-image-area"></div>
+    </div>
+</div>
+<script>
+// تشفير صورة وتحميلها كملف نصي مشفر
+function encryptImageAndDownload() {
+    const fileInput = document.getElementById('encrypt-image-file');
+    const key = document.getElementById('encrypt-image-key').value;
+    const status = document.getElementById('encrypt-status');
+    status.textContent = "";
+    status.className = "status";
+    if (!fileInput.files.length || !key) {
+        status.textContent = "يرجى اختيار صورة وإدخال المفتاح";
+        status.classList.add("error");
+        return;
+    }
+    const file = fileInput.files[0];
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        try {
+            // تشفير بيانات الصورة (Base64)
+            const encrypted = CryptoJS.AES.encrypt(e.target.result, key).toString();
+            // حفظ كملف نصي
+            const blob = new Blob([encrypted], {type: "text/plain"});
+            const a = document.createElement("a");
+            a.href = URL.createObjectURL(blob);
+            a.download = "encrypted_image.txt";
+            a.click();
+            status.textContent = "تم تشفير الصورة وتحميل الملف بنجاح!";
+            status.classList.add("success");
+        } catch (err) {
+            status.textContent = "فشل التشفير!";
+            status.classList.add("error");
         }
-        // توليد كلمة مرور مع تحكم بعدد الرموز والأرقام
-        function generatePassword() {
-            let upper = +document.getElementById('pw-upper').value;
-            let lower = +document.getElementById('pw-lower').value;
-            let num = +document.getElementById('pw-num').value;
-            let symbol = +document.getElementById('pw-symbol').value;
-            let len = +document.getElementById('pw-len').value;
-            let chars = [];
-            for(let i=0;i<upper;i++) chars.push(randomChar("ABCDEFGHIJKLMNOPQRSTUVWXYZ"));
-            for(let i=0;i<lower;i++) chars.push(randomChar("abcdefghijklmnopqrstuvwxyz"));
-            for(let i=0;i<num;i++) chars.push(randomChar("0123456789"));
-            for(let i=0;i<symbol;i++) chars.push(randomChar("!@#$%^&*()-_=+[]{};:,.<>?"));
-            while(chars.length < len) chars.push(randomChar("abcdefghijklmnopqrstuvwxyz0123456789"));
-            chars = shuffle(chars).slice(0,len);
-            document.getElementById('pw-text').textContent = chars.join('');
-        }
-        function randomChar(set){return set[Math.floor(Math.random()*set.length)];}
-        function shuffle(a){for(let i=a.length-1;i>0;i--){let j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
-        // توليد جملة سر
-        function generatePassphrase() {
-            let words = ["sky","river","mountain","tree","cloud","storm","light","star","dream","moon","sun","fire","rain","stone","wind","flower","leaf","forest","wave"];
-            let arr = [];
-            for(let i=0;i<4;i++) arr.push(words[Math.floor(Math.random()*words.length)]);
-            document.getElementById('passphrase-text').textContent = arr.join('-');
-        }
-        // توليد اسم مستخدم
-        function generateUsername() {
-            let chars="abcdefghijklmnopqrstuvwxyz0123456789";
-            let user="";
-            for(let i=0;i<8;i++) user+=chars[Math.floor(Math.random()*chars.length)];
-            document.getElementById('username-text').textContent = user;
-        }
-        // توليد بريد إلكتروني
-        function generateEmail() {
-            let user = document.getElementById('email-user').value.trim();
-            let domain = document.getElementById('email-domain').value;
-            let chars="abcdefghijklmnopqrstuvwxyz0123456789";
-            if(!user){user="";for(let i=0;i<10;i++)user+=chars[Math.floor(Math.random()*chars.length)];}
-            document.getElementById('email-text').textContent = user + "@" + domain;
-        }
-        function copyText(id) {
-            let val=document.getElementById(id).textContent;if(!val)return;navigator.clipboard.writeText(val);
-        }
-        // تشفير وفك التشفير بالنص
-        function encrypt() {
-            let msg = document.getElementById('enc-msg').value;
-            let key = document.getElementById('enc-key').value;
-            if(!msg||!key){document.getElementById('enc-result').textContent="يرجى إدخال النص والمفتاح";return;}
-            let result = CryptoJS.AES.encrypt(msg, key).toString();
-            document.getElementById('enc-result').textContent = result;
-        }
-        function decrypt() {
-            let msg = document.getElementById('enc-msg').value;
-            let key = document.getElementById('enc-key').value;
-            if(!msg||!key){document.getElementById('enc-result').textContent="يرجى إدخال النص والمفتاح";return;}
-            let result = CryptoJS.AES.decrypt(msg, key).toString(CryptoJS.enc.Utf8);
-            document.getElementById('enc-result').textContent = result || "النص فارغ أو مفتاح خاطئ";
-        }
-        // تشفير وفك تشفير الصور/ملفات نصية
-        function encryptImage() {
-            let fileInput = document.getElementById('img-file');
-            let key = document.getElementById('img-key').value;
-            let status = document.getElementById('img-status');
-            if (!fileInput.files.length || !key) {
-                status.textContent = "يرجى اختيار ملف وإدخال مفتاح";
-                status.className = "encryption-status status-error";status.style.display = "block";return;
-            }
-            let file = fileInput.files[0];
-            let reader = new FileReader();
-            reader.onload = function(e) {
-                try {
-                    let encrypted = CryptoJS.AES.encrypt(e.target.result, key).toString();
-                    document.getElementById('img-result').textContent = encrypted;
-                    status.textContent = "تم تشفير الملف بنجاح!";
-                    status.className = "encryption-status status-success";
-                    status.style.display = "block";
-                } catch (err) {
-                    status.textContent = "فشل التشفير!";
-                    status.className = "encryption-status status-error";
-                    status.style.display = "block";
-                }
-            };
-            reader.readAsDataURL(file);
-        }
-        function decryptImage() {
-            let key = document.getElementById('img-key').value;
-            let encrypted = document.getElementById('img-result').textContent;
-            let status = document.getElementById('img-status');
-            if (!encrypted || !key) {
-                status.textContent = "يرجى إدخال مفتاح وفك التشفير";
-                status.className = "encryption-status status-error";status.style.display = "block";return;
-            }
-            try {
-                let decrypted = CryptoJS.AES.decrypt(encrypted, key).toString(CryptoJS.enc.Utf8);
-                if (decrypted.startsWith("data:image")) {
-                    document.getElementById('img-preview').src = decrypted;
-                    document.getElementById('img-preview').style.display = "block";
-                    status.textContent = "تم فك تشفير الصورة!";
-                    status.className = "encryption-status status-success";
-                    status.style.display = "block";
-                } else {
-                    status.textContent = "تم فك التشفير، لكن الملف ليس صورة!";
-                    status.className = "encryption-status status-error";
-                    status.style.display = "block";
-                }
-                document.getElementById('img-result').textContent = decrypted;
-            } catch (err) {
-                status.textContent = "فشل فك التشفير!";
-                status.className = "encryption-status status-error";
-                status.style.display = "block";
-            }
-        }
-        // إخفاء واستخراج بيانات سري نصي داخل صورة (تجريبي)
-        function hideDataInImage() {
-            let coverInput = document.getElementById('stego-cover');
-            let secretText = document.getElementById('stego-secret').value;
-            let stegoKey = document.getElementById('stego-key').value;
-            let area = document.getElementById('stego-area');
-            if (!coverInput.files.length || !secretText) {
-                area.style.display = "block";
-                document.getElementById('stego-result').textContent = "يرجى اختيار صورة وإدخال نص سري";
+    };
+    reader.readAsDataURL(file);
+}
+
+// فك تشفير صورة مشفرة وعرضها/تحميلها
+function decryptImageAndShow() {
+    const fileInput = document.getElementById('decrypt-image-file');
+    const key = document.getElementById('decrypt-image-key').value;
+    const status = document.getElementById('decrypt-status');
+    const imageArea = document.getElementById('decrypted-image-area');
+    status.textContent = "";
+    status.className = "status";
+    imageArea.innerHTML = "";
+    if (!fileInput.files.length || !key) {
+        status.textContent = "يرجى اختيار ملف مشفر وإدخال المفتاح";
+        status.classList.add("error");
+        return;
+    }
+    const file = fileInput.files[0];
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        try {
+            // نص الصورة المشفر
+            const encryptedText = e.target.result;
+            // فك التشفير
+            const decrypted = CryptoJS.AES.decrypt(encryptedText, key).toString(CryptoJS.enc.Utf8);
+            if (!decrypted.startsWith("data:image")) {
+                status.textContent = "المفتاح خاطئ أو الملف ليس صورة مشفرة!";
+                status.classList.add("error");
                 return;
             }
-            let reader = new FileReader();
-            reader.onload = function(e) {
-                let data = e.target.result + "|STEGO|" + (stegoKey ? CryptoJS.AES.encrypt(secretText, stegoKey).toString() : secretText);
-                document.getElementById('stego-result').textContent = "تم إخفاء البيانات (تجريبي): " + data.substring(0,100) + "...";
-                area.style.display = "block";
-            };
-            reader.readAsDataURL(coverInput.files[0]);
+            // عرض الصورة
+            imageArea.innerHTML = `<img src="${decrypted}" alt="الصورة بعد فك التشفير"><br>
+            <button onclick="downloadDecryptedImage('${decrypted}')">تحميل الصورة الأصلية</button>`;
+            status.textContent = "تم فك التشفير بنجاح!";
+            status.classList.add("success");
+        } catch (err) {
+            status.textContent = "فشل فك التشفير!";
+            status.classList.add("error");
         }
-        function extractDataFromImage() {
-            let coverInput = document.getElementById('stego-cover');
-            let stegoKey = document.getElementById('stego-key').value;
-            let area = document.getElementById('stego-area');
-            if (!coverInput.files.length) {
-                area.style.display = "block";
-                document.getElementById('stego-result').textContent = "يرجى اختيار صورة الغلاف";
-                return;
-            }
-            let reader = new FileReader();
-            reader.onload = function(e) {
-                let data = e.target.result;
-                let parts = data.split("|STEGO|");
-                if (parts.length > 1) {
-                    let secret = parts[1];
-                    if (stegoKey) {
-                        try { secret = CryptoJS.AES.decrypt(secret, stegoKey).toString(CryptoJS.enc.Utf8); }
-                        catch { secret = "فشل فك التشفير أو المفتاح خاطئ"; }
-                    }
-                    document.getElementById('stego-result').textContent = "النص السري المستخرج: " + secret;
-                } else {
-                    document.getElementById('stego-result').textContent = "لم يتم العثور على بيانات مخفية!";
-                }
-                area.style.display = "block";
-            };
-            reader.readAsDataURL(coverInput.files[0]);
-        }
-        // موريس
-        const morseMap = {
-            'A':'.-','B':'-...','C':'-.-.','D':'-..','E':'.','F':'..-.','G':'--.','H':'....','I':'..','J':'.---',
-            'K':'-.-','L':'.-..','M':'--','N':'-.','O':'---','P':'.--.','Q':'--.-','R':'.-.','S':'...','T':'-',
-            'U':'..-','V':'...-','W':'.--','X':'-..-','Y':'-.--','Z':'--..',
-            '0':'-----','1':'.----','2':'..---','3':'...--','4':'....-','5':'.....','6':'-....','7':'--...','8':'---..','9':'----.'
-        };
-        function toMorse() {
-            let txt = document.getElementById('morse-text').value.toUpperCase();
-            let res = [];
-            for(let i=0;i<txt.length;i++){
-                let c=txt[i];
-                res.push(morseMap[c]||' ');
-            }
-            document.getElementById('morse-result').textContent = res.join(' ');
-        }
-        // قيصر
-        function caesarEncrypt() {
-            let txt = document.getElementById('caesar-text').value;
-            let shift = +document.getElementById('caesar-shift').value;
-            let result = "";
-            for(let i=0;i<txt.length;i++){
-                let c=txt[i];
-                if(/[A-Za-z]/.test(c)){
-                    let code=txt.charCodeAt(i);
-                    let base=(code>=97)?97:65;
-                    result+=String.fromCharCode(((code-base+shift)%26)+base);
-                }else result+=c;
-            }
-            document.getElementById('caesar-result').textContent = result;
-        }
-        function caesarDecrypt() {
-            let txt = document.getElementById('caesar-text').value;
-            let shift = +document.getElementById('caesar-shift').value;
-            let result = "";
-            for(let i=0;i<txt.length;i++){
-                let c=txt[i];
-                if(/[A-Za-z]/.test(c)){
-                    let code=txt.charCodeAt(i);
-                    let base=(code>=97)?97:65;
-                    result+=String.fromCharCode(((code-base+26-shift)%26)+base);
-                }else result+=c;
-            }
-            document.getElementById('caesar-result').textContent = result;
-        }
-        // فحص قوة كلمة المرور
-        function checkStrength() {
-            let pwd = document.getElementById('check-password').value;
-            let score = 0;
-            if (!pwd) {document.getElementById('check-strength-bar').style.width="0%";return;}
-            if (pwd.length>=8) score++;
-            if (/[A-Z]/.test(pwd)) score++;
-            if (/[a-z]/.test(pwd)) score++;
-            if (/[0-9]/.test(pwd)) score++;
-            if (/[^A-Za-z0-9]/.test(pwd)) score++;
-            let percent = score*20;
-            document.getElementById('check-strength-bar').style.width = percent + "%";
-            document.getElementById('check-strength-bar').style.background = percent<40?"red":percent<80?"orange":"green";
-            let crackTime = "لحظي";
-            if (percent>=80) crackTime = "آمن جدًا (عدة سنوات)";
-            else if (percent>=60) crackTime = "عدة أشهر";
-            else if (percent>=40) crackTime = "عدة أيام";
-            else crackTime = "غير آمن";
-            document.getElementById('check-crack-time').textContent = "وقت الاختراق المتوقع: " + crackTime;
-        }
-        // تحقق من كلمة مرور مسربة (تجريبي)
-        function checkBreachedPassword() {
-            let pwd = document.getElementById('breached-password').value;
-            let breached = ["123456","password","qwerty","111111","abc123","letmein"];
-            if (breached.includes(pwd)) {
-                document.getElementById('breach-result').innerHTML = "<span style='color:red'>هذه كلمة مرور مسربة وشائعة!</span>";
-            } else {
-                document.getElementById('breach-result').innerHTML = "<span style='color:green'>كلمة المرور غير موجودة في التسربات المعروفة.</span>";
-            }
-        }
-    </script>
+    };
+    reader.readAsText(file);
+}
+
+// تحميل الصورة بعد فك التشفير
+function downloadDecryptedImage(dataUrl) {
+    const a = document.createElement("a");
+    a.href = dataUrl;
+    a.download = "decrypted_image.png";
+    a.click();
+}
+</script>
 </body>
 </html>
