@@ -1,0 +1,929 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Crypto Toolbox — All-in-One (Single File)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- Bootstrap CSS (CDN) -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body { padding: 1.25rem; }
+    .monos { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono", monospace; }
+    .section-card { margin-bottom: 1.25rem; }
+    canvas { max-width: 100%; }
+    .small-muted { font-size: 0.85rem; color: #666; }
+    .cipher-output { white-space: pre-wrap; word-break: break-word; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1 class="mb-3">Crypto Toolbox — Single-file prototype</h1>
+    <p class="lead">Password & identity generators, file encryption, key generation, steganography, ciphers (Caesar, Vigenère, Morse...), explanations and tools — all in one HTML file. Works offline in modern browsers. <span class="small-muted">SubtleCrypto required for RSA/AES.</span></p>
+
+    <!-- NAV -->
+    <nav class="nav nav-pills mb-3 flex-column flex-sm-row">
+      <a class="nav-link active" href="#gen">Generators</a>
+      <a class="nav-link" href="#fileenc">File Encryption</a>
+      <a class="nav-link" href="#keys">Public/Private Keys</a>
+      <a class="nav-link" href="#single">Single/Text Encryption</a>
+      <a class="nav-link" href="#steg">Image Steganography</a>
+      <a class="nav-link" href="#algos">Algorithms & Explanations</a>
+      <a class="nav-link" href="#morse">Morse (Morris)</a>
+    </nav>
+
+    <!-- 1. Generators -->
+    <div id="gen" class="card section-card">
+      <div class="card-body">
+        <h3>Generators — passwords, names, emails, secret phrases, OTP</h3>
+        <div class="row">
+          <div class="col-md-6">
+            <h5>Password generator</h5>
+            <div class="mb-2">
+              <label class="form-label">Length: <span id="pwlenLabel">16</span></label>
+              <input id="pwlen" type="range" min="4" max="128" value="16" class="form-range">
+            </div>
+            <div class="mb-2 row">
+              <div class="col">
+                <label>Letters</label>
+                <input id="pwLetters" type="number" value="8" min="0" class="form-control">
+              </div>
+              <div class="col">
+                <label>Numbers</label>
+                <input id="pwNumbers" type="number" value="4" min="0" class="form-control">
+              </div>
+              <div class="col">
+                <label>Symbols</label>
+                <input id="pwSymbols" type="number" value="4" min="0" class="form-control">
+              </div>
+            </div>
+            <div class="mb-2 form-check">
+              <input id="pwLower" class="form-check-input" type="checkbox" checked>
+              <label class="form-check-label">Include lowercase</label>
+            </div>
+            <div class="mb-2 form-check">
+              <input id="pwUpper" class="form-check-input" type="checkbox" checked>
+              <label class="form-check-label">Include uppercase</label>
+            </div>
+
+            <div class="d-flex gap-2">
+              <button id="genPwBtn" class="btn btn-primary">Generate Password</button>
+              <button id="copyPwBtn" class="btn btn-outline-secondary">Copy</button>
+              <button id="savePwBtn" class="btn btn-outline-success">Save to list</button>
+              <button id="sortPwBtn" class="btn btn-outline-info">Sort saved</button>
+              <button id="clearPwSavedBtn" class="btn btn-outline-danger">Delete saved</button>
+            </div>
+
+            <div class="mt-3">
+              <label>Generated:</label>
+              <div id="generatedPassword" class="p-2 border rounded monos"></div>
+              <div class="mt-2">
+                <div class="progress" style="height:10px;">
+                  <div id="pwStrengthBar" class="progress-bar" role="progressbar" style="width:0%"></div>
+                </div>
+                <div class="small-muted mt-1" id="pwEntropyInfo"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-6">
+            <h5>Generate names / emails / secret phrases</h5>
+            <div class="mb-2">
+              <label>How many to generate</label>
+              <input id="countGen" type="number" value="5" min="1" class="form-control">
+            </div>
+            <div class="d-flex gap-2 mb-2">
+              <button id="genNamesBtn" class="btn btn-secondary">Generate Names</button>
+              <button id="genEmailsBtn" class="btn btn-secondary">Generate Emails</button>
+              <button id="genPhrasesBtn" class="btn btn-secondary">Secret Phrases</button>
+            </div>
+            <div>
+              <ul id="generatedList" class="list-group"></ul>
+            </div>
+
+            <hr>
+            <h5>OTP Simulator (local)</h5>
+            <div class="mb-2">
+              <label>OTP length</label>
+              <input id="otpLen" type="number" value="6" min="4" max="10" class="form-control">
+            </div>
+            <div class="mb-2 d-flex gap-2">
+              <button id="genOtpPhone" class="btn btn-warning">Generate Phone OTP</button>
+              <button id="genOtpEmail" class="btn btn-warning">Generate Email OTP</button>
+            </div>
+            <div id="otpOutput" class="mt-2 monos"></div>
+
+            <hr>
+            <h6>Saved passwords</h6>
+            <ul id="savedPwList" class="list-group"></ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. File Encryption -->
+    <div id="fileenc" class="card section-card">
+      <div class="card-body">
+        <h3>File encryption (AES-GCM symmetric)</h3>
+        <p class="small-muted">Encrypt a file locally in your browser (AES-GCM). You choose a passphrase — a key is derived with PBKDF2. Download encrypted file and metadata (IV, salt). Re-upload to decrypt.</p>
+
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label>Choose file to encrypt</label>
+            <input id="fileInput" type="file" class="form-control">
+          </div>
+          <div class="col-md-6">
+            <label>Passphrase (for key derivation)</label>
+            <input id="filePass" type="password" class="form-control" placeholder="Enter passphrase">
+          </div>
+          <div class="col-12 d-flex gap-2">
+            <button id="encryptFileBtn" class="btn btn-primary">Encrypt & Download</button>
+            <input id="encFileUpload" type="file" class="form-control" accept=".enc,application/octet-stream">
+            <button id="decryptFileBtn" class="btn btn-success">Decrypt Uploaded .enc</button>
+          </div>
+          <div class="col-12">
+            <div id="fileEncStatus" class="small-muted"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3. Public/Private Keys -->
+    <div id="keys" class="card section-card">
+      <div class="card-body">
+        <h3>Public / Private Key generation (RSA-OAEP)</h3>
+        <p class="small-muted">Generates RSA keypair (2048 or 4096). Export to PEM, download, import to use for encrypt/decrypt small messages.</p>
+
+        <div class="row g-2">
+          <div class="col-md-3">
+            <label>Key size</label>
+            <select id="rsaSize" class="form-select">
+              <option value="2048">2048</option>
+              <option value="4096">4096</option>
+            </select>
+          </div>
+          <div class="col-md-3 d-flex align-items-end">
+            <button id="genRsaBtn" class="btn btn-primary w-100">Generate RSA Keypair</button>
+          </div>
+          <div class="col-md-6 d-flex gap-2 align-items-end">
+            <button id="downloadPubBtn" class="btn btn-outline-secondary">Download Public PEM</button>
+            <button id="downloadPrivBtn" class="btn btn-outline-secondary">Download Private PEM</button>
+            <button id="clearKeysBtn" class="btn btn-outline-danger">Delete Keys</button>
+          </div>
+
+          <div class="col-12">
+            <label>Message to encrypt with public key</label>
+            <textarea id="rsaPlain" class="form-control" rows="3"></textarea>
+            <div class="mt-2 d-flex gap-2">
+              <button id="rsaEncryptBtn" class="btn btn-secondary">Encrypt (public)</button>
+              <button id="rsaDecryptBtn" class="btn btn-success">Decrypt (private)</button>
+              <button id="copyRsaOut" class="btn btn-outline-secondary">Copy output</button>
+            </div>
+            <div id="rsaOutput" class="mt-2 p-2 border rounded monos cipher-output"></div>
+          </div>
+
+          <div class="col-12 mt-3">
+            <h6>Stored keys</h6>
+            <ul id="rsaList" class="list-group"></ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 4. Single/Text Encryption & Comparison -->
+    <div id="single" class="card section-card">
+      <div class="card-body">
+        <h3>Single / Text encryption (Caesar, Vigenère, XOR) & Compare</h3>
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label>Plain text</label>
+            <textarea id="singlePlain" class="form-control" rows="6"></textarea>
+            <div class="mt-2 d-flex gap-2">
+              <button class="btn btn-outline-primary" id="caesarEnc">Caesar Encrypt</button>
+              <button class="btn btn-outline-secondary" id="caesarDec">Caesar Decrypt</button>
+              <input id="caesarShift" type="number" value="3" class="form-control" style="width:100px;">
+              <button class="btn btn-outline-primary" id="vigenereEnc">Vigenère Encrypt</button>
+              <button class="btn btn-outline-secondary" id="vigenereDec">Vigenère Decrypt</button>
+              <input id="vigKey" type="text" value="KEY" class="form-control" style="width:150px;">
+            </div>
+
+            <div class="mt-2 d-flex gap-2">
+              <input id="xorKey" type="text" value="secret" class="form-control" style="width:200px;">
+              <button class="btn btn-outline-primary" id="xorEnc">XOR Encrypt (base64)</button>
+              <button class="btn btn-outline-secondary" id="xorDec">XOR Decrypt</button>
+            </div>
+          </div>
+
+          <div class="col-md-6">
+            <label>Cipher output</label>
+            <div id="singleOut" class="p-2 border rounded monos cipher-output" style="min-height: 210px;"></div>
+            <div class="mt-2 d-flex gap-2">
+              <button id="copySingle" class="btn btn-sm btn-outline-secondary">Copy</button>
+              <button id="saveSingle" class="btn btn-sm btn-outline-success">Save</button>
+              <button id="sortSingle" class="btn btn-sm btn-outline-info">Sort saved</button>
+              <button id="clearSingle" class="btn btn-sm btn-outline-danger">Delete saved</button>
+            </div>
+            <ul id="singleSaved" class="list-group mt-2"></ul>
+          </div>
+
+          <div class="col-12">
+            <h6>Compare text encryption with file encryption</h6>
+            <p class="small-muted">You can paste a text and compare AES-GCM result (derived key) vs simple XOR result. This is a quick experiment to see differences (not a formal benchmark).</p>
+            <div class="d-flex gap-2">
+              <button id="compareEncryptBtn" class="btn btn-primary">Run quick compare</button>
+              <div id="compareResult" class="small-muted"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 5. Image Steganography -->
+    <div id="steg" class="card section-card">
+      <div class="card-body">
+        <h3>Image steganography (LSB) — hide and extract text inside PNG</h3>
+        <p class="small-muted">Upload an image (PNG recommended). We will encode ASCII into the least significant bits of RGB channels. Download the new image and decode it later.</p>
+
+        <div class="row g-2">
+          <div class="col-md-6">
+            <label>Upload cover image (PNG)</label>
+            <input id="coverImage" type="file" class="form-control" accept="image/*">
+            <label class="mt-2">Message to hide</label>
+            <textarea id="stegMessage" class="form-control" rows="4"></textarea>
+            <div class="mt-2 d-flex gap-2">
+              <button id="stegEncode" class="btn btn-primary">Encode & Download PNG</button>
+              <button id="stegDecodeBtn" class="btn btn-success">Decode from PNG (upload)</button>
+              <input id="stegUpload" type="file" class="form-control" accept="image/*">
+            </div>
+            <div id="stegStatus" class="mt-2 small-muted"></div>
+          </div>
+
+          <div class="col-md-6">
+            <label>Preview</label>
+            <canvas id="stegCanvas" class="border"></canvas>
+            <div class="mt-2">
+              <button id="downloadStegBtn" class="btn btn-outline-secondary">Download encoded image</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 6. Algorithms & Explanations -->
+    <div id="algos" class="card section-card">
+      <div class="card-body">
+        <h3>Algorithms, explanations, strengths, and how to decrypt</h3>
+
+        <div class="accordion" id="algAccordion">
+          <div class="accordion-item">
+            <h2 class="accordion-header" id="headingOne"><button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne">Symmetric: AES-GCM</button></h2>
+            <div id="collapseOne" class="accordion-collapse collapse show" data-bs-parent="#algAccordion">
+              <div class="accordion-body">
+                <p><strong>What:</strong> AES (Advanced Encryption Standard) in GCM mode — authenticated encryption.</p>
+                <p><strong>Strength:</strong> 128/192/256-bit keys. Secure if key kept secret. Resistant to many attacks when used properly (unique IV per message).</p>
+                <p><strong>How to decrypt:</strong> Need same key and IV; verify authentication tag. Use PBKDF2 to derive keys from passphrases if needed.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <h2 class="accordion-header" id="headingTwo"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo">Asymmetric: RSA-OAEP</button></h2>
+            <div id="collapseTwo" class="accordion-collapse collapse" data-bs-parent="#algAccordion">
+              <div class="accordion-body">
+                <p><strong>What:</strong> RSA with OAEP padding — public/private key encryption for small payloads.</p>
+                <p><strong>Strength:</strong> Security depends on key length (2048, 3072, 4096). Not for large files — typically encrypt a symmetric key instead.</p>
+                <p><strong>How to decrypt:</strong> Use private key corresponding to the public key that encrypted the message.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <h2 class="accordion-header" id="headingThree"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree">Classical ciphers: Caesar, Vigenère</button></h2>
+            <div id="collapseThree" class="accordion-collapse collapse" data-bs-parent="#algAccordion">
+              <div class="accordion-body">
+                <p><strong>Caesar:</strong> shifts letters by a fixed amount. <em>Decryption law:</em> P = (C - k) mod 26, where k is the shift.</p>
+                <p><strong>Vigenère:</strong> polyalphabetic with repeating key; more secure than Caesar but vulnerable to frequency analysis if key short.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <h2 class="accordion-header" id="headingFour"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFour">Morse (Morris) code</button></h2>
+            <div id="collapseFour" class="accordion-collapse collapse" data-bs-parent="#algAccordion">
+              <div class="accordion-body">
+                <p>Morse encodes letters to dots and dashes. It's not encryption but an encoding system. Table below (also available in the Morse section).</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <h2 class="accordion-header" id="headingFive"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFive">Simple XOR</button></h2>
+            <div id="collapseFive" class="accordion-collapse collapse" data-bs-parent="#algAccordion">
+              <div class="accordion-body">
+                <p>XOR each byte with key stream. If key is as long and random as message (one-time pad) it's unbreakable. Reused keys lead to vulnerabilities.</p>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <hr>
+        <h5>Password breach check (k-anonymity helper)</h5>
+        <p class="small-muted">The page computes SHA-1 of a password and shows its prefix — paste this prefix at <em>Have I Been Pwned</em> range API or website to check without revealing the full hash. (We don't call external APIs in this static file.)</p>
+        <div class="input-group mb-2">
+          <input id="pwCheckInput" type="password" class="form-control" placeholder="Enter password to check (locally hashed)">
+          <button id="pwCheckBtn" class="btn btn-outline-primary">Compute SHA-1 prefix</button>
+        </div>
+        <div id="pwCheckOut" class="small-muted monos"></div>
+
+      </div>
+    </div>
+
+    <!-- 7. Morse section -->
+    <div id="morse" class="card section-card">
+      <div class="card-body">
+        <h3>Morse (you wrote "Morris") — table and encode/decode</h3>
+        <div class="row">
+          <div class="col-md-6">
+            <label>Text</label>
+            <textarea id="morseText" class="form-control" rows="4"></textarea>
+            <div class="mt-2 d-flex gap-2">
+              <button id="morseEncBtn" class="btn btn-primary">Encode to Morse</button>
+              <button id="morseDecBtn" class="btn btn-secondary">Decode Morse</button>
+              <button id="copyMorse" class="btn btn-outline-secondary">Copy</button>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <label>Output</label>
+            <div id="morseOut" class="p-2 border rounded monos cipher-output" style="min-height:160px;"></div>
+          </div>
+        </div>
+
+        <hr>
+        <h6>Morse table (letters, numbers, punctuation)</h6>
+        <div style="max-height:240px; overflow:auto;">
+          <table class="table table-sm table-bordered">
+            <thead><tr><th>Symbol</th><th>Morse</th><th>Symbol</th><th>Morse</th></tr></thead>
+            <tbody id="morseTableBody"></tbody>
+          </table>
+        </div>
+
+      </div>
+    </div>
+
+    <footer class="text-center small-muted mt-4">Prototype — for educational purposes. Do not rely on this for high-security production use. Sending real OTPs or performing server-side checks requires external services.</footer>
+  </div>
+
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+  <script>
+  // ---------- Utility helpers ----------
+  function rngInt(min, max){ return Math.floor(Math.random()*(max-min+1))+min; }
+  function arrayShuffle(a){ for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+  function copyToClipboard(text){ navigator.clipboard?.writeText(text).catch(()=>{}); }
+
+  // ---------- Password generator ----------
+  const pwlen = document.getElementById('pwlen');
+  const pwlenLabel = document.getElementById('pwlenLabel');
+  pwlen.oninput = ()=> pwlenLabel.textContent = pwlen.value;
+
+  document.getElementById('genPwBtn').onclick = ()=>{
+    const L = +pwlen.value;
+    let letters = +document.getElementById('pwLetters').value || 0;
+    let numbers = +document.getElementById('pwNumbers').value || 0;
+    let symbols = +document.getElementById('pwSymbols').value || 0;
+    const lower = document.getElementById('pwLower').checked;
+    const upper = document.getElementById('pwUpper').checked;
+    // adjust counts to length
+    const remainder = Math.max(0, L - (letters+numbers+symbols));
+    letters += remainder;
+    let poolLetters = '';
+    if (lower) poolLetters += 'abcdefghijklmnopqrstuvwxyz';
+    if (upper) poolLetters += 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    const poolNumbers = '0123456789';
+    const poolSym = '!@#$%^&*()-_=+[]{};:,.<>?';
+
+    let out = [];
+    for(let i=0;i<letters;i++) out.push(poolLetters.charAt(rngInt(0,poolLetters.length-1)));
+    for(let i=0;i<numbers;i++) out.push(poolNumbers.charAt(rngInt(0,poolNumbers.length-1)));
+    for(let i=0;i<symbols;i++) out.push(poolSym.charAt(rngInt(0,poolSym.length-1)));
+    out = arrayShuffle(out).join('');
+    document.getElementById('generatedPassword').textContent = out;
+    updatePasswordStrength(out);
+  };
+
+  document.getElementById('copyPwBtn').onclick = ()=> copyToClipboard(document.getElementById('generatedPassword').textContent);
+
+  // saved list features
+  const savedPwList = document.getElementById('savedPwList');
+  document.getElementById('savePwBtn').onclick = ()=>{
+    const val = document.getElementById('generatedPassword').textContent;
+    if(!val) return;
+    const li=document.createElement('li'); li.className='list-group-item d-flex justify-content-between align-items-center monos';
+    li.innerHTML = `<span>${val}</span><span><button class="btn btn-sm btn-outline-secondary me-1 copy">Copy</button><button class="btn btn-sm btn-outline-danger del">Del</button></span>`;
+    savedPwList.appendChild(li);
+    li.querySelector('.copy').onclick = ()=> copyToClipboard(val);
+    li.querySelector('.del').onclick = ()=> li.remove();
+  };
+  document.getElementById('sortPwBtn').onclick = ()=>{
+    const items = [...savedPwList.querySelectorAll('li')].map(li=>li.firstChild.textContent);
+    items.sort();
+    savedPwList.innerHTML = '';
+    items.forEach(v=>{ const li=document.createElement('li'); li.className='list-group-item monos'; li.textContent=v; savedPwList.appendChild(li); });
+  };
+  document.getElementById('clearPwSavedBtn').onclick = ()=> savedPwList.innerHTML='';
+
+  // names, emails, phrases generation
+  const sampleNames = ['Amina','Youssef','Khaled','Nadia','Sofia','Karim','Layla','Ibrahim','Sara','Rami','Hajar'];
+  document.getElementById('genNamesBtn').onclick = ()=>{
+    const count = Math.max(1, +document.getElementById('countGen').value);
+    const ul = document.getElementById('generatedList'); ul.innerHTML='';
+    for(let i=0;i<count;i++){
+      const n = sampleNames[rngInt(0,sampleNames.length-1)] + (rngInt(1,999));
+      const li=document.createElement('li'); li.className='list-group-item d-flex justify-content-between align-items-center';
+      li.innerHTML = `<span>${n}</span><span><button class="btn btn-sm btn-outline-secondary copy">Copy</button></span>`;
+      li.querySelector('.copy').onclick = ()=> copyToClipboard(n);
+      ul.appendChild(li);
+    }
+  };
+  document.getElementById('genEmailsBtn').onclick = ()=>{
+    const count = Math.max(1, +document.getElementById('countGen').value);
+    const domains=['example.com','mail.com','proton.example'];
+    const ul = document.getElementById('generatedList'); ul.innerHTML='';
+    for(let i=0;i<count;i++){
+      const nm = sampleNames[rngInt(0,sampleNames.length-1)].toLowerCase()+rngInt(1,999);
+      const email = nm+'@'+domains[rngInt(0,domains.length-1)];
+      const li=document.createElement('li'); li.className='list-group-item d-flex justify-content-between align-items-center';
+      li.innerHTML = `<span>${email}</span><span><button class="btn btn-sm btn-outline-secondary copy">Copy</button></span>`;
+      li.querySelector('.copy').onclick = ()=> copyToClipboard(email);
+      ul.appendChild(li);
+    }
+  };
+  document.getElementById('genPhrasesBtn').onclick = ()=>{
+    const count = Math.max(1, +document.getElementById('countGen').value);
+    const words = ['sun','river','apple','learning','crypto','secret','kite','ocean','mountain','coffee'];
+    const ul = document.getElementById('generatedList'); ul.innerHTML='';
+    for(let i=0;i<count;i++){
+      const phrase = Array.from({length:4},()=>words[rngInt(0,words.length-1)]).join(' ');
+      const li=document.createElement('li'); li.className='list-group-item d-flex justify-content-between align-items-center';
+      li.innerHTML = `<span>${phrase}</span><span><button class="btn btn-sm btn-outline-secondary copy">Copy</button></span>`;
+      li.querySelector('.copy').onclick = ()=> copyToClipboard(phrase);
+      ul.appendChild(li);
+    }
+  };
+
+  // ---------- Password strength & brute force time ----------
+  function entropyBits(pw){
+    // estimate charset size
+    let charset = 0;
+    if(/[a-z]/.test(pw)) charset += 26;
+    if(/[A-Z]/.test(pw)) charset += 26;
+    if(/[0-9]/.test(pw)) charset += 10;
+    if(/[^A-Za-z0-9]/.test(pw)) charset += 32;
+    if(charset===0) charset=1;
+    return Math.log2(Math.pow(charset, pw.length));
+  }
+  function updatePasswordStrength(pw){
+    const bits = Math.round(entropyBits(pw));
+    const bar = document.getElementById('pwStrengthBar');
+    const percent = Math.min(100, Math.floor(bits));
+    bar.style.width = percent + '%';
+    bar.textContent = bits + ' bits';
+    // estimate brute force time at 1e9 guesses/sec (aggressive)
+    const guesses = Math.pow(2, bits);
+    const gps = 1e9;
+    const seconds = guesses / gps;
+    const human = secondsToHuman(seconds);
+    document.getElementById('pwEntropyInfo').textContent = `Entropy: ${bits} bits — estimated brute-force at 1e9 guesses/s: ${human}`;
+  }
+  function secondsToHuman(s){
+    if (!isFinite(s) || s > 1e18) return '>> centuries';
+    const units = [
+      ['years', 3600*24*365],
+      ['days', 3600*24],
+      ['hours', 3600],
+      ['minutes', 60],
+      ['seconds', 1]
+    ];
+    let out=[];
+    for(const [name,sec] of units){
+      if (s >= sec){
+        const v = Math.floor(s/sec);
+        s -= v*sec;
+        out.push(v + ' ' + name);
+      }
+      if(out.length>=2) break;
+    }
+    return out.join(', ');
+  }
+
+  // ---------- OTP Simulator ----------
+  document.getElementById('genOtpPhone').onclick = ()=> {
+    const len = Math.max(4, +document.getElementById('otpLen').value);
+    const code = Array.from({length:len},()=>rngInt(0,9)).join('');
+    const out = `Phone OTP (simulated): ${code}  — (This is local; not sent). Expires in 5 minutes.`;
+    document.getElementById('otpOutput').textContent = out;
+    copyToClipboard(code);
+  };
+  document.getElementById('genOtpEmail').onclick = ()=> {
+    const len = Math.max(4, +document.getElementById('otpLen').value);
+    const code = Array.from({length:len},()=>rngInt(0,9)).join('');
+    const out = `Email OTP (simulated): ${code}  — (This is local; not sent).`;
+    document.getElementById('otpOutput').textContent = out;
+    copyToClipboard(code);
+  };
+
+  // ---------- File encryption (AES-GCM) ----------
+  async function deriveKeyFromPassphrase(pass, salt, iterations=250000, length=256){
+    const enc = new TextEncoder();
+    const keyMaterial = await crypto.subtle.importKey('raw', enc.encode(pass), {name:'PBKDF2'}, false, ['deriveKey']);
+    return crypto.subtle.deriveKey({
+      name: 'PBKDF2', salt: salt, iterations: iterations, hash: 'SHA-256'
+    }, keyMaterial, {name:'AES-GCM', length:length}, true, ['encrypt','decrypt']);
+  }
+  function bufToBase64(b){ return btoa(String.fromCharCode(...new Uint8Array(b))); }
+  function base64ToBuf(s){ const bin = atob(s); const arr = new Uint8Array(bin.length); for(let i=0;i<bin.length;i++) arr[i]=bin.charCodeAt(i); return arr.buffer; }
+
+  document.getElementById('encryptFileBtn').onclick = async ()=>{
+    const fi = document.getElementById('fileInput').files[0];
+    const pass = document.getElementById('filePass').value;
+    if(!fi || !pass){ document.getElementById('fileEncStatus').textContent = 'Select file and passphrase.'; return; }
+    const data = await fi.arrayBuffer();
+    const salt = crypto.getRandomValues(new Uint8Array(16));
+    const iv = crypto.getRandomValues(new Uint8Array(12));
+    const key = await deriveKeyFromPassphrase(pass, salt);
+    const ct = await crypto.subtle.encrypt({name:'AES-GCM', iv:iv}, key, data);
+    // package: iv, salt, iterations, ct
+    const meta = {
+      filename: fi.name,
+      iv: bufToBase64(iv),
+      salt: bufToBase64(salt),
+      iterations: 250000,
+      algo: 'AES-GCM'
+    };
+    // create blob with JSON meta + binary
+    const metaStr = JSON.stringify(meta);
+    const encBlob = new Blob([new TextEncoder().encode(metaStr), new Uint8Array([0x1f,0x8b,0x00]), new Uint8Array(ct)], {type:'application/octet-stream'});
+    const url = URL.createObjectURL(encBlob);
+    const a = document.createElement('a'); a.href = url; a.download = fi.name + '.enc'; document.body.appendChild(a); a.click(); a.remove();
+    URL.revokeObjectURL(url);
+    document.getElementById('fileEncStatus').textContent = 'Encrypted; downloaded. Keep passphrase safe.';
+  };
+
+  document.getElementById('decryptFileBtn').onclick = async ()=>{
+    const f = document.getElementById('encFileUpload').files[0];
+    const pass = document.getElementById('filePass').value;
+    if(!f || !pass){ document.getElementById('fileEncStatus').textContent = 'Upload .enc and enter passphrase.'; return;}
+    // read as ArrayBuffer
+    const buf = await f.arrayBuffer();
+    // heuristic: meta is first JSON object — we try to extract until the '{"filename"' start
+    // to be robust: parse text until we find '}' then rest is binary. We used a specific separator sequence 0x1f,0x8b,0x00
+    const bytes = new Uint8Array(buf);
+    // find separator
+    let sepIndex = -1;
+    for(let i=0;i<bytes.length-2;i++){
+      if(bytes[i]===0x1f && bytes[i+1]===0x8b && bytes[i+2]===0x00){ sepIndex = i; break; }
+    }
+    if(sepIndex===-1){ document.getElementById('fileEncStatus').textContent = 'Invalid .enc format.'; return; }
+    const metaBytes = bytes.slice(0, sepIndex);
+    const ctBytes = bytes.slice(sepIndex+3);
+    let meta;
+    try{ meta = JSON.parse(new TextDecoder().decode(metaBytes)); } catch(e){ document.getElementById('fileEncStatus').textContent = 'Cannot parse metadata.'; return; }
+    const salt = base64ToBuf(meta.salt);
+    const iv = base64ToBuf(meta.iv);
+    try{
+      const key = await deriveKeyFromPassphrase(pass, new Uint8Array(salt));
+      const plain = await crypto.subtle.decrypt({name:'AES-GCM', iv: new Uint8Array(iv)}, key, ctBytes.buffer);
+      const blob = new Blob([plain], {type:'application/octet-stream'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a'); a.href = url; a.download = meta.filename || 'decrypted.bin'; document.body.appendChild(a); a.click(); a.remove();
+      URL.revokeObjectURL(url);
+      document.getElementById('fileEncStatus').textContent = 'Decrypted and downloaded.';
+    } catch(e){
+      document.getElementById('fileEncStatus').textContent = 'Decryption failed (wrong passphrase or corrupted file).';
+    }
+  };
+
+  // ---------- RSA key generation and usage ----------
+  let rsaKeyPair = null;
+  async function exportPublicPem(key){
+    const spki = await crypto.subtle.exportKey('spki', key);
+    const b64 = bufToBase64(spki);
+    const pem = `-----BEGIN PUBLIC KEY-----\n${b64.match(/.{1,64}/g).join('\\n')}\n-----END PUBLIC KEY-----`;
+    return pem;
+  }
+  async function exportPrivatePem(key){
+    const pkcs8 = await crypto.subtle.exportKey('pkcs8', key);
+    const b64 = bufToBase64(pkcs8);
+    const pem = `-----BEGIN PRIVATE KEY-----\n${b64.match(/.{1,64}/g).join('\\n')}\n-----END PRIVATE KEY-----`;
+    return pem;
+  }
+  async function importPublicPem(pem){
+    const b64 = pem.replace(/-----.*KEY-----/g,'').replace(/\\s+/g,'');
+    const bin = base64ToBuf(b64);
+    return crypto.subtle.importKey('spki', bin, {name:'RSA-OAEP', hash:'SHA-256'}, true, ['encrypt']);
+  }
+  async function importPrivatePem(pem){
+    const b64 = pem.replace(/-----.*KEY-----/g,'').replace(/\\s+/g,'');
+    const bin = base64ToBuf(b64);
+    return crypto.subtle.importKey('pkcs8', bin, {name:'RSA-OAEP', hash:'SHA-256'}, true, ['decrypt']);
+  }
+
+  document.getElementById('genRsaBtn').onclick = async ()=>{
+    const size = +document.getElementById('rsaSize').value;
+    document.getElementById('rsaOutput').textContent = 'Generating... (may take a few seconds)';
+    rsaKeyPair = await crypto.subtle.generateKey({name:'RSA-OAEP', modulusLength: size, publicExponent: new Uint8Array([1,0,1]), hash:'SHA-256'}, true, ['encrypt','decrypt']);
+    document.getElementById('rsaOutput').textContent = 'Keypair generated: ' + size + ' bits.';
+    // store in UI list
+    const li=document.createElement('li'); li.className='list-group-item monos'; li.textContent = `RSA ${size} bits — in-memory`;
+    document.getElementById('rsaList').appendChild(li);
+  };
+
+  document.getElementById('downloadPubBtn').onclick = async ()=>{
+    if(!rsaKeyPair) return alert('Generate keys first');
+    const pem = await exportPublicPem(rsaKeyPair.publicKey);
+    const blob = new Blob([pem], {type:'application/x-pem-file'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href=url; a.download='public.pem'; document.body.appendChild(a); a.click(); a.remove();
+    URL.revokeObjectURL(url);
+  };
+  document.getElementById('downloadPrivBtn').onclick = async ()=>{
+    if(!rsaKeyPair) return alert('Generate keys first');
+    const pem = await exportPrivatePem(rsaKeyPair.privateKey);
+    const blob = new Blob([pem], {type:'application/x-pem-file'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href=url; a.download='private.pem'; document.body.appendChild(a); a.click(); a.remove();
+    URL.revokeObjectURL(url);
+  };
+  document.getElementById('clearKeysBtn').onclick = ()=>{ rsaKeyPair=null; document.getElementById('rsaOutput').textContent='Keys cleared.'; document.getElementById('rsaList').innerHTML=''; };
+
+  document.getElementById('rsaEncryptBtn').onclick = async ()=>{
+    const plain = new TextEncoder().encode(document.getElementById('rsaPlain').value||'');
+    if(!rsaKeyPair) return alert('Generate or import keys first');
+    const ct = await crypto.subtle.encrypt({name:'RSA-OAEP'}, rsaKeyPair.publicKey, plain);
+    const b64 = bufToBase64(ct);
+    document.getElementById('rsaOutput').textContent = b64;
+  };
+  document.getElementById('rsaDecryptBtn').onclick = async ()=>{
+    const b64 = document.getElementById('rsaOutput').textContent.trim();
+    if(!b64) return;
+    const buf = base64ToBuf(b64);
+    try{
+      const plain = await crypto.subtle.decrypt({name:'RSA-OAEP'}, rsaKeyPair.privateKey, buf);
+      document.getElementById('rsaOutput').textContent = new TextDecoder().decode(plain);
+    }catch(e){
+      document.getElementById('rsaOutput').textContent = 'Decryption failed';
+    }
+  };
+  document.getElementById('copyRsaOut').onclick = ()=> copyToClipboard(document.getElementById('rsaOutput').textContent);
+
+  // ---------- Single ciphers (classical) ----------
+  function caesarEncrypt(text, shift){
+    return text.replace(/[A-Za-z]/g, c=>{
+      const base = c<='Z' ? 65 : 97;
+      return String.fromCharCode((c.charCodeAt(0)-base + shift + 26) % 26 + base);
+    });
+  }
+  function caesarDecrypt(text, shift){ return caesarEncrypt(text, (26-shift)%26); }
+  document.getElementById('caesarEnc').onclick = ()=>{
+    const s = +document.getElementById('caesarShift').value;
+    const out = caesarEncrypt(document.getElementById('singlePlain').value, s);
+    document.getElementById('singleOut').textContent = out;
+  };
+  document.getElementById('caesarDec').onclick = ()=>{
+    const s = +document.getElementById('caesarShift').value;
+    const out = caesarDecrypt(document.getElementById('singlePlain').value, s);
+    document.getElementById('singleOut').textContent = out;
+  };
+
+  function vigenere(text, key, decrypt=false){
+    let ki=0; const out=[];
+    for(let ch of text){
+      if(/[A-Za-z]/.test(ch)){
+        const base = ch<='Z'?65:97;
+        const kch = key[ki % key.length];
+        const k = (kch.toUpperCase().charCodeAt(0)-65);
+        const shift = decrypt ? (26 - k) : k;
+        out.push(String.fromCharCode((ch.charCodeAt(0)-base + shift)%26 + base));
+        ki++;
+      } else out.push(ch);
+    }
+    return out.join('');
+  }
+  document.getElementById('vigenereEnc').onclick = ()=>{
+    const key = document.getElementById('vigKey').value || 'KEY';
+    const out = vigenere(document.getElementById('singlePlain').value, key, false);
+    document.getElementById('singleOut').textContent = out;
+  };
+  document.getElementById('vigenereDec').onclick = ()=>{
+    const key = document.getElementById('vigKey').value || 'KEY';
+    const out = vigenere(document.getElementById('singlePlain').value, key, true);
+    document.getElementById('singleOut').textContent = out;
+  };
+
+  function xorEncryptBase64(text, key){
+    const tb = new TextEncoder().encode(text);
+    const kb = new TextEncoder().encode(key);
+    const out = new Uint8Array(tb.length);
+    for(let i=0;i<tb.length;i++) out[i] = tb[i] ^ kb[i % kb.length];
+    return btoa(String.fromCharCode(...out));
+  }
+  function xorDecryptBase64(b64, key){
+    const bin = atob(b64);
+    const kb = new TextEncoder().encode(key);
+    const arr = new Uint8Array(bin.length);
+    for(let i=0;i<bin.length;i++) arr[i] = bin.charCodeAt(i) ^ kb[i % kb.length];
+    return new TextDecoder().decode(arr);
+  }
+  document.getElementById('xorEnc').onclick = ()=>{
+    const key = document.getElementById('xorKey').value || 'k';
+    const out = xorEncryptBase64(document.getElementById('singlePlain').value, key);
+    document.getElementById('singleOut').textContent = out;
+  };
+  document.getElementById('xorDec').onclick = ()=>{
+    const key = document.getElementById('xorKey').value || 'k';
+    const out = xorDecryptBase64(document.getElementById('singleOut').textContent.trim(), key);
+    document.getElementById('singleOut').textContent = out;
+  };
+
+  // saved single outputs
+  document.getElementById('copySingle').onclick = ()=> copyToClipboard(document.getElementById('singleOut').textContent);
+  document.getElementById('saveSingle').onclick = ()=>{
+    const v=document.getElementById('singleOut').textContent;
+    if(!v) return;
+    const ul=document.getElementById('singleSaved');
+    const li=document.createElement('li'); li.className='list-group-item monos d-flex justify-content-between align-items-center';
+    li.innerHTML = `<span>${v}</span><span><button class="btn btn-sm btn-outline-secondary copy">Copy</button><button class="btn btn-sm btn-outline-danger del ms-1">Del</button></span>`;
+    li.querySelector('.copy').onclick = ()=> copyToClipboard(v);
+    li.querySelector('.del').onclick = ()=> li.remove();
+    ul.appendChild(li);
+  };
+  document.getElementById('sortSingle').onclick = ()=>{
+    const lis = [...document.getElementById('singleSaved').querySelectorAll('li')].map(li=>li.textContent.trim());
+    lis.sort();
+    document.getElementById('singleSaved').innerHTML = '';
+    lis.forEach(v=>{ const li=document.createElement('li'); li.className='list-group-item monos'; li.textContent=v; document.getElementById('singleSaved').appendChild(li); });
+  };
+  document.getElementById('clearSingle').onclick = ()=> document.getElementById('singleSaved').innerHTML='';
+
+  // compare text vs file encryption (quick)
+  document.getElementById('compareEncryptBtn').onclick = async ()=>{
+    const text = document.getElementById('singlePlain').value || '';
+    // XOR encrypt
+    const xor = xorEncryptBase64(text, 'compareKey123');
+    // AES encrypt (derive key)
+    const salt = crypto.getRandomValues(new Uint8Array(16));
+    const key = await deriveKeyFromPassphrase('comparePass', salt);
+    const iv = crypto.getRandomValues(new Uint8Array(12));
+    const ct = await crypto.subtle.encrypt({name:'AES-GCM', iv: iv}, key, new TextEncoder().encode(text));
+    document.getElementById('compareResult').textContent = `XOR size: ${xor.length} chars — AES size: ${ct.byteLength} bytes`;
+  };
+
+  // ---------- Steganography (LSB) ----------
+  const stegCanvas = document.getElementById('stegCanvas');
+  const ctx = stegCanvas.getContext('2d');
+  let lastImg = null;
+  document.getElementById('coverImage').onchange = async (e)=>{
+    const f = e.target.files[0]; if(!f) return;
+    const img = new Image();
+    img.onload = ()=>{
+      stegCanvas.width = img.width; stegCanvas.height = img.height;
+      ctx.drawImage(img,0,0);
+      lastImg = img;
+    };
+    img.src = URL.createObjectURL(f);
+  };
+
+  function stringToBits(s){
+    const bytes = new TextEncoder().encode(s);
+    const bits = [];
+    for(const b of bytes) for(let i=7;i>=0;i--) bits.push((b>>i)&1);
+    return bits;
+  }
+  function bitsToString(bits){
+    const bytes = [];
+    for(let i=0;i<bits.length;i+=8){
+      let b=0;
+      for(let j=0;j<8 && (i+j)<bits.length;j++){
+        b = (b<<1) | bits[i+j];
+      }
+      bytes.push(b);
+    }
+    return new TextDecoder().decode(new Uint8Array(bytes));
+  }
+
+  document.getElementById('stegEncode').onclick = async ()=>{
+    const msg = document.getElementById('stegMessage').value || '';
+    if(!lastImg){ document.getElementById('stegStatus').textContent='Upload a cover image first.'; return; }
+    // encode message length + message
+    const bits = stringToBits(msg);
+    const lenBits = [];
+    // store length in 32 bits
+    const len = bits.length;
+    for(let i=31;i>=0;i--) lenBits.push((len>>i)&1);
+    const all = lenBits.concat(bits);
+    // draw
+    ctx.drawImage(lastImg,0,0);
+    const imgd = ctx.getImageData(0,0,stegCanvas.width,stegCanvas.height);
+    const pixels = imgd.data; // RGBA
+    if(all.length > pixels.length/4*3){ document.getElementById('stegStatus').textContent='Message too large for image.'; return; }
+    let bitIndex=0;
+    for(let i=0;i<pixels.length && bitIndex<all.length;i+=4){
+      // we will use R,G,B LSBs (3 bits per pixel)
+      for(let c=0;c<3 && bitIndex<all.length;c++){
+        pixels[i+c] = (pixels[i+c] & 0xFE) | all[bitIndex++];
+      }
+    }
+    ctx.putImageData(imgd,0,0);
+    document.getElementById('stegStatus').textContent='Encoded in canvas. Click Download to get PNG.';
+    document.getElementById('downloadStegBtn').onclick = ()=>{
+      stegCanvas.toBlob(b=>{
+        const url = URL.createObjectURL(b);
+        const a = document.createElement('a'); a.href=url; a.download='stego.png'; document.body.appendChild(a); a.click(); a.remove();
+        URL.revokeObjectURL(url);
+      });
+    };
+  };
+
+  document.getElementById('stegDecodeBtn').onclick = async ()=>{
+    const f = document.getElementById('stegUpload').files[0];
+    if(!f){ document.getElementById('stegStatus').textContent='Upload an encoded image to decode.'; return; }
+    const img = new Image();
+    img.onload = ()=>{
+      const w=img.width, h=img.height;
+      const c = document.createElement('canvas'); c.width=w; c.height=h;
+      const cctx = c.getContext('2d'); cctx.drawImage(img,0,0);
+      const imgd = cctx.getImageData(0,0,w,h);
+      const pixels = imgd.data;
+      const bits = [];
+      for(let i=0;i<pixels.length;i+=4){
+        bits.push(pixels[i]&1);
+        bits.push(pixels[i+1]&1);
+        bits.push(pixels[i+2]&1);
+      }
+      // read length first 32 bits
+      const lenBits = bits.slice(0,32);
+      let len=0;
+      for(let i=0;i<32;i++) len = (len<<1) | lenBits[i];
+      const msgBits = bits.slice(32, 32+len);
+      const msg = bitsToString(msgBits);
+      document.getElementById('stegStatus').textContent = 'Decoded message: ' + msg;
+    };
+    img.src = URL.createObjectURL(f);
+  };
+
+  // ---------- Password leak check (SHA-1 prefix helper) ----------
+  async function sha1hex(msg){
+    const buf = await crypto.subtle.digest('SHA-1', new TextEncoder().encode(msg));
+    const hex = [...new Uint8Array(buf)].map(b=>b.toString(16).padStart(2,'0')).join('').toUpperCase();
+    return hex;
+  }
+  document.getElementById('pwCheckBtn').onclick = async ()=>{
+    const pw = document.getElementById('pwCheckInput').value || '';
+    if(!pw) return;
+    const hex = await sha1hex(pw);
+    const prefix = hex.slice(0,5);
+    const suffix = hex.slice(5);
+    document.getElementById('pwCheckOut').textContent = `SHA-1: ${hex}\nPrefix (first 5 hex chars): ${prefix}\nSuffix: ${suffix}\nUse prefix in HaveIBeenPwned range API to check without sending full hash.`;
+  };
+
+  // ---------- Morse (table + encode/decode) ----------
+  const morseMap = {
+    'A':'.-','B':'-...','C':'-.-.','D':'-..','E':'.','F':'..-.','G':'--.','H':'....','I':'..','J':'.---','K':'-.-','L':'.-..',
+    'M':'--','N':'-.','O':'---','P':'.--.','Q':'--.-','R':'.-.','S':'...','T':'-','U':'..-','V':'...-','W':'.--','X':'-..-',
+    'Y':'-.--','Z':'--..',
+    '0':'-----','1':'.----','2':'..---','3':'...--','4':'....-','5':'.....','6':'-....','7':'--...','8':'---..','9':'----.',
+    '.':'.-.-.-',',':'--..--','?':'..--..','!':'-.-.--','/':'-..-.','(':'-.--.',')':'-.--.-','&':'.-...',':':'---...',';':'-.-.-.',
+    '=':'-...-','+':'.-.-.','-':'-....-','_':'..--.-','"':'.-..-.','$':'...-..-','@':'.--.-.'
+  };
+  const revMorse = {};
+  for(const k in morseMap) revMorse[morseMap[k]] = k;
+
+  function morseEncode(text){
+    return text.toUpperCase().split('').map(ch=>{
+      if(ch===' ') return '/';
+      return morseMap[ch] || '?';
+    }).join(' ');
+  }
+  function morseDecode(code){
+    return code.split(' ').map(token=>{
+      if(token==='/') return ' ';
+      return revMorse[token] || '?';
+    }).join('');
+  }
+  document.getElementById('morseEncBtn').onclick = ()=> document.getElementById('morseOut').textContent = morseEncode(document.getElementById('morseText').value||'');
+  document.getElementById('morseDecBtn').onclick = ()=> document.getElementById('morseOut').textContent = morseDecode(document.getElementById('morseText').value||'');
+  document.getElementById('copyMorse').onclick = ()=> copyToClipboard(document.getElementById('morseOut').textContent);
+  // fill table
+  const tbody = document.getElementById('morseTableBody');
+  const keys = Object.keys(morseMap).sort();
+  for(let i=0;i<keys.length;i+=2){
+    const a = keys[i], b = keys[i+1]||'';
+    const row = document.createElement('tr'); row.innerHTML = `<td>${a}</td><td>${morseMap[a]||''}</td><td>${b}</td><td>${morseMap[b]||''}</td>`;
+    tbody.appendChild(row);
+  }
+
+  // ---------- Morse done ----------
+  </script>
+</body>
+</html>
