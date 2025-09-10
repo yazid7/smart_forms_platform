@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Crypto Security Suite</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- Bootstrap 5 -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- CryptoJS -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.2.0/crypto-js.min.js"></script>
+  <!-- jsrsasign for RSA -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jsrsasign/10.9.0/jsrsasign-all-min.js"></script>
+  <!-- Steganography.js -->
+  <script src="https://cdn.jsdelivr.net/gh/petereigenschink/steganography.js/steganography.min.js"></script>
+  <style>
+    body { padding:20px; }
+    .card { margin-bottom:20px; box-shadow:0 4px 8px rgba(0,0,0,0.1); border-radius:1rem; }
+    textarea,input[type=text],input[type=password] { font-family:monospace; }
+    .copy-btn { cursor:pointer; }
+    .dark-mode { background:#121212; color:#eee; }
+    .dark-mode .card { background:#1e1e1e; color:#eee; }
+  </style>
+</head>
+<body>
+<div class="container">
+  <h1 class="text-center mb-4">🔐 Crypto Security Suite</h1>
+  <div class="text-center mb-4">
+    <button class="btn btn-secondary" onclick="toggleDark()">🌙 Toggle Dark Mode</button>
+  </div>
+
+  <!-- Password Generator -->
+  <div class="card">
+    <div class="card-header">🔑 Password Generator</div>
+    <div class="card-body">
+      <div class="row g-2 mb-3">
+        <div class="col-md-3"><input type="number" id="pwLength" class="form-control" value="16" min="8" max="64"></div>
+        <div class="col-md-3"><button class="btn btn-primary w-100" onclick="generatePassword()">Generate</button></div>
+        <div class="col-md-3"><button class="btn btn-secondary w-100" onclick="generateRandomIdentity()">Random Identity</button></div>
+        <div class="col-md-3"><button class="btn btn-danger w-100" onclick="clearField('passwordOutput')">Clear</button></div>
+      </div>
+      <input type="password" id="passwordOutput" class="form-control mb-2" readonly>
+      <div class="d-flex gap-2">
+        <button class="btn btn-outline-secondary" onclick="togglePw()">👁 Show/Hide</button>
+        <button class="btn btn-outline-secondary" onclick="copyText('passwordOutput')">Copy</button>
+      </div>
+      <small id="pwStrength" class="text-muted"></small>
+    </div>
+  </div>
+
+  <!-- RSA Keys -->
+  <div class="card">
+    <div class="card-header">🔐 RSA Keys</div>
+    <div class="card-body">
+      <div class="mb-2">
+        <button class="btn btn-primary" onclick="generateRSA()">Generate RSA Keys</button>
+        <input type="file" id="importKeyFile" onchange="importKeyFile(event)" hidden>
+        <button class="btn btn-secondary" onclick="document.getElementById('importKeyFile').click()">Import Key</button>
+      </div>
+      <textarea id="rsaPublic" class="form-control mb-2" rows="3" placeholder="Public Key"></textarea>
+      <textarea id="rsaPrivate" class="form-control mb-2" rows="3" placeholder="Private Key"></textarea>
+      <div class="d-flex gap-2 mb-2">
+        <button class="btn btn-outline-secondary" onclick="downloadKey('rsaPublic','public.pem')">Export Public</button>
+        <button class="btn btn-outline-secondary" onclick="downloadKey('rsaPrivate','private.pem')">Export Private</button>
+      </div>
+      <textarea id="rsaPlain" class="form-control mb-2" rows="2" placeholder="Message"></textarea>
+      <div class="d-flex gap-2">
+        <button class="btn btn-primary" onclick="rsaEncrypt()">Encrypt</button>
+        <button class="btn btn-success" onclick="rsaDecrypt()">Decrypt</button>
+      </div>
+      <textarea id="rsaResult" class="form-control mt-2" rows="2" placeholder="Result"></textarea>
+    </div>
+  </div>
+
+  <!-- Text Encryption & Hashes -->
+  <div class="card">
+    <div class="card-header">📝 Text Encryption / Hashes</div>
+    <div class="card-body">
+      <textarea id="textInput" class="form-control mb-2" rows="3" placeholder="Enter text"></textarea>
+      <div class="d-flex gap-2 mb-2">
+        <button class="btn btn-primary" onclick="encryptAES()">AES Encrypt</button>
+        <button class="btn btn-success" onclick="decryptAES()">AES Decrypt</button>
+        <button class="btn btn-warning" onclick="hashText()">Hash (MD5/SHA256/SHA3)</button>
+      </div>
+      <textarea id="textResult" class="form-control mb-2" rows="3" placeholder="Result"></textarea>
+      <div class="d-flex gap-2">
+        <button class="btn btn-outline-secondary" onclick="copyText('textResult')">Copy</button>
+        <button class="btn btn-outline-secondary" onclick="clearField('textResult')">Clear</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- File Encryption -->
+  <div class="card">
+    <div class="card-header">📂 File Encryption & Verification</div>
+    <div class="card-body">
+      <input type="file" id="fileInput" class="form-control mb-2">
+      <div class="d-flex gap-2 mb-2">
+        <button class="btn btn-primary" onclick="encryptFile()">Encrypt File</button>
+        <button class="btn btn-success" onclick="decryptFile()">Decrypt File</button>
+      </div>
+      <div class="mb-2"><input type="text" id="fileHash" class="form-control" placeholder="SHA-256 fingerprint" readonly></div>
+      <button class="btn btn-outline-secondary" onclick="copyText('fileHash')">Copy Fingerprint</button>
+    </div>
+  </div>
+
+  <!-- Steganography -->
+  <div class="card">
+    <div class="card-header">🖼 Image Steganography (AES Protected)</div>
+    <div class="card-body">
+      <input type="file" id="stegImage" class="form-control mb-2">
+      <textarea id="stegMessage" class="form-control mb-2" rows="2" placeholder="Secret message"></textarea>
+      <input type="password" id="stegPassword" class="form-control mb-2" placeholder="Password">
+      <div class="d-flex gap-2 mb-2">
+        <button class="btn btn-primary" onclick="hideInImage()">Hide</button>
+        <button class="btn btn-success" onclick="revealFromImage()">Reveal</button>
+      </div>
+      <img id="stegPreview" class="img-fluid mb-2"/>
+      <textarea id="stegResult" class="form-control" rows="2" placeholder="Revealed message"></textarea>
+    </div>
+  </div>
+
+  <!-- Morse Cipher -->
+  <div class="card">
+    <div class="card-header">📡 Morse Cipher</div>
+    <div class="card-body">
+      <table class="table table-bordered">
+        <tr><th>A</th><td>.-</td><th>B</th><td>-...</td><th>@</th><td>.--.-.</td></tr>
+        <tr><th>#</th><td>......</td><th>$</th><td>...-..-</td><th>&</th><td>.-...</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- Leak Check -->
+  <div class="card">
+    <div class="card-header">🚨 Leaked Password Check</div>
+    <div class="card-body">
+      <input type="text" id="leakEmail" class="form-control mb-2" placeholder="Enter email">
+      <button class="btn btn-primary" onclick="checkLeak()">Check</button>
+      <div id="leakResult" class="mt-2"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// Dark mode
+function toggleDark(){ document.body.classList.toggle('dark-mode'); }
+
+// Copy
+function copyText(id){ const e=document.getElementById(id); e.select(); document.execCommand("copy"); }
+function clearField(id){ document.getElementById(id).value=""; }
+
+// Password generator
+function generatePassword(){
+  const len = +document.getElementById("pwLength").value;
+  const chars="abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()";
+  let pw=""; for(let i=0;i<len;i++){ pw+=chars.charAt(Math.floor(Math.random()*chars.length)); }
+  // format xxxx-xxxx-xxxx
+  pw = pw.match(/.{1,4}/g).join("-");
+  document.getElementById("passwordOutput").value=pw;
+  // entropy
+  let entropy = len*Math.log2(chars.length);
+  let seconds = Math.pow(2,entropy)/1e9; // rough
+  document.getElementById("pwStrength").innerText="Entropy: "+entropy.toFixed(1)+" bits | Crack time: ~"+seconds.toExponential(2)+" s";
+}
+function generateRandomIdentity(){
+  let rand = ()=>Math.random().toString(36).substring(2,8);
+  document.getElementById("passwordOutput").value = rand()+"-"+rand()+"-"+rand();
+}
+function togglePw(){
+  let f=document.getElementById("passwordOutput");
+  f.type = (f.type==="password")?"text":"password";
+}
+
+// RSA
+function generateRSA(){
+  let kp=KEYUTIL.generateKeypair("RSA",2048);
+  let pub=KEYUTIL.getPEM(kp.pubKeyObj);
+  let prv=KEYUTIL.getPEM(kp.prvKeyObj,"PKCS8PRV");
+  document.getElementById("rsaPublic").value=pub;
+  document.getElementById("rsaPrivate").value=prv;
+}
+function rsaEncrypt(){
+  let pub=document.getElementById("rsaPublic").value;
+  let msg=document.getElementById("rsaPlain").value;
+  let pubKey=KEYUTIL.getKey(pub);
+  let enc=KJUR.crypto.Cipher.encrypt(msg,pubKey,"RSA");
+  document.getElementById("rsaResult").value=btoa(enc);
+}
+function rsaDecrypt(){
+  let prv=document.getElementById("rsaPrivate").value;
+  let ct=document.getElementById("rsaResult").value;
+  let prvKey=KEYUTIL.getKey(prv);
+  let dec=KJUR.crypto.Cipher.decrypt(atob(ct),prvKey,"RSA");
+  document.getElementById("rsaPlain").value=dec;
+}
+function downloadKey(id,filename){
+  let blob=new Blob([document.getElementById(id).value],{type:"text/plain"});
+  let a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download=filename; a.click();
+}
+function importKeyFile(e){
+  let file=e.target.files[0]; let r=new FileReader();
+  r.onload=function(){ document.getElementById("rsaPublic").value=r.result; };
+  r.readAsText(file);
+}
+
+// AES Text
+let aesKey="mySecretKey12345"; // demo
+function encryptAES(){
+  let txt=document.getElementById("textInput").value;
+  let enc=CryptoJS.AES.encrypt(txt,CryptoJS.enc.Utf8.parse(aesKey),{mode:CryptoJS.mode.CBC,padding:CryptoJS.pad.Pkcs7,iv:CryptoJS.enc.Utf8.parse("1234567890123456")});
+  document.getElementById("textResult").value=enc.toString();
+}
+function decryptAES(){
+  try{
+    let ct=document.getElementById("textResult").value;
+    let dec=CryptoJS.AES.decrypt(ct,CryptoJS.enc.Utf8.parse(aesKey),{mode:CryptoJS.mode.CBC,padding:CryptoJS.pad.Pkcs7,iv:CryptoJS.enc.Utf8.parse("1234567890123456")});
+    document.getElementById("textInput").value=dec.toString(CryptoJS.enc.Utf8);
+  }catch(e){ alert("AES decryption failed"); }
+}
+function hashText(){
+  let t=document.getElementById("textInput").value;
+  let md5=CryptoJS.MD5(t).toString();
+  let sha256=CryptoJS.SHA256(t).toString();
+  let sha3=CryptoJS.SHA3(t).toString();
+  document.getElementById("textResult").value="MD5: "+md5+"\nSHA256: "+sha256+"\nSHA3: "+sha3;
+}
+
+// File Encryption
+function encryptFile(){
+  let file=document.getElementById("fileInput").files[0]; if(!file) return;
+  let r=new FileReader();
+  r.onload=function(){
+    let word=CryptoJS.lib.WordArray.create(r.result);
+    let enc=CryptoJS.AES.encrypt(word,aesKey).toString();
+    let blob=new Blob([enc],{type:"text/plain"});
+    let a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download=file.name+".enc"; a.click();
+    // fingerprint
+    let hash=CryptoJS.SHA256(word).toString();
+    document.getElementById("fileHash").value=hash;
+  };
+  r.readAsArrayBuffer(file);
+}
+function decryptFile(){
+  let file=document.getElementById("fileInput").files[0]; if(!file) return;
+  let r=new FileReader();
+  r.onload=function(){
+    let dec=CryptoJS.AES.decrypt(r.result,aesKey).toString(CryptoJS.enc.Latin1);
+    let blob=new Blob([dec],{type:"text/plain"});
+    let a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download=file.name.replace(".enc",""); a.click();
+    document.getElementById("fileHash").value=CryptoJS.SHA256(dec).toString();
+  };
+  r.readAsText(file);
+}
+
+// Steganography
+function hideInImage(){
+  let file=document.getElementById("stegImage").files[0]; if(!file) return;
+  let msg=document.getElementById("stegMessage").value;
+  let pw=document.getElementById("stegPassword").value;
+  let enc=CryptoJS.AES.encrypt(msg,pw).toString();
+  let r=new FileReader();
+  r.onload=function(){
+    let img=new Image();
+    img.onload=function(){
+      let canvas=document.createElement("canvas");
+      canvas.width=img.width; canvas.height=img.height;
+      let ctx=canvas.getContext("2d"); ctx.drawImage(img,0,0);
+      let stego=steganography.encode(enc,canvas);
+      document.getElementById("stegPreview").src=stego;
+      let a=document.createElement("a"); a.href=stego; a.download="stego.png"; a.click();
+    };
+    img.src=r.result;
+  };
+  r.readAsDataURL(file);
+}
+function revealFromImage(){
+  let file=document.getElementById("stegImage").files[0]; if(!file) return;
+  let pw=document.getElementById("stegPassword").value;
+  let r=new FileReader();
+  r.onload=function(){
+    let img=new Image();
+    img.onload=function(){
+      let canvas=document.createElement("canvas");
+      canvas.width=img.width; canvas.height=img.height;
+      let ctx=canvas.getContext("2d"); ctx.drawImage(img,0,0);
+      let enc=steganography.decode(canvas);
+      let dec=CryptoJS.AES.decrypt(enc,pw).toString(CryptoJS.enc.Utf8);
+      document.getElementById("stegResult").value=dec;
+    };
+    img.src=r.result;
+  };
+  r.readAsDataURL(file);
+}
+
+// Leak check
+const fakeDB=["test@example.com","admin@mail.com","user@demo.com"];
+function checkLeak(){
+  let email=document.getElementById("leakEmail").value;
+  if(fakeDB.includes(email.toLowerCase())) document.getElementById("leakResult").innerHTML="<span class='text-danger'>⚠ Leaked!</span>";
+  else document.getElementById("leakResult").innerHTML="<span class='text-success'>✅ Safe</span>";
+}
+</script>
+</body>
+</html>
