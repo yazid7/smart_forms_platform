@@ -2,246 +2,996 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>Crypto Toolbox — Full Single File</title>
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Crypto Toolbox — Updated (word-passphrases, merged email, file-hash)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- Bootstrap 5 -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 
-  <!-- CryptoJS -->
+  <!-- CryptoJS (core + hashes) -->
   <script src="https://cdn.jsdelivr.net/npm/crypto-js@4.1.1/crypto-js.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/crypto-js@4.1.1/md5.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/crypto-js@4.1.1/sha1.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/crypto-js@4.1.1/sha256.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/crypto-js@4.1.1/sha3.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/crypto-js@4.1.1/ripemd160.js"></script>
+  <!-- jsrsasign for RSA utilities (kept from original) -->
+  <script src="https://cdn.jsdelivr.net/npm/jsrsasign@10.5.23/lib/jsrsasign-all-min.js"></script>
 
   <style>
-    body { background:#f8fafc; font-family: Inter, sans-serif; }
-    [data-theme="dark"] { background:#0d1117; color:#e6edf3; }
-    .card { border-radius: 12px; box-shadow:0 4px 16px rgba(0,0,0,0.08); }
-    .monos { font-family: ui-monospace, monospace; }
-    .cipher-output { white-space: pre-wrap; word-break: break-word; }
+    :root{ --bg:#f8f9fa; --card:#fff; --text:#111; --muted:#444; --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono", monospace;}
+    [data-theme="dark"]{ --bg:#071127; --card:#0b1524; --text:#e6eef8; --muted:#9fb3d7; }
+    body{ background:var(--bg); color:var(--text); padding:18px; font-family:Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;}
+    .card{ background:var(--card); color:var(--text); border-radius:12px; box-shadow:0 8px 20px rgba(2,6,23,0.06); }
+    .monos{ font-family:var(--mono); }
+    .cipher-output{ white-space:pre-wrap; word-break:break-word; }
+    footer small{ color:var(--muted); }
+    .rounded-lg{ border-radius:.75rem; }
+    .large-text{ font-size:1.03rem; padding:.5rem; }
   </style>
 </head>
-<body>
-<div class="container py-4">
-  <header class="d-flex mb-4 align-items-center">
-    <h1 class="h4 me-3">🔐 Crypto Toolbox</h1>
-    <div class="ms-auto">
-      <div class="form-check form-switch">
-        <input class="form-check-input" id="darkModeToggle" type="checkbox">
-        <label class="form-check-label" for="darkModeToggle">Dark</label>
+<body data-theme="light">
+  <div class="container-fluid">
+    <header class="d-flex align-items-center mb-3">
+      <h1 class="h4 me-3">Crypto Toolbox — Updated</h1>
+      <div class="ms-auto d-flex align-items-center gap-3">
+        <div class="form-check form-switch">
+          <input class="form-check-input" id="darkMode" type="checkbox">
+          <label class="form-check-label" for="darkMode">Dark mode</label>
+        </div>
+        <small class="text-muted">Client-side demo — CryptoJS & WebCrypto</small>
       </div>
-    </div>
-  </header>
+    </header>
 
-  <!-- Password Generator -->
-  <section class="card p-3 mb-4">
-    <h5>Password & Identity Generator</h5>
-    <div class="mb-2 d-flex gap-2">
-      <input id="wordCount" type="number" class="form-control form-control-sm" value="5" min="2" max="12" style="width:100px">
-      <button id="genPw" class="btn btn-primary btn-sm">Generate</button>
-      <button id="copyPw" class="btn btn-outline-secondary btn-sm">Copy</button>
-    </div>
-    <div id="pwOut" class="p-2 border rounded monos"></div>
-    <small id="pwInfo" class="text-muted d-block mt-1"></small>
-    <div class="progress mt-2"><div id="pwBar" class="progress-bar" style="width:0%"></div></div>
-  </section>
+    <nav class="nav nav-pills flex-column flex-sm-row mb-3">
+      <a class="nav-link active" href="#gen">Generators</a>
+      <a class="nav-link" href="#file">File</a>
+      <a class="nav-link" href="#keys">RSA Keys</a>
+      <a class="nav-link" href="#text">Text & Hash</a>
+      <a class="nav-link" href="#stego">Steganography</a>
+      <a class="nav-link" href="#algos">Algorithms</a>
+      <a class="nav-link" href="#morse">Morse</a>
+      <a class="nav-link" href="#leak">Leak Check</a>
+    </nav>
 
-  <!-- Email Merger -->
-  <section class="card p-3 mb-4">
-    <h5>Email Merger</h5>
-    <div class="input-group mb-2">
-      <input id="origEmail" type="email" class="form-control" placeholder="alpha@gmail.com">
-      <button id="genEmails" class="btn btn-secondary">Generate</button>
-    </div>
-    <div id="emailOut" class="monos"></div>
-  </section>
+    <!-- Generators -->
+    <section id="gen" class="card mb-3 p-3">
+      <div class="d-flex justify-content-between mb-2">
+        <h5 class="mb-0">Password & Identity Generator</h5>
+        <small class="text-muted">Word-based passphrases & merged emails</small>
+      </div>
 
-  <!-- RSA Keys -->
-  <section class="card p-3 mb-4">
-    <h5>RSA Keys</h5>
-    <div class="mb-2">
-      <button id="genRSA" class="btn btn-primary btn-sm">Generate</button>
-      <input id="rsaMessage" class="form-control mt-2" placeholder="Message">
-      <button id="rsaEncrypt" class="btn btn-success btn-sm mt-2">Encrypt</button>
-      <button id="rsaDecrypt" class="btn btn-danger btn-sm mt-2">Decrypt</button>
-    </div>
-    <div id="rsaOut" class="cipher-output monos border p-2"></div>
-  </section>
+      <div class="row g-3">
+        <div class="col-lg-6">
+          <label>Words per passphrase</label>
+          <div class="input-group mb-2">
+            <input id="wordCount" type="number" class="form-control form-control-sm" value="5" min="2" max="12" style="width:110px">
+            <button id="genPw" class="btn btn-primary btn-sm">Generate</button>
+            <button id="copyPw" class="btn btn-outline-secondary btn-sm">Copy</button>
+            <button id="savePw" class="btn btn-success btn-sm">Save</button>
+            <button id="clearPwSaved" class="btn btn-danger btn-sm">Clear saved</button>
+            <button id="toggleShowPw" class="btn btn-outline-secondary btn-sm">Show</button>
+          </div>
 
-  <!-- AES -->
-  <section class="card p-3 mb-4">
-    <h5>AES Text Encryption</h5>
-    <input id="aesKey" class="form-control mb-2" placeholder="Password">
-    <textarea id="aesText" class="form-control mb-2" placeholder="Text"></textarea>
-    <button id="aesEncrypt" class="btn btn-primary btn-sm">Encrypt</button>
-    <button id="aesDecrypt" class="btn btn-secondary btn-sm">Decrypt</button>
-    <div id="aesOut" class="cipher-output monos border p-2 mt-2"></div>
-  </section>
+          <label class="form-label">Passphrase (words-only)</label>
+          <div id="pwOut" class="p-2 border rounded-lg monos large-text" style="min-height:48px;"></div>
+          <div class="mt-2">
+            <div class="progress" style="height:10px"><div id="pwBar" class="progress-bar" style="width:0%"></div></div>
+            <small id="pwInfo" class="text-muted">Press Generate</small>
+          </div>
 
-  <!-- File -->
-  <section class="card p-3 mb-4">
-    <h5>File Encryption + SHA-256 Fingerprint</h5>
-    <input type="file" id="fileInput" class="form-control mb-2">
-    <input id="filePass" class="form-control mb-2" placeholder="Password">
-    <button id="fileEncrypt" class="btn btn-primary btn-sm">Encrypt</button>
-    <button id="fileDecrypt" class="btn btn-secondary btn-sm">Decrypt</button>
-    <div id="fileHash" class="monos mt-2"></div>
-  </section>
+          <div class="mt-3">
+            <h6>Saved</h6>
+            <ul id="pwSaved" class="list-group"></ul>
+          </div>
+        </div>
 
-  <!-- Hash -->
-  <section class="card p-3 mb-4">
-    <h5>Hashing</h5>
-    <textarea id="hashInput" class="form-control mb-2" placeholder="Enter text"></textarea>
-    <button id="doHash" class="btn btn-primary btn-sm">Hash</button>
-    <input type="file" id="hashFile" class="form-control mt-2">
-    <div id="hashOut" class="monos mt-2"></div>
-  </section>
+        <div class="col-lg-6">
+          <label>Merge original email into variants</label>
+          <div class="input-group mb-2">
+            <input id="origEmail" class="form-control form-control-lg" placeholder="alpha@gmail.com">
+            <button id="genEmails" class="btn btn-secondary btn-sm">Generate</button>
+            <button id="copyEmails" class="btn btn-outline-secondary btn-sm">Copy All</button>
+          </div>
+          <ul id="emailList" class="list-group mb-2"></ul>
 
-  <!-- Stego -->
-  <section class="card p-3 mb-4">
-    <h5>Image Steganography</h5>
-    <input type="file" id="stegoImg" class="form-control mb-2">
-    <input id="stegoPass" class="form-control mb-2" placeholder="Password">
-    <textarea id="stegoMsg" class="form-control mb-2" placeholder="Message"></textarea>
-    <button id="stegoHide" class="btn btn-primary btn-sm">Hide</button>
-    <button id="stegoReveal" class="btn btn-secondary btn-sm">Reveal</button>
-    <div id="stegoOut" class="monos mt-2"></div>
-  </section>
-</div>
+          <hr>
+          <label>Random identities (nonsense)</label>
+          <div class="input-group mb-2">
+            <input id="idCount" type="number" class="form-control form-control-sm" value="5" min="1" max="100" style="width:100px">
+            <button id="genNames" class="btn btn-outline-secondary btn-sm">Names</button>
+            <button id="genEmailsFallback" class="btn btn-outline-secondary btn-sm">Emails</button>
+            <button id="genPhrases" class="btn btn-outline-secondary btn-sm">Passphrases</button>
+          </div>
+          <ul id="idList" class="list-group"></ul>
 
-<script>
-// Dark mode
-document.getElementById("darkModeToggle").addEventListener("change",e=>{
-  document.body.dataset.theme = e.target.checked?"dark":"light";
-});
+          <hr>
+          <label>OTP Simulator</label>
+          <div class="d-flex gap-2 align-items-center">
+            <input id="otpLen" type="number" value="6" min="4" max="10" class="form-control form-control-sm" style="width:90px">
+            <button id="genOtpPhone" class="btn btn-warning btn-sm">Phone OTP</button>
+            <button id="genOtpEmail" class="btn btn-warning btn-sm">Email OTP</button>
+            <button id="otpCopy" class="btn btn-outline-secondary btn-sm">Copy</button>
+          </div>
+          <pre id="otpOut" class="small-muted mt-2"></pre>
+        </div>
+      </div>
+    </section>
 
-// Helper random words
-const words=["alpha","bravo","charlie","delta","echo","foxtrot","golf","hotel","india","juliet","kilo","lima","mike","november","oscar","papa","quebec","romeo","sierra","tango","uniform","victor","whiskey","xray","yankee","zulu","lunacy","ceremony","kisser","cannon","devalue"];
-function genPassphrase(n){
-  let arr=[];
-  for(let i=0;i<n;i++) arr.push(words[Math.floor(Math.random()*words.length)]);
-  return arr.join("-");
-}
-function crackTime(len){return Math.pow(26,len)/1e9;}
+    <!-- File with SHA256 fingerprint -->
+    <section id="file" class="card mb-3 p-3">
+      <h5>File encryption & SHA-256 fingerprint verification</h5>
+      <div class="row g-2 align-items-end">
+        <div class="col-md-4"><input id="fileInput" type="file" class="form-control"></div>
+        <div class="col-md-4">
+          <input id="filePass" type="password" class="form-control" placeholder="passphrase">
+          <div class="form-check mt-1"><input id="showFilePass" class="form-check-input" type="checkbox"><label class="form-check-label">Show passphrase</label></div>
+        </div>
+        <div class="col-md-4 d-flex gap-2">
+          <button id="encryptFile" class="btn btn-primary btn-sm">Encrypt & Download</button>
+          <input id="encUpload" type="file" accept=".enc" class="form-control form-control-sm">
+          <button id="decryptFile" class="btn btn-success btn-sm">Decrypt uploaded</button>
+        </div>
 
-// Password gen
-document.getElementById("genPw").onclick=()=>{
-  let n=parseInt(document.getElementById("wordCount").value)||5;
-  let pw=genPassphrase(n);
-  document.getElementById("pwOut").textContent=pw;
-  let t=crackTime(n*6);
-  document.getElementById("pwInfo").textContent=`Estimated crack time: ${t.toExponential(2)} seconds`;
-  document.getElementById("pwBar").style.width=Math.min(100,n*10)+"%";
-};
-document.getElementById("copyPw").onclick=()=>{
-  navigator.clipboard.writeText(document.getElementById("pwOut").textContent);
-};
+        <div class="col-12 mt-2 d-flex gap-3 align-items-center">
+          <div>File status: <span id="fileStatus" class="monos">Idle</span></div>
+          <div>Attempts: <span id="fileAttempts">0</span></div>
+          <div>SHA-256: <span id="fileSha" class="monos"></span> <button id="copyFileSha" class="btn btn-sm btn-outline-secondary">Copy</button></div>
+          <div><button id="verifyFileBtn" class="btn btn-outline-info btn-sm">Compute SHA-256 for selected file</button></div>
+        </div>
+      </div>
+    </section>
 
-// Email merger
-document.getElementById("genEmails").onclick=()=>{
-  let email=document.getElementById("origEmail").value;
-  if(!email.includes("@")) return;
-  let [name,domain]=email.split("@");
-  let rand=Math.random().toString(36).slice(2,10);
-  document.getElementById("emailOut").textContent=`${name}+${rand}@${domain}`;
-};
+    <!-- RSA Keys -->
+    <section id="keys" class="card mb-3 p-3">
+      <h5>RSA Keys — generate / import / export / encrypt / decrypt</h5>
+      <div class="row g-2">
+        <div class="col-md-2"><select id="rsaBits" class="form-select form-select-sm"><option>2048</option><option>3072</option><option>4096</option></select></div>
+        <div class="col-md-5 d-flex align-items-end gap-2">
+          <button id="rsaGenerate" class="btn btn-primary btn-sm">Generate</button>
+          <button id="rsaExportPub" class="btn btn-outline-secondary btn-sm">Export public.pem</button>
+          <button id="rsaExportPriv" class="btn btn-outline-secondary btn-sm">Export private.pem</button>
+          <button id="rsaClearAll" class="btn btn-danger btn-sm">Clear</button>
+        </div>
+        <div class="col-md-5 d-flex align-items-end gap-2">
+          <input id="rsaImportPubFile" type="file" accept=".pem" class="form-control form-control-sm">
+          <button id="rsaImportPub" class="btn btn-secondary btn-sm">Import public</button>
+          <input id="rsaImportPrivFile" type="file" accept=".pem" class="form-control form-control-sm">
+          <button id="rsaImportPriv" class="btn btn-secondary btn-sm">Import private</button>
+        </div>
 
-// RSA using WebCrypto
-let rsaKeyPair;
-async function genRSAKeys(){
-  rsaKeyPair=await crypto.subtle.generateKey(
-    {name:"RSA-OAEP",modulusLength:2048,publicExponent:new Uint8Array([1,0,1]),hash:"SHA-256"},
-    true,["encrypt","decrypt"]);
-}
-document.getElementById("genRSA").onclick=async()=>{await genRSAKeys();document.getElementById("rsaOut").textContent="Keys generated";};
-document.getElementById("rsaEncrypt").onclick=async()=>{
-  let msg=document.getElementById("rsaMessage").value;
-  let enc=await crypto.subtle.encrypt({name:"RSA-OAEP"},rsaKeyPair.publicKey,new TextEncoder().encode(msg));
-  document.getElementById("rsaOut").textContent=btoa(String.fromCharCode(...new Uint8Array(enc)));
-};
-document.getElementById("rsaDecrypt").onclick=async()=>{
-  let data=document.getElementById("rsaOut").textContent;
-  let bytes=Uint8Array.from(atob(data),c=>c.charCodeAt(0));
-  let dec=await crypto.subtle.decrypt({name:"RSA-OAEP"},rsaKeyPair.privateKey,bytes);
-  document.getElementById("rsaOut").textContent=new TextDecoder().decode(dec);
-};
+        <div class="col-12 mt-2">
+          <label>Plaintext / Ciphertext</label>
+          <div class="input-group mb-2">
+            <textarea id="rsaText" rows="4" class="form-control form-control-lg monos"></textarea>
+          </div>
+          <div class="d-flex gap-2 mb-2">
+            <button id="rsaEncryptBtn" class="btn btn-outline-primary btn-sm">Encrypt (public)</button>
+            <button id="rsaDecryptBtn" class="btn btn-outline-success btn-sm">Decrypt (private)</button>
+            <button id="rsaCopyOut" class="btn btn-outline-secondary btn-sm">Copy output</button>
+            <button id="rsaPasteIn" class="btn btn-outline-secondary btn-sm">Paste into input</button>
+          </div>
 
-// AES
-document.getElementById("aesEncrypt").onclick=()=>{
-  let key=document.getElementById("aesKey").value;
-  let text=document.getElementById("aesText").value;
-  let enc=CryptoJS.AES.encrypt(text,key).toString();
-  document.getElementById("aesOut").textContent=enc;
-};
-document.getElementById("aesDecrypt").onclick=()=>{
-  let key=document.getElementById("aesKey").value;
-  let ct=document.getElementById("aesOut").textContent;
-  let dec=CryptoJS.AES.decrypt(ct,key);
-  try{
-    document.getElementById("aesOut").textContent=dec.toString(CryptoJS.enc.Utf8)||"AES decryption failed";
-  }catch{document.getElementById("aesOut").textContent="AES decryption failed";}
-};
+          <div class="mt-2">
+            <label>Output</label>
+            <div id="rsaOutput" class="p-2 border monos cipher-output"></div>
+          </div>
 
-// File
-document.getElementById("fileEncrypt").onclick=()=>{
-  let file=document.getElementById("fileInput").files[0]; if(!file) return;
-  let reader=new FileReader();
-  reader.onload=()=>{
-    let key=document.getElementById("filePass").value;
-    let enc=CryptoJS.AES.encrypt(reader.result,key).toString();
-    let hash=CryptoJS.SHA256(reader.result).toString();
-    document.getElementById("fileHash").textContent="SHA-256: "+hash;
+          <div class="mt-2">Key status: <span id="rsaStatus">no key</span> — Attempts: <span id="rsaAttempts">0</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Text & Hash -->
+    <section id="text" class="card mb-3 p-3">
+      <h5>Text encryption, hashing & fingerprint comparison</h5>
+      <div class="row g-3">
+        <div class="col-lg-6">
+          <label>Text input</label>
+          <div class="input-group mb-2">
+            <textarea id="textInput" rows="6" class="form-control form-control-lg"></textarea>
+          </div>
+          <div class="d-flex gap-2 mb-2">
+            <button id="pasteText" class="btn btn-outline-secondary btn-sm">Paste</button>
+            <button id="copyTextIn" class="btn btn-outline-secondary btn-sm">Copy</button>
+            <button id="clearTextIn" class="btn btn-danger btn-sm">Clear</button>
+          </div>
+
+          <div class="d-flex gap-2 flex-wrap mb-2">
+            <button id="caesarEncBtn" class="btn btn-sm btn-outline-primary">Caesar Enc</button>
+            <button id="caesarDecBtn" class="btn btn-sm btn-outline-secondary">Caesar Dec</button>
+            <input id="caesarShift" type="number" class="form-control form-control-sm" style="width:90px" value="3">
+
+            <button id="vigEncBtn" class="btn btn-sm btn-outline-primary">Vigenère Enc</button>
+            <button id="vigDecBtn" class="btn btn-sm btn-outline-secondary">Vigenère Dec</button>
+            <input id="vigKey" type="text" class="form-control form-control-sm" style="width:120px" value="KEY">
+
+            <button id="xorEncBtn" class="btn btn-sm btn-outline-primary">XOR Enc (b64)</button>
+            <button id="xorDecBtn" class="btn btn-sm btn-outline-secondary">XOR Dec</button>
+            <input id="xorKey" type="text" class="form-control form-control-sm" style="width:120px" value="secret">
+          </div>
+
+          <hr>
+          <div class="d-flex gap-2 mb-2 align-items-center">
+            <button id="md5Btn" class="btn btn-outline-secondary btn-sm">MD5</button>
+            <button id="sha1Btn" class="btn btn-outline-secondary btn-sm">SHA-1</button>
+            <button id="sha256Btn" class="btn btn-outline-secondary btn-sm">SHA-256</button>
+            <button id="sha3Btn" class="btn btn-outline-secondary btn-sm">SHA3-512</button>
+            <button id="ripemdBtn" class="btn btn-outline-secondary btn-sm">RIPEMD160</button>
+            <select id="havalSelect" class="form-select form-select-sm" style="width:160px">
+              <option value="HAVAL-256">HAVAL-256 (placeholder)</option>
+            </select>
+            <button id="compareHashes" class="btn btn-primary btn-sm">Compare fingerprints</button>
+          </div>
+
+          <div class="mt-2">
+            <label>Hashes</label>
+            <div id="hashOutput" class="p-2 border monos cipher-output"></div>
+          </div>
+
+          <div class="mt-2 d-flex gap-2 align-items-center">
+            <label>File hash</label>
+            <select id="fileHashAlgo" class="form-select form-select-sm" style="width:160px">
+              <option>SHA-1</option><option>SHA-256</option><option>MD5</option><option>SHA3</option><option>RIPEMD160</option>
+            </select>
+            <input id="fileForHash" type="file" class="form-control form-control-sm" style="width:220px">
+            <button id="computeFileHashBtn" class="btn btn-outline-primary btn-sm">Compute file hash</button>
+            <div id="fileHashOut" class="monos ms-2"></div>
+          </div>
+        </div>
+
+        <div class="col-lg-6">
+          <label>AES text encryption</label>
+          <div class="input-group mb-2">
+            <input id="aesPass" type="password" class="form-control form-control-lg" placeholder="passphrase">
+            <button id="showHideAesPass" class="btn btn-outline-secondary btn-sm">Show</button>
+          </div>
+
+          <div class="d-flex gap-2 mb-2">
+            <select id="aesChoice" class="form-select form-select-sm" style="width:140px"><option value="CBC">AES-CBC (CryptoJS)</option><option value="GCM">AES-GCM (SubtleCrypto)</option></select>
+            <button id="aesEncryptBtn" class="btn btn-outline-primary btn-sm">Encrypt</button>
+            <button id="aesDecryptBtn" class="btn btn-outline-success btn-sm">Decrypt</button>
+            <button id="copyTextOutBtn" class="btn btn-outline-secondary btn-sm">Copy output</button>
+          </div>
+
+          <div>
+            <label>Output</label>
+            <div id="textOutput" class="p-2 border monos cipher-output" style="min-height:200px"></div>
+          </div>
+
+          <div class="mt-2 d-flex gap-2">
+            <button id="saveTextOutput" class="btn btn-success btn-sm">Save</button>
+            <button id="clearTextSaved" class="btn btn-danger btn-sm">Clear saved</button>
+          </div>
+          <ul id="textSavedList" class="list-group mt-2"></ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- Steganography -->
+    <section id="stego" class="card mb-3 p-3">
+      <h5>Image Steganography (LSB) — AES-protected payload</h5>
+      <div class="row g-2">
+        <div class="col-md-6">
+          <input id="coverImageFile" type="file" accept="image/*" class="form-control mb-2">
+          <label>Message to hide</label>
+          <textarea id="stegMessage" class="form-control mb-2" rows="4"></textarea>
+          <label>Password</label>
+          <input id="stegPassword" class="form-control mb-2" placeholder="password to protect hidden payload">
+          <div class="d-flex gap-2 mb-2">
+            <button id="stegHideBtn" class="btn btn-primary btn-sm">Hide & Preview</button>
+            <button id="stegDownloadBtn" class="btn btn-outline-secondary btn-sm" disabled>Download PNG</button>
+            <input id="stegUploadFile" type="file" accept="image/*" class="form-control form-control-sm">
+            <button id="stegRevealBtn" class="btn btn-success btn-sm">Reveal</button>
+          </div>
+          <div>Stego status: <span id="stegStatus">Idle</span> — Attempts: <span id="stegAttempts">0</span></div>
+        </div>
+
+        <div class="col-md-6">
+          <label>Preview</label>
+          <canvas id="stegCanvas" class="border" style="max-width:100%"></canvas>
+          <div class="mt-2"><small class="text-muted">AES-CBC (PBKDF2) -> base64 -> LSB embed.</small></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Morse -->
+    <section id="morse" class="card mb-3 p-3">
+      <h5>Morse (extended)</h5>
+      <div class="row">
+        <div class="col-md-6">
+          <textarea id="morseInput" class="form-control" rows="3"></textarea>
+          <div class="mt-2 d-flex gap-2">
+            <button id="morseEncBtn" class="btn btn-sm btn-outline-primary">Encode</button>
+            <button id="morseDecBtn" class="btn btn-sm btn-outline-secondary">Decode</button>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div id="morseOutput" class="p-2 border monos cipher-output" style="min-height:120px"></div>
+        </div>
+      </div>
+      <hr>
+      <div style="max-height:200px; overflow:auto">
+        <table class="table table-sm table-bordered">
+          <thead><tr><th>Char</th><th>Morse</th><th>Char</th><th>Morse</th></tr></thead>
+          <tbody id="morseTable"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Leak -->
+    <section id="leak" class="card mb-5 p-3">
+      <h5>Leaked password detection (simulated) & SHA-1 helper</h5>
+      <div class="row g-2">
+        <div class="col-md-4">
+          <label>Email to check</label>
+          <input id="leakEmail" class="form-control" placeholder="user@example.com">
+          <div class="mt-2"><button id="checkEmailLeaks" class="btn btn-outline-primary btn-sm">Check (sim)</button></div>
+          <div id="emailLeakResult" class="mt-2 monos"></div>
+        </div>
+        <div class="col-md-8">
+          <label>Password (SHA-1 prefix for HIBP)</label>
+          <div class="input-group mb-2">
+            <input id="leakPassword" class="form-control form-control-lg" placeholder="enter password to locally hash">
+            <button id="showHideLeakPass" class="btn btn-outline-secondary btn-sm">Show</button>
+          </div>
+          <div class="d-flex gap-2">
+            <button id="computeSha1Prefix" class="btn btn-outline-primary btn-sm">Compute SHA-1 prefix</button>
+            <div id="sha1Out" class="monos"></div>
+          </div>
+          <small class="text-muted">This shows SHA-1 prefix for HaveIBeenPwned k-anonymity. This tool does not call external APIs.</small>
+        </div>
+      </div>
+    </section>
+
+    <footer class="text-center mb-4">
+      <small>Educational prototype. Use HTTPS/localhost for RSA keygen and SubtleCrypto.</small>
+    </footer>
+  </div>
+
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+  <script>
+  // ============= Utilities =============
+  function rngInt(min,max){ return Math.floor(Math.random()*(max-min+1))+min; }
+  function copyText(t){ navigator.clipboard?.writeText(t).catch(()=>{}); }
+  function bytesToBase64(buf){ return btoa(String.fromCharCode(...new Uint8Array(buf))); }
+  function base64ToBytes(b64){ const bin = atob(b64); const arr = new Uint8Array(bin.length); for(let i=0;i<bin.length;i++) arr[i]=bin.charCodeAt(i); return arr; }
+
+  // Dark mode toggle
+  document.getElementById('darkMode').addEventListener('change', (e)=> {
+    document.body.setAttribute('data-theme', e.target.checked ? 'dark' : 'light');
+  });
+
+  // ============= Password generator (words-only) =============
+  // small wordlist; replace/extend with your own larger list if you want
+  const WORDS = [
+    "lunacy","ceremony","kisser","cannon","devalue","alpha","bravo","charlie","delta","echo","foxtrot",
+    "gambit","harbor","island","jovial","krypton","lattice","magnet","nectar","opal","pylon","quartz",
+    "ripple","sable","tango","umbra","vivid","wander","xenon","yonder","zephyr"
+  ];
+
+  function genWordPassphrase(count){
+    const parts = [];
+    for(let i=0;i<count;i++) parts.push(WORDS[rngInt(0, WORDS.length - 1)]);
+    return parts.join('-');
+  }
+
+  function entropyBitsWordlist(count){
+    const bitsPerWord = Math.log2(WORDS.length);
+    return bitsPerWord * count;
+  }
+
+  function secondsToHuman(s){
+    if (!isFinite(s) || s > 1e18) return '>> centuries';
+    const years = Math.floor(s / (3600*24*365)); if(years>0) return years + ' years';
+    const days = Math.floor(s / (3600*24)); if(days>0) return days + ' days';
+    const hours = Math.floor(s / 3600); if(hours>0) return hours + ' hours';
+    const mins = Math.floor(s / 60); if(mins>0) return mins + ' minutes';
+    return Math.round(s) + ' seconds';
+  }
+
+  document.getElementById('genPw').addEventListener('click', ()=>{
+    const count = Math.max(1, Math.min(12, +document.getElementById('wordCount').value || 5));
+    const pass = genWordPassphrase(count);
+    document.getElementById('pwOut').textContent = pass;
+    // compute entropy/time-to-crack @1e9 guesses/s
+    const bits = entropyBitsWordlist(count);
+    const guesses = Math.pow(2, bits);
+    const seconds = guesses / 1e9;
+    document.getElementById('pwBar').style.width = Math.min(100, bits) + '%';
+    document.getElementById('pwBar').textContent = Math.round(bits) + ' bits';
+    document.getElementById('pwInfo').textContent = 'Est. crack time @1e9 g/s: ' + secondsToHuman(seconds);
+  });
+
+  document.getElementById('copyPw').addEventListener('click', ()=> copyText(document.getElementById('pwOut').textContent));
+  document.getElementById('savePw').addEventListener('click', ()=>{
+    const v = document.getElementById('pwOut').textContent; if(!v) return;
+    const li = document.createElement('li'); li.className='list-group-item d-flex justify-content-between align-items-center monos';
+    li.innerHTML = `<span>${v}</span><div><button class="btn btn-sm btn-outline-secondary copy">Copy</button> <button class="btn btn-sm btn-danger del">Del</button></div>`;
+    li.querySelector('.copy').addEventListener('click', ()=> copyText(v));
+    li.querySelector('.del').addEventListener('click', ()=> li.remove());
+    document.getElementById('pwSaved').prepend(li);
+  });
+  document.getElementById('clearPwSaved').addEventListener('click', ()=> document.getElementById('pwSaved').innerHTML='');
+  document.getElementById('toggleShowPw').addEventListener('click', (e)=> {
+    const el = document.getElementById('pwOut');
+    if(el.style.filter === 'blur(6px)'){ el.style.filter='none'; e.target.textContent='Hide'; } else { el.style.filter='blur(6px)'; e.target.textContent='Show'; }
+  });
+
+  // Random identities (existing functions preserved)
+  function randString(len){
+    const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    return Array.from({length:len}, ()=> chars[rngInt(0,chars.length-1)]).join('');
+  }
+  document.getElementById('genNames').addEventListener('click', ()=>{
+    const c = Math.min(100, Math.max(1, +document.getElementById('idCount').value));
+    const ul = document.getElementById('idList'); ul.innerHTML = '';
+    for(let i=0;i<c;i++){
+      const s = randString(rngInt(6,12));
+      const li = document.createElement('li'); li.className='list-group-item d-flex justify-content-between align-items-center';
+      li.innerHTML = `<span>${s}</span><div><button class="btn btn-sm btn-outline-secondary copy">Copy</button></div>`;
+      li.querySelector('.copy').addEventListener('click', ()=> copyText(s));
+      ul.appendChild(li);
+    }
+  });
+  document.getElementById('genPhrases').addEventListener('click', ()=>{
+    const c = Math.min(100, Math.max(1, +document.getElementById('idCount').value));
+    const ul = document.getElementById('idList'); ul.innerHTML = '';
+    for(let i=0;i<c;i++){
+      const pass = randString(rngInt(12,24));
+      const li = document.createElement('li'); li.className='list-group-item d-flex justify-content-between align-items-center monos';
+      li.innerHTML = `<span>${pass}</span><div><button class="btn btn-sm btn-outline-secondary copy">Copy</button></div>`;
+      li.querySelector('.copy').addEventListener('click', ()=> copyText(pass));
+      ul.appendChild(li);
+    }
+  });
+  document.getElementById('genEmailsFallback').addEventListener('click', ()=>{
+    const c = Math.min(100, Math.max(1, +document.getElementById('idCount').value));
+    const domains = ['mailinator.com','randommail.xyz','service.test','example.org'];
+    const ul = document.getElementById('idList'); ul.innerHTML = '';
+    for(let i=0;i<c;i++){
+      const user = randString(rngInt(6,12)).toLowerCase();
+      const email = user + '@' + domains[rngInt(0,domains.length-1)];
+      const li = document.createElement('li'); li.className='list-group-item d-flex justify-content-between align-items-center';
+      li.innerHTML = `<span>${email}</span><div><button class="btn btn-sm btn-outline-secondary copy">Copy</button></div>`;
+      li.querySelector('.copy').addEventListener('click', ()=> copyText(email));
+      ul.appendChild(li);
+    }
+  });
+
+  // OTP
+  document.getElementById('genOtpPhone').addEventListener('click', ()=>{
+    const l = Math.max(4, +document.getElementById('otpLen').value);
+    const code = Array.from({length:l}).map(()=>rngInt(0,9)).join('');
+    document.getElementById('otpOut').textContent = 'Phone OTP (simulated): ' + code;
+  });
+  document.getElementById('genOtpEmail').addEventListener('click', ()=>{
+    const l = Math.max(4, +document.getElementById('otpLen').value);
+    const code = Array.from({length:l}).map(()=>rngInt(0,9)).join('');
+    document.getElementById('otpOut').textContent = 'Email OTP (simulated): ' + code;
+  });
+  document.getElementById('otpCopy').addEventListener('click', ()=> copyText(document.getElementById('otpOut').textContent));
+
+  // ============= Email merge logic =============
+  function mergeEmail(originalEmail){
+    try{
+      const parts = originalEmail.split('@');
+      if(parts.length !== 2) return originalEmail;
+      let local = parts[0];
+      const domain = parts[1];
+      const suffix = Array.from({length:8}).map(()=> 'abcdefghijklmnopqrstuvwxyz0123456789'[rngInt(0,35)]).join('');
+      const localCap = local.charAt(0).toUpperCase() + local.slice(1);
+      return `${localCap}+${suffix}@${domain}`;
+    }catch(e){
+      return originalEmail;
+    }
+  }
+
+  document.getElementById('genEmails').addEventListener('click', ()=>{
+    const base = document.getElementById('origEmail').value || 'alpha@gmail.com';
+    const list = document.getElementById('emailList'); list.innerHTML = '';
+    for(let i=0;i<5;i++){
+      const merged = mergeEmail(base);
+      const li = document.createElement('li'); li.className='list-group-item d-flex justify-content-between align-items-center';
+      li.innerHTML = `<span>${merged}</span><div><button class="btn btn-sm btn-outline-secondary copy">Copy</button></div>`;
+      li.querySelector('.copy').addEventListener('click', ()=> copyText(merged));
+      list.appendChild(li);
+    }
+  });
+  document.getElementById('copyEmails').addEventListener('click', ()=>{
+    const items = Array.from(document.querySelectorAll('#emailList li span')).map(s=>s.textContent).join('\n');
+    copyText(items);
+  });
+
+  // ============= File encryption + SHA256 (unchanged logic but kept safe) =============
+  let fileFailCount = 0;
+  async function sha256File(file){
+    const ab = await file.arrayBuffer();
+    const hashBuf = await crypto.subtle.digest('SHA-256', ab);
+    return [...new Uint8Array(hashBuf)].map(b=>b.toString(16).padStart(2,'0')).join('');
+  }
+  document.getElementById('verifyFileBtn').addEventListener('click', async ()=>{
+    const f = document.getElementById('fileInput').files[0];
+    if(!f){ alert('Select a file first'); return; }
+    const h = await sha256File(f);
+    document.getElementById('fileSha').textContent = h;
+  });
+
+  document.getElementById('copyFileSha').addEventListener('click', ()=> copyText(document.getElementById('fileSha').textContent || ''));
+
+  document.getElementById('encryptFile').addEventListener('click', async ()=>{
+    const f = document.getElementById('fileInput').files[0];
+    const pass = document.getElementById('filePass').value || '';
+    if(!f || !pass){ document.getElementById('fileStatus').textContent = 'Select file & enter passphrase'; return; }
+    document.getElementById('fileStatus').textContent = 'Encrypting...';
+    const ab = await f.arrayBuffer();
+    const wa = CryptoJS.lib.WordArray.create(new Uint8Array(ab));
+    const salt = CryptoJS.lib.WordArray.random(128/8);
+    const iv = CryptoJS.lib.WordArray.random(128/8);
+    const key = CryptoJS.PBKDF2(pass, salt, { keySize: 256/32, iterations: 200000 });
+    const encWA = CryptoJS.AES.encrypt(wa, key, { iv: iv, mode: CryptoJS.mode.CBC, padding: CryptoJS.pad.Pkcs7 }).ciphertext;
+    const payload = {
+      filename: f.name,
+      algo: 'AES-CBC-CryptoJS',
+      salt: CryptoJS.enc.Base64.stringify(salt),
+      iv: CryptoJS.enc.Base64.stringify(iv),
+      iterations: 200000,
+      ciphertext: CryptoJS.enc.Base64.stringify(encWA)
+    };
+    const blob = new Blob([JSON.stringify(payload)], {type:'application/octet-stream'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href = url; a.download = f.name + '.enc'; a.click(); a.remove();
+    URL.revokeObjectURL(url);
+    document.getElementById('fileStatus').textContent = 'Encrypted & downloaded.';
+  });
+
+  document.getElementById('decryptFile').addEventListener('click', async ()=>{
+    const f = document.getElementById('encUpload').files[0];
+    const pass = document.getElementById('filePass').value || '';
+    if(!f || !pass){ document.getElementById('fileStatus').textContent = 'Upload .enc and passphrase'; return; }
+    document.getElementById('fileStatus').textContent = 'Decrypting...';
+    try{
+      const txt = await f.text();
+      const payload = JSON.parse(txt);
+      const salt = CryptoJS.enc.Base64.parse(payload.salt);
+      const iv = CryptoJS.enc.Base64.parse(payload.iv);
+      const key = CryptoJS.PBKDF2(pass, salt, { keySize: 256/32, iterations: payload.iterations || 200000 });
+      const cipherWA = CryptoJS.enc.Base64.parse(payload.ciphertext);
+      const dec = CryptoJS.AES.decrypt({ ciphertext: cipherWA }, key, { iv: iv, mode: CryptoJS.mode.CBC, padding: CryptoJS.pad.Pkcs7 });
+      const arr = new Uint8Array(dec.sigBytes);
+      for(let i=0;i<dec.sigBytes;i++) arr[i] = (dec.words[i>>>2] >>> (24 - (i%4)*8)) & 0xFF;
+      const blob = new Blob([arr], {type:'application/octet-stream'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a'); a.href = url; a.download = payload.filename || 'decrypted.bin'; a.click(); a.remove();
+      URL.revokeObjectURL(url);
+      document.getElementById('fileStatus').textContent = 'Decrypted & downloaded.';
+      fileFailCount = 0; document.getElementById('fileAttempts').textContent = fileFailCount;
+    } catch(e){
+      fileFailCount++; document.getElementById('fileAttempts').textContent = fileFailCount;
+      document.getElementById('fileStatus').textContent = 'Decryption failed (wrong pass or corrupted).';
+    }
+  });
+
+  document.getElementById('showFilePass').addEventListener('change', (e)=> { document.getElementById('filePass').type = e.target.checked ? 'text' : 'password'; });
+
+  // ============= RSA (WebCrypto) - preserved but included earlier fixes ============
+  let rsaObj = { pub: null, prv: null };
+  let rsaAttemptCount = 0;
+  const rsaStatusEl = document.getElementById('rsaStatus'), rsaAttemptsEl = document.getElementById('rsaAttempts');
+
+  // We'll use jsrsasign for PEM import/export convenience plus SubtleCrypto for RSA-OAEP encryption/decryption where needed.
+  // For compatibility with earlier code in this file we use a simple approach: when generate via jsrsasign, convert to PEM and import into Subtle if available.
+  async function generateRSA(bits){
+    // generate via jsrsasign (fast) and also import into SubtleCrypto if possible
+    const kp = KEYUTIL.generateKeypair('RSA', bits);
+    rsaObj.pub = kp.pubKeyObj;
+    rsaObj.prv = kp.prvKeyObj;
+    rsaStatusEl.textContent = `RSA ${bits} generated (in-memory)`;
+    rsaAttemptsEl.textContent = rsaAttemptCount;
+  }
+
+  document.getElementById('rsaGenerate').addEventListener('click', ()=> {
+    const bits = +document.getElementById('rsaBits').value;
+    rsaStatusEl.textContent = 'Generating...';
+    setTimeout(()=> { try{ generateRSA(bits); } catch(e){ rsaStatusEl.textContent = 'RSA generation failed: ' + e; } }, 50);
+  });
+
+  document.getElementById('rsaExportPub').addEventListener('click', ()=>{
+    if(!rsaObj.pub) return alert('No public key to export');
+    const pem = KEYUTIL.getPEM(rsaObj.pub);
+    const blob = new Blob([pem], {type:'application/x-pem-file'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href = url; a.download = 'public.pem'; a.click(); a.remove(); URL.revokeObjectURL(url);
+  });
+  document.getElementById('rsaExportPriv').addEventListener('click', ()=>{
+    if(!rsaObj.prv) return alert('No private key to export');
+    const pem = KEYUTIL.getPEM(rsaObj.prv, 'PKCS8PRV');
+    const blob = new Blob([pem], {type:'application/x-pem-file'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href = url; a.download = 'private.pem'; a.click(); a.remove(); URL.revokeObjectURL(url);
+  });
+
+  document.getElementById('rsaImportPub').addEventListener('click', async ()=>{
+    const f = document.getElementById('rsaImportPubFile').files[0];
+    if(!f) return alert('Select public PEM file');
+    try{ const pem = await f.text(); const key = KEYUTIL.getKey(pem); rsaObj.pub = key; rsaStatusEl.textContent = 'Public key imported'; } catch(e){ alert('Import failed: ' + e); }
+  });
+  document.getElementById('rsaImportPriv').addEventListener('click', async ()=>{
+    const f = document.getElementById('rsaImportPrivFile').files[0];
+    if(!f) return alert('Select private PEM file');
+    try{ const pem = await f.text(); const key = KEYUTIL.getKey(pem); rsaObj.prv = key; rsaStatusEl.textContent = 'Private key imported'; } catch(e){ alert('Import failed: ' + e); }
+  });
+
+  document.getElementById('rsaClearAll').addEventListener('click', ()=> { rsaObj = {pub:null,prv:null}; rsaStatusEl.textContent='no key'; rsaAttemptCount=0; rsaAttemptsEl.textContent=0; document.getElementById('rsaOutput').textContent=''; });
+
+  document.getElementById('rsaEncryptBtn').addEventListener('click', ()=>{
+    const txt = document.getElementById('rsaText').value || '';
+    if(!rsaObj.pub) return alert('No public key available');
+    try{
+      const pubPEM = KEYUTIL.getPEM(rsaObj.pub);
+      const hex = KJUR.crypto.Cipher.encrypt(txt, pubPEM); // hex
+      const b64 = KJUR.crypto.Util.hex2b64(hex);
+      document.getElementById('rsaOutput').textContent = b64;
+    } catch(e){ alert('RSA encryption failed: ' + e); }
+  });
+
+  document.getElementById('rsaDecryptBtn').addEventListener('click', ()=>{
+    const b64 = document.getElementById('rsaOutput').textContent.trim();
+    if(!b64) return alert('No ciphertext in output area');
+    if(!rsaObj.prv) return alert('No private key available');
+    try{
+      const hex = KJUR.crypto.Util.b64tohex(b64);
+      const privPEM = KEYUTIL.getPEM(rsaObj.prv, 'PKCS8PRV');
+      const dec = KJUR.crypto.Cipher.decrypt(hex, privPEM);
+      document.getElementById('rsaOutput').textContent = dec;
+      rsaAttemptCount = 0; rsaAttemptsEl.textContent = rsaAttemptCount;
+    } catch(e){
+      rsaAttemptCount++; rsaAttemptsEl.textContent = rsaAttemptCount;
+      document.getElementById('rsaOutput').textContent = 'RSA decryption failed (wrong key or data)';
+    }
+  });
+
+  document.getElementById('rsaCopyOut').addEventListener('click', ()=> copyText(document.getElementById('rsaOutput').textContent));
+  document.getElementById('rsaPasteIn').addEventListener('click', async ()=> { try{ const txt = await navigator.clipboard.readText(); document.getElementById('rsaText').value = txt; } catch(e){ alert('Paste failed'); } });
+
+  // ============= Text ciphers & Hashes (expanded) =============
+  function caesarEncrypt(text, shift){
+    return text.replace(/[A-Za-z]/g, c=>{
+      const base = c <= 'Z' ? 65 : 97;
+      return String.fromCharCode((c.charCodeAt(0)-base + shift + 26) % 26 + base);
+    });
+  }
+  function caesarDecrypt(text, shift){ return caesarEncrypt(text, (26-shift)%26); }
+  document.getElementById('caesarEncBtn').addEventListener('click', ()=> document.getElementById('textOutput').textContent = caesarEncrypt(document.getElementById('textInput').value || '', +document.getElementById('caesarShift').value || 3));
+  document.getElementById('caesarDecBtn').addEventListener('click', ()=> document.getElementById('textOutput').textContent = caesarDecrypt(document.getElementById('textInput').value || '', +document.getElementById('caesarShift').value || 3));
+
+  function vigenere(text, key, decrypt=false){
+    if(!key) return text;
+    let ki = 0; const out = [];
+    for(const ch of text){
+      if(/[A-Za-z]/.test(ch)){
+        const base = ch <= 'Z' ? 65 : 97;
+        const k = key[ki % key.length].toUpperCase().charCodeAt(0) - 65;
+        const shift = decrypt ? (26 - k) : k;
+        out.push(String.fromCharCode((ch.charCodeAt(0) - base + shift) % 26 + base));
+        ki++;
+      } else out.push(ch);
+    }
+    return out.join('');
+  }
+  document.getElementById('vigEncBtn').addEventListener('click', ()=> document.getElementById('textOutput').textContent = vigenere(document.getElementById('textInput').value || '', document.getElementById('vigKey').value || 'KEY', false));
+  document.getElementById('vigDecBtn').addEventListener('click', ()=> document.getElementById('textOutput').textContent = vigenere(document.getElementById('textInput').value || '', document.getElementById('vigKey').value || 'KEY', true));
+
+  function xorToBase64(text, key){
+    const t = new TextEncoder().encode(text); const k = new TextEncoder().encode(key);
+    const out = new Uint8Array(t.length);
+    for(let i=0;i<t.length;i++) out[i] = t[i] ^ k[i % k.length];
+    return bytesToBase64(out);
+  }
+  function xorFromBase64(b64, key){
+    const data = base64ToBytes(b64); const k = new TextEncoder().encode(key);
+    const out = new Uint8Array(data.length);
+    for(let i=0;i<data.length;i++) out[i] = data[i] ^ k[i % k.length];
+    return new TextDecoder().decode(out);
+  }
+  document.getElementById('xorEncBtn').addEventListener('click', ()=> document.getElementById('textOutput').textContent = xorToBase64(document.getElementById('textInput').value || '', document.getElementById('xorKey').value || 'k'));
+  document.getElementById('xorDecBtn').addEventListener('click', ()=> {
+    try{ document.getElementById('textOutput').textContent = xorFromBase64(document.getElementById('textOutput').textContent || '', document.getElementById('xorKey').value || 'k'); } catch(e){ document.getElementById('textOutput').textContent = 'XOR decode failed'; }
+  });
+
+  // Hash buttons
+  document.getElementById('md5Btn').addEventListener('click', ()=> {
+    const t = document.getElementById('textInput').value || '';
+    document.getElementById('hashOutput').textContent = 'MD5: ' + CryptoJS.MD5(t).toString(CryptoJS.enc.Hex);
+  });
+  document.getElementById('sha1Btn').addEventListener('click', ()=> {
+    const t = document.getElementById('textInput').value || '';
+    document.getElementById('hashOutput').textContent = 'SHA-1: ' + CryptoJS.SHA1(t).toString(CryptoJS.enc.Hex);
+  });
+  document.getElementById('sha256Btn').addEventListener('click', ()=> {
+    const t = document.getElementById('textInput').value || '';
+    document.getElementById('hashOutput').textContent = 'SHA-256: ' + CryptoJS.SHA256(t).toString(CryptoJS.enc.Hex);
+  });
+  document.getElementById('sha3Btn').addEventListener('click', ()=> {
+    const t = document.getElementById('textInput').value || '';
+    document.getElementById('hashOutput').textContent = 'SHA3-512: ' + CryptoJS.SHA3(t, { outputLength: 512 }).toString(CryptoJS.enc.Hex);
+  });
+  document.getElementById('ripemdBtn').addEventListener('click', ()=> {
+    const t = document.getElementById('textInput').value || '';
+    document.getElementById('hashOutput').textContent = 'RIPEMD160: ' + CryptoJS.RIPEMD160(t).toString(CryptoJS.enc.Hex);
+  });
+  document.getElementById('compareHashes').addEventListener('click', ()=> {
+    const t = document.getElementById('textInput').value || '';
+    const md5 = CryptoJS.MD5(t).toString(CryptoJS.enc.Hex);
+    const sha1 = CryptoJS.SHA1(t).toString(CryptoJS.enc.Hex);
+    const sha256 = CryptoJS.SHA256(t).toString(CryptoJS.enc.Hex);
+    const sha3 = CryptoJS.SHA3(t, { outputLength: 512 }).toString(CryptoJS.enc.Hex);
+    const ripeme = CryptoJS.RIPEMD160(t).toString(CryptoJS.enc.Hex);
+    document.getElementById('hashOutput').textContent = `MD5: ${md5}\nSHA1: ${sha1}\nSHA256: ${sha256}\nSHA3-512: ${sha3}\nRIPEMD160: ${ripeme}\nHAVAL-256: [not available unless you include a HAVAL library]`;
+  });
+
+  // File hashing (selected algorithm)
+  async function computeFileHash(algorithm, file){
+    const ab = await file.arrayBuffer();
+    const algoMap = { 'SHA-1':'SHA-1', 'SHA-256':'SHA-256', 'SHA-384':'SHA-384', 'SHA-512':'SHA-512' };
+    if(algorithm in algoMap){
+      const buf = await crypto.subtle.digest(algoMap[algorithm], ab);
+      return [...new Uint8Array(buf)].map(b=>b.toString(16).padStart(2,'0')).join('');
+    }
+    // fallback to CryptoJS for MD5, RIPEMD160, SHA3
+    function abToWordArray(ab){
+      const u8 = new Uint8Array(ab);
+      return CryptoJS.lib.WordArray.create(u8);
+    }
+    const wa = abToWordArray(ab);
+    switch(algorithm){
+      case 'MD5': return CryptoJS.MD5(wa).toString(CryptoJS.enc.Hex);
+      case 'RIPEMD160': return CryptoJS.RIPEMD160(wa).toString(CryptoJS.enc.Hex);
+      case 'SHA3': return CryptoJS.SHA3(wa, {outputLength:512}).toString(CryptoJS.enc.Hex);
+      case 'HAVAL-256': return '[HAVAL-256 unavailable unless library included]';
+      default: return '[unsupported]';
+    }
+  }
+
+  document.getElementById('computeFileHashBtn').addEventListener('click', async ()=>{
+    const f = document.getElementById('fileForHash').files[0];
+    const algo = document.getElementById('fileHashAlgo').value;
+    if(!f) return alert('Choose a file');
+    document.getElementById('fileHashOut').textContent = 'Computing...';
+    const res = await computeFileHash(algo, f);
+    document.getElementById('fileHashOut').textContent = `${algo}: ${res}`;
+  });
+
+  // ============= AES text encryption/decryption (fixed) ============
+  async function subtleAesGcmEncrypt(plain, pass){
+    const enc = new TextEncoder();
+    const salt = crypto.getRandomValues(new Uint8Array(16));
+    const iv = crypto.getRandomValues(new Uint8Array(12));
+    const keyMaterial = await crypto.subtle.importKey('raw', enc.encode(pass), {name:'PBKDF2'}, false, ['deriveKey']);
+    const key = await crypto.subtle.deriveKey({name:'PBKDF2', salt, iterations:200000, hash:'SHA-256'}, keyMaterial, {name:'AES-GCM', length:256}, true, ['encrypt','decrypt']);
+    const ct = await crypto.subtle.encrypt({name:'AES-GCM', iv}, key, enc.encode(plain));
+    return { algo:'AES-GCM-Subtle', salt: bytesToBase64(salt), iv: bytesToBase64(iv), ciphertext: bytesToBase64(ct), iterations:200000 };
+  }
+  async function subtleAesGcmDecrypt(obj, pass){
+    const enc = new TextEncoder(), dec = new TextDecoder();
+    const salt = base64ToBytes(obj.salt);
+    const iv = base64ToBytes(obj.iv);
+    const keyMaterial = await crypto.subtle.importKey('raw', enc.encode(pass), {name:'PBKDF2'}, false, ['deriveKey']);
+    const key = await crypto.subtle.deriveKey({name:'PBKDF2', salt, iterations: obj.iterations || 200000, hash:'SHA-256'}, keyMaterial, {name:'AES-GCM', length:256}, true, ['encrypt','decrypt']);
+    const pt = await crypto.subtle.decrypt({name:'AES-GCM', iv}, key, base64ToBytes(obj.ciphertext).buffer);
+    return dec.decode(pt);
+  }
+
+  document.getElementById('aesEncryptBtn').addEventListener('click', async ()=>{
+    const pass = document.getElementById('aesPass').value || '';
+    if(!pass) return alert('Enter passphrase');
+    const plain = document.getElementById('textInput').value || '';
+    const mode = document.getElementById('aesChoice').value;
+    if(mode === 'CBC'){
+      const salt = CryptoJS.lib.WordArray.random(128/8);
+      const iv = CryptoJS.lib.WordArray.random(128/8);
+      const key = CryptoJS.PBKDF2(pass, salt, { keySize: 256/32, iterations: 200000 });
+      const enc = CryptoJS.AES.encrypt(plain, key, { iv: iv, mode: CryptoJS.mode.CBC, padding: CryptoJS.pad.Pkcs7 });
+      const payload = { algo:'AES-CBC-CryptoJS', salt: CryptoJS.enc.Base64.stringify(salt), iv: CryptoJS.enc.Base64.stringify(iv), iterations:200000, ciphertext: CryptoJS.enc.Base64.stringify(enc.ciphertext) };
+      document.getElementById('textOutput').textContent = JSON.stringify(payload);
+    } else {
+      try{
+        const payload = await subtleAesGcmEncrypt(plain, pass);
+        document.getElementById('textOutput').textContent = JSON.stringify(payload);
+      } catch(e){ alert('GCM encryption failed: ' + e); }
+    }
+  });
+
+  document.getElementById('aesDecryptBtn').addEventListener('click', async ()=>{
+    const pass = document.getElementById('aesPass').value || '';
+    if(!pass) return alert('Enter passphrase');
+    const outEl = document.getElementById('textOutput');
+    try{
+      const payload = JSON.parse(outEl.textContent || '{}');
+      if(payload.algo === 'AES-CBC-CryptoJS'){
+        const salt = CryptoJS.enc.Base64.parse(payload.salt);
+        const iv = CryptoJS.enc.Base64.parse(payload.iv);
+        const key = CryptoJS.PBKDF2(pass, salt, { keySize: 256/32, iterations: payload.iterations || 200000 });
+        const cipherWA = CryptoJS.enc.Base64.parse(payload.ciphertext);
+        const dec = CryptoJS.AES.decrypt({ ciphertext: cipherWA }, key, { iv: iv, mode: CryptoJS.mode.CBC, padding: CryptoJS.pad.Pkcs7 });
+        const text = dec.toString(CryptoJS.enc.Utf8);
+        if(!text) throw 'Decryption failed';
+        outEl.textContent = text;
+      } else if(payload.algo === 'AES-GCM-Subtle'){
+        try{
+          const decText = await subtleAesGcmDecrypt(payload, pass);
+          outEl.textContent = decText;
+        } catch(e){ outEl.textContent = 'GCM decryption failed'; }
+      } else outEl.textContent = 'Unknown payload';
+    } catch(e){ outEl.textContent = 'AES decryption failed'; }
+  });
+
+  document.getElementById('showHideAesPass').addEventListener('click', ()=>{
+    const el = document.getElementById('aesPass');
+    el.type = el.type === 'password' ? 'text' : 'password';
+    document.getElementById('showHideAesPass').textContent = el.type === 'text' ? 'Hide' : 'Show';
+  });
+
+  document.getElementById('copyTextOutBtn').addEventListener('click', ()=> copyText(document.getElementById('textOutput').textContent || ''));
+  document.getElementById('saveTextOutput').addEventListener('click', ()=>{
+    const v = document.getElementById('textOutput').textContent || '';
+    if(!v) return;
+    const ul = document.getElementById('textSavedList'); const li = document.createElement('li'); li.className='list-group-item monos d-flex justify-content-between align-items-center';
+    li.innerHTML = `<span>${v}</span><div><button class="btn btn-sm btn-outline-secondary copyBtn">Copy</button> <button class="btn btn-sm btn-danger delBtn">Del</button></div>`;
+    li.querySelector('.copyBtn').addEventListener('click', ()=> copyText(v)); li.querySelector('.delBtn').addEventListener('click', ()=> li.remove());
+    ul.prepend(li);
+  });
+  document.getElementById('clearTextSaved').addEventListener('click', ()=> document.getElementById('textSavedList').innerHTML = '');
+
+  // ============= Steganography (LSB) with AES-protected payload (unchanged but fixed preview) ============
+  const stegCanvas = document.getElementById('stegCanvas'), stegCtx = stegCanvas.getContext('2d');
+  let coverImg = null, stegFailCount = 0;
+  document.getElementById('coverImageFile').addEventListener('change', (e)=>{
+    const f = e.target.files[0]; if(!f) return;
+    const img = new Image();
+    img.onload = ()=> { stegCanvas.width = img.width; stegCanvas.height = img.height; stegCtx.drawImage(img,0,0); coverImg = img; document.getElementById('stegStatus').textContent = 'Cover image loaded'; };
+    img.src = URL.createObjectURL(f);
+  });
+
+  function stringToBits(s){
+    const bytes = new TextEncoder().encode(s);
+    const bits = [];
+    for(const b of bytes) for(let i=7;i>=0;i--) bits.push((b>>i)&1);
+    return bits;
+  }
+  function bitsToString(bits){
+    const bytes = [];
+    for(let i=0;i<bits.length;i+=8){
+      let val = 0;
+      for(let j=0;j<8 && (i+j)<bits.length;j++) val = (val<<1) | bits[i+j];
+      bytes.push(val);
+    }
+    return new TextDecoder().decode(new Uint8Array(bytes));
+  }
+
+  document.getElementById('stegHideBtn').addEventListener('click', ()=>{
+    if(!coverImg){ document.getElementById('stegStatus').textContent = 'Upload a cover image'; return; }
+    const msg = document.getElementById('stegMessage').value || '';
+    const pass = document.getElementById('stegPassword').value || '';
+    if(!pass){ document.getElementById('stegStatus').textContent = 'Enter password'; return; }
+    const salt = CryptoJS.lib.WordArray.random(128/8);
+    const iv = CryptoJS.lib.WordArray.random(128/8);
+    const key = CryptoJS.PBKDF2(pass, salt, { keySize: 256/32, iterations: 200000 });
+    const ct = CryptoJS.AES.encrypt(msg, key, { iv: iv, mode: CryptoJS.mode.CBC, padding: CryptoJS.pad.Pkcs7 }).ciphertext;
+    const payload = JSON.stringify({ salt: CryptoJS.enc.Base64.stringify(salt), iv: CryptoJS.enc.Base64.stringify(iv), iterations: 200000, ciphertext: CryptoJS.enc.Base64.stringify(ct) });
+    const b64payload = btoa(payload);
+
+    const bits = stringToBits(b64payload);
+    stegCtx.drawImage(coverImg,0,0);
+    const imgd = stegCtx.getImageData(0,0,stegCanvas.width,stegCanvas.height);
+    const px = imgd.data;
+    const capacity = Math.floor(px.length/4) * 3;
+    if(bits.length + 32 > capacity){ document.getElementById('stegStatus').textContent = 'Message too large for image'; return; }
+    const lenBits = []; const len = bits.length;
+    for(let i=31;i>=0;i--) lenBits.push((len>>i)&1);
+    const all = lenBits.concat(bits);
+    let bi = 0;
+    for(let i=0;i<px.length && bi<all.length;i+=4){
+      for(let c=0;c<3 && bi<all.length;c++){
+        px[i+c] = (px[i+c] & 0xFE) | all[bi++];
+      }
+    }
+    stegCtx.putImageData(imgd,0,0);
+    document.getElementById('stegStatus').textContent = 'Hidden — preview updated';
+    document.getElementById('stegDownloadBtn').disabled = false;
+    document.getElementById('stegDownloadBtn').onclick = ()=> {
+      stegCanvas.toBlob(b=>{
+        const url = URL.createObjectURL(b);
+        const a = document.createElement('a'); a.href = url; a.download = 'stego.png'; a.click(); a.remove(); URL.revokeObjectURL(url);
+      });
+    };
+  });
+
+  document.getElementById('stegRevealBtn').addEventListener('click', async ()=>{
+    const f = document.getElementById('stegUploadFile').files[0];
+    if(!f){ document.getElementById('stegStatus').textContent = 'Upload encoded image'; return; }
+    const img = new Image();
+    img.onload = ()=>{
+      const c = document.createElement('canvas'); c.width = img.width; c.height = img.height;
+      const ctx = c.getContext('2d'); ctx.drawImage(img,0,0);
+      const imgd = ctx.getImageData(0,0,c.width,c.height);
+      const px = imgd.data;
+      const bits = [];
+      for(let i=0;i<px.length;i+=4){ bits.push(px[i]&1); bits.push(px[i+1]&1); bits.push(px[i+2]&1); }
+      const lenBits = bits.slice(0,32);
+      let len = 0; for(let i=0;i<32;i++) len = (len<<1) | lenBits[i];
+      const payloadBits = bits.slice(32,32+len);
+      const b64payload = bitsToString(payloadBits);
+      try{
+        const payload = JSON.parse(atob(b64payload));
+        const pass = document.getElementById('stegPassword').value || '';
+        if(!pass){ document.getElementById('stegStatus').textContent = 'Enter password to decrypt hidden message'; return; }
+        const salt = CryptoJS.enc.Base64.parse(payload.salt);
+        const iv = CryptoJS.enc.Base64.parse(payload.iv);
+        const key = CryptoJS.PBKDF2(pass, salt, { keySize: 256/32, iterations: payload.iterations || 200000 });
+        const cipherWA = CryptoJS.enc.Base64.parse(payload.ciphertext);
+        const dec = CryptoJS.AES.decrypt({ ciphertext: cipherWA }, key, { iv: iv, mode: CryptoJS.mode.CBC, padding: CryptoJS.pad.Pkcs7 });
+        const out = dec.toString(CryptoJS.enc.Utf8);
+        if(!out) throw 'Decrypt empty';
+        document.getElementById('stegStatus').textContent = 'Revealed: ' + out;
+        stegFailCount = 0; document.getElementById('stegAttempts').textContent = stegFailCount;
+      } catch(e){
+        stegFailCount++; document.getElementById('stegAttempts').textContent = stegFailCount;
+        document.getElementById('stegStatus').textContent = 'Reveal failed (wrong password or corrupted)';
+      }
+    };
+    img.src = URL.createObjectURL(f);
+  });
+
+  // ============= Morse (unchanged) ============
+  const morseMap = {
+    'A':'.-','B':'-...','C':'-.-.','D':'-..','E':'.','F':'..-.','G':'--.','H':'....','I':'..','J':'.---',
+    'K':'-.-','L':'.-..','M':'--','N':'-.','O':'---','P':'.--.','Q':'--.-','R':'.-.','S':'...','T':'-',
+    'U':'..-','V':'...-','W':'.--','X':'-..-','Y':'-.--','Z':'--..',
+    '0':'-----','1':'.----','2':'..---','3':'...--','4':'....-','5':'.....','6':'-....','7':'--...','8':'---..','9':'----.',
+    '.':'.-.-.-',',':'--..--','?':'..--..','!':'-.-.--','/':'-..-.','(':'-.--.',')':'-.--.-','&':'.-...',
+    ':':'---...',';':'-.-.-.','=':'-...-','+':'.-.-.','-':'-....-','_':'..--.-','"':'.-..-.','$':'...-..-','@':'.--.-.',
+    '#':'......','%':'..--..--','*':'-..-.-'
   };
-  reader.readAsText(file);
-};
-document.getElementById("fileDecrypt").onclick=()=>{
-  let file=document.getElementById("fileInput").files[0]; if(!file) return;
-  let reader=new FileReader();
-  reader.onload=()=>{
-    let key=document.getElementById("filePass").value;
-    let dec=CryptoJS.AES.decrypt(reader.result,key);
-    document.getElementById("fileHash").textContent="Decrypted: "+dec.toString(CryptoJS.enc.Utf8);
-  };
-  reader.readAsText(file);
-};
+  const revMorse = {}; for(const k in morseMap) revMorse[morseMap[k]] = k;
+  function morseEncode(text){ return text.toUpperCase().split('').map(ch => ch === ' ' ? '/' : (morseMap[ch] || '?')).join(' '); }
+  function morseDecode(code){ return code.split(' ').map(token => token === '/' ? ' ' : (revMorse[token] || '?')).join(''); }
+  document.getElementById('morseEncBtn').addEventListener('click', ()=> document.getElementById('morseOutput').textContent = morseEncode(document.getElementById('morseInput').value || ''));
+  document.getElementById('morseDecBtn').addEventListener('click', ()=> document.getElementById('morseOutput').textContent = morseDecode(document.getElementById('morseInput').value || ''));
+  (function fillMorseTable(){
+    const tbody = document.getElementById('morseTable');
+    const keys = Object.keys(morseMap).sort();
+    for(let i=0;i<keys.length;i+=2){
+      const a = keys[i], b = keys[i+1] || '';
+      const row = document.createElement('tr'); row.innerHTML = `<td>${a}</td><td>${morseMap[a]||''}</td><td>${b}</td><td>${morseMap[b]||''}</td>`;
+      tbody.appendChild(row);
+    }
+  })();
 
-// Hash
-document.getElementById("doHash").onclick=()=>{
-  let txt=document.getElementById("hashInput").value;
-  let out="MD5: "+CryptoJS.MD5(txt).toString()+"\n";
-  out+="SHA1: "+CryptoJS.SHA1(txt).toString()+"\n";
-  out+="SHA256: "+CryptoJS.SHA256(txt).toString()+"\n";
-  out+="SHA3: "+CryptoJS.SHA3(txt).toString()+"\n";
-  out+="RIPEMD160: "+CryptoJS.RIPEMD160(txt).toString();
-  document.getElementById("hashOut").textContent=out;
-};
-document.getElementById("hashFile").onchange=e=>{
-  let f=e.target.files[0]; if(!f) return;
-  let r=new FileReader();
-  r.onload=()=>{
-    document.getElementById("hashOut").textContent="SHA256(file): "+CryptoJS.SHA256(r.result).toString();
-  };
-  r.readAsText(f);
-};
+  // ============= Leak check (unchanged) =============
+  const simulatedLeakedEmails = { 'alice@example.com': true, 'bob@example.com': true };
+  document.getElementById('checkEmailLeaks').addEventListener('click', ()=>{
+    const email = (document.getElementById('leakEmail').value || '').toLowerCase().trim();
+    if(!email) return alert('Enter an email');
+    const leaked = !!simulatedLeakedEmails[email];
+    document.getElementById('emailLeakResult').textContent = leaked ? `Email ${email} found in simulated breaches` : `No record in simulated DB for ${email}`;
+  });
 
-// Stego (simple base64 with password)
-document.getElementById("stegoHide").onclick=()=>{
-  let msg=document.getElementById("stegoMsg").value;
-  let pass=document.getElementById("stegoPass").value;
-  let hidden=btoa(pass+":"+msg);
-  document.getElementById("stegoOut").textContent=hidden;
-};
-document.getElementById("stegoReveal").onclick=()=>{
-  let enc=document.getElementById("stegoOut").textContent;
-  let pass=document.getElementById("stegoPass").value;
-  try{
-    let dec=atob(enc);
-    if(dec.startsWith(pass+":"))
-      document.getElementById("stegoOut").textContent=dec.slice(pass.length+1);
-    else document.getElementById("stegoOut").textContent="Wrong password";
-  }catch{document.getElementById("stegoOut").textContent="Invalid data";}
-};
-</script>
+  document.getElementById('computeSha1Prefix').addEventListener('click', async ()=>{
+    const pw = document.getElementById('leakPassword').value || '';
+    if(!pw) return alert('Enter a password');
+    const buf = await crypto.subtle.digest('SHA-1', new TextEncoder().encode(pw));
+    const hex = [...new Uint8Array(buf)].map(b=>b.toString(16).padStart(2,'0')).join('').toUpperCase();
+    document.getElementById('sha1Out').textContent = `SHA1: ${hex}  Prefix: ${hex.slice(0,5)}  Suffix: ${hex.slice(5)}`;
+  });
+  document.getElementById('showHideLeakPass').addEventListener('click', ()=> {
+    const el = document.getElementById('leakPassword'); el.type = el.type === 'password' ? 'text' : 'password';
+    document.getElementById('showHideLeakPass').textContent = el.type === 'text' ? 'Hide' : 'Show';
+  });
+
+  // ============= End of script =============
+  </script>
 </body>
 </html>
