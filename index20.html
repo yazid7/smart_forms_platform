@@ -453,6 +453,26 @@
       font-family: monospace;
       overflow-x: auto;
     }
+    .file-encryption-section {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+    .file-encryption-controls {
+      display: flex;
+      gap: 0.5rem;
+    }
+    .file-encryption-controls .btn {
+      flex: 1;
+    }
+    .file-encryption-preview {
+      max-width: 100%;
+      max-height: 200px;
+      display: block;
+      margin: 0 auto;
+      border-radius: 0.25rem;
+      border: 1px solid #e5e7eb;
+    }
   </style>
 </head>
 <body>
@@ -467,41 +487,49 @@
         </svg>
         File Encryption (AES-CBC via CryptoJS) + SHA-256 fingerprint
       </h2>
-      <div class="file-upload">
-        <label for="encryptFile">
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-            <polyline points="17 8 12 3 7 8"></polyline>
-            <line x1="12" y1="3" x2="12" y2="15"></line>
-          </svg>
-          Upload File for Encryption
-        </label>
-        <input type="file" id="encryptFile" accept="*">
-        <div class="file-name" id="encryptFileName">No file selected</div>
-      </div>
-      <div class="form-group">
-        <label for="encryptKey">Encryption Key (16/24/32 characters)</label>
-        <input type="text" id="encryptKey" placeholder="Enter encryption key">
-      </div>
-      <div class="form-group">
-        <label for="encryptIV">Initialization Vector (IV) (16 characters)</label>
-        <input type="text" id="encryptIV" placeholder="Enter IV (16 characters)">
-      </div>
-      <button class="btn" id="encryptBtn">Encrypt File</button>
-      <button class="btn btn-secondary" id="decryptBtn">Decrypt File</button>
-      <div class="result-container">
-        <div class="result-value" id="encryptedData"></div>
-        <button class="copy-btn" onclick="copyToClipboard('encryptedData')">
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-          </svg>
-          Copy
-        </button>
-      </div>
-      <div class="form-group">
-        <label for="fileHash">SHA-256 Fingerprint</label>
-        <input type="text" id="fileHash" readonly>
+      <div class="file-encryption-section">
+        <div class="file-upload">
+          <label for="encryptFile">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="17 8 12 3 7 8"></polyline>
+              <line x1="12" y1="3" x2="12" y2="15"></line>
+            </svg>
+            Upload File for Encryption
+          </label>
+          <input type="file" id="encryptFile" accept="*">
+          <div class="file-name" id="encryptFileName">No file selected</div>
+        </div>
+        <div class="form-group">
+          <label for="encryptKey">Encryption Key (16/24/32 characters)</label>
+          <input type="text" id="encryptKey" placeholder="Enter encryption key">
+        </div>
+        <div class="form-group">
+          <label for="encryptIV">Initialization Vector (IV) (16 characters)</label>
+          <input type="text" id="encryptIV" placeholder="Enter IV (16 characters)">
+        </div>
+        <div class="file-encryption-controls">
+          <button class="btn" id="encryptBtn">Encrypt File</button>
+          <button class="btn btn-secondary" id="decryptBtn">Decrypt File</button>
+        </div>
+        <div class="result-container">
+          <div class="result-value" id="encryptedData"></div>
+          <button class="copy-btn" onclick="copyToClipboard('encryptedData')">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+            </svg>
+            Copy
+          </button>
+        </div>
+        <div class="form-group">
+          <label for="fileHash">SHA-256 Fingerprint</label>
+          <input type="text" id="fileHash" readonly>
+        </div>
+        <div class="form-group" id="decryptedFilePreviewContainer" style="display: none;">
+          <label>Decrypted File Preview</label>
+          <img id="decryptedFilePreview" class="file-encryption-preview" src="" alt="Decrypted file preview">
+        </div>
       </div>
     </section>
 
@@ -612,7 +640,7 @@
             <textarea id="encryptText" placeholder="Enter text to encrypt..."></textarea>
           </div>
           <div class="form-group">
-            <label for="encryptKey">Encryption Key</label>
+            <label for="encryptKeyText">Encryption Key</label>
             <input type="text" id="encryptKeyText" placeholder="Enter encryption key">
           </div>
           <button class="btn" id="encryptTextBtn">Encrypt Text</button>
@@ -710,16 +738,19 @@
           <p>Least Significant Bit steganography hides data in the least significant bits of image pixels. AES encryption is used to protect the payload before embedding.</p>
           <code>const stegoImage = embedMessageInImage(originalImage, encryptedMessage);</code>
         </div>
+        <div class="algorithm-card">
+          <h3>SHA-256/SHA-1/MD5</h3>
+          <p>Hashing algorithms used for data integrity verification. SHA-256 is currently considered secure for most applications.</p>
+          <code>const hash = CryptoJS.SHA256(data).toString();</code>
+        </div>
       </div>
     </section>
 
     <section>
       <h2>
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M12 2a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h6z"></path>
-          <path d="M8 12h8"></path>
-          <path d="M8 16h4"></path>
-          <path d="M8 8h4"></path>
+          <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
+          <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
         </svg>
         Morse code (extended)
       </h2>
@@ -918,8 +949,10 @@
     <section>
       <h2>
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
-          <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
+          <path d="M12 2a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h6z"></path>
+          <path d="M8 12h8"></path>
+          <path d="M8 16h4"></path>
+          <path d="M8 8h4"></path>
         </svg>
         Password leak helper & email check (simulated)
       </h2>
@@ -946,6 +979,8 @@
       const ivInput = document.getElementById('encryptIV');
       const encryptedDataElement = document.getElementById('encryptedData');
       const fileHashElement = document.getElementById('fileHash');
+      const decryptedFilePreviewContainer = document.getElementById('decryptedFilePreviewContainer');
+      const decryptedFilePreview = document.getElementById('decryptedFilePreview');
       
       if (!fileInput.files.length) {
         alert('Please select a file');
@@ -969,13 +1004,58 @@
         // Calculate SHA-256 fingerprint
         const hash = CryptoJS.SHA256(fileData).toString();
         fileHashElement.value = hash;
+        
+        // Clear decrypted preview
+        decryptedFilePreviewContainer.style.display = 'none';
+        decryptedFilePreview.src = '';
       };
       reader.readAsArrayBuffer(fileInput.files[0]);
     }
 
     function decryptFile() {
-      // Implementation for decryption would go here
-      alert('Decryption functionality is not fully implemented in this demo');
+      const fileInput = document.getElementById('encryptFile');
+      const keyInput = document.getElementById('encryptKey');
+      const ivInput = document.getElementById('encryptIV');
+      const encryptedDataElement = document.getElementById('encryptedData');
+      const decryptedFilePreviewContainer = document.getElementById('decryptedFilePreviewContainer');
+      const decryptedFilePreview = document.getElementById('decryptedFilePreview');
+      
+      if (!fileInput.files.length) {
+        alert('Please select a file');
+        return;
+      }
+      
+      if (!keyInput.value || keyInput.value.length < 16) {
+        alert('Encryption key must be at least 16 characters');
+        return;
+      }
+      
+      const key = CryptoJS.enc.Utf8.parse(keyInput.value);
+      const iv = ivInput.value ? CryptoJS.enc.Utf8.parse(ivInput.value) : CryptoJS.lib.WordArray.random(16);
+      
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const fileData = e.target.result;
+        
+        // Attempt to decrypt
+        try {
+          const decrypted = CryptoJS.AES.decrypt(fileData, key, { iv: iv, mode: CryptoJS.mode.CBC });
+          const decryptedText = decrypted.toString(CryptoJS.enc.Utf8);
+          
+          // Try to display as image if possible
+          if (fileInput.files[0].type.startsWith('image/')) {
+            const base64Data = btoa(decryptedText);
+            const imgSrc = `data:${fileInput.files[0].type};base64,${base64Data}`;
+            decryptedFilePreview.src = imgSrc;
+            decryptedFilePreviewContainer.style.display = 'block';
+          } else {
+            encryptedDataElement.textContent = decryptedText;
+          }
+        } catch (error) {
+          alert('Decryption failed. Please check your key and IV.');
+        }
+      };
+      reader.readAsText(fileInput.files[0]);
     }
 
     // RSA-OAEP functions
@@ -1154,16 +1234,22 @@
           const data = ctx.getImageData(0, 0, canvas.width, canvas.height);
           const messageBytes = new TextEncoder().encode(encryptedMessage);
           
+          // Add null terminator
+          const terminator = new Uint8Array([0]);
+          const fullMessage = new Uint8Array(messageBytes.length + terminator.length);
+          fullMessage.set(messageBytes);
+          fullMessage.set(terminator, messageBytes.length);
+          
           let index = 0;
-          for (let i = 0; i < data.data.length && index < messageBytes.length; i += 4) {
+          for (let i = 0; i < data.data.length && index < fullMessage.length; i += 4) {
             // Modify the red channel
-            data.data[i] = (data.data[i] & 0xFE) | ((messageBytes[index] >> 7) & 1);
+            data.data[i] = (data.data[i] & 0xFE) | ((fullMessage[index] >> 7) & 1);
             // Modify the green channel
-            data.data[i + 1] = (data.data[i + 1] & 0xFE) | ((messageBytes[index] >> 6) & 1);
+            data.data[i + 1] = (data.data[i + 1] & 0xFE) | ((fullMessage[index] >> 6) & 1);
             // Modify the blue channel
-            data.data[i + 2] = (data.data[i + 2] & 0xFE) | ((messageBytes[index] >> 5) & 1);
+            data.data[i + 2] = (data.data[i + 2] & 0xFE) | ((fullMessage[index] >> 5) & 1);
             // Modify the alpha channel
-            data.data[i + 3] = (data.data[i + 3] & 0xFE) | ((messageBytes[index] >> 4) & 1);
+            data.data[i + 3] = (data.data[i + 3] & 0xFE) | ((fullMessage[index] >> 4) & 1);
             
             index++;
           }
@@ -1205,8 +1291,9 @@
           
           const data = ctx.getImageData(0, 0, canvas.width, canvas.height);
           let extractedBytes = [];
+          let foundTerminator = false;
           
-          for (let i = 0; i < data.data.length; i += 4) {
+          for (let i = 0; i < data.data.length && !foundTerminator; i += 4) {
             // Extract bits from each channel
             const bit1 = data.data[i] & 1;
             const bit2 = (data.data[i + 1] & 1) << 1;
@@ -1216,8 +1303,11 @@
             const byte = bit1 | bit2 | bit3 | bit4;
             extractedBytes.push(byte);
             
-            // Stop if we hit null terminator
-            if (byte === 0) break;
+            // Check for null terminator
+            if (byte === 0) {
+              foundTerminator = true;
+              break;
+            }
           }
           
           // Convert to string
