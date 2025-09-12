@@ -1,1178 +1,1424 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SecurePass - Advanced Security Toolkit</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        :root {
-            --primary: #2c3e50;
-            --secondary: #3498db;
-            --accent: #e74c3c;
-            --light: #ecf0f1;
-            --dark: #2c3e50;
-        }
-        
-        body {
-            background-color: #f8f9fa;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-        
-        .navbar {
-            background: linear-gradient(135deg, var(--primary), var(--dark));
-        }
-        
-        .section-title {
-            border-left: 5px solid var(--secondary);
-            padding-left: 15px;
-            margin: 30px 0;
-            color: var(--primary);
-        }
-        
-        .card {
-            border-radius: 10px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-            margin-bottom: 20px;
-            border: none;
-        }
-        
-        .card-header {
-            background: linear-gradient(135deg, var(--primary), var(--dark));
-            color: white;
-            border-radius: 10px 10px 0 0 !important;
-        }
-        
-        .btn-primary {
-            background-color: var(--secondary);
-            border: none;
-        }
-        
-        .btn-primary:hover {
-            background-color: var(--primary);
-        }
-        
-        .feature-icon {
-            font-size: 1.2rem;
-            margin-right: 5px;
-        }
-        
-        .password-strength-meter {
-            height: 10px;
-            border-radius: 5px;
-            margin: 10px 0;
-            background-color: #eee;
-        }
-        
-        .strength-weak { background: linear-gradient(to right, #e74c3c, #e74c3c); width: 25%; }
-        .strength-fair { background: linear-gradient(to right, #f39c12, #f39c12); width: 50%; }
-        .strength-good { background: linear-gradient(to right, #3498db, #3498db); width: 75%; }
-        .strength-strong { background: linear-gradient(to right, #2ecc71, #2ecc71); width: 100%; }
-        
-        .nav-pills .nav-link.active {
-            background-color: var(--secondary);
-        }
-        
-        .algorithm-explanation {
-            background-color: #f8f9fa;
-            padding: 15px;
-            border-radius: 5px;
-            margin-top: 15px;
-        }
-        
-        footer {
-            background: linear-gradient(135deg, var(--primary), var(--dark));
-            color: white;
-            padding: 20px 0;
-            margin-top: 40px;
-        }
-        
-        .feature-box {
-            transition: transform 0.3s;
-        }
-        
-        .feature-box:hover {
-            transform: translateY(-5px);
-        }
-        
-        .cipher-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 15px 0;
-        }
-        
-        .cipher-table th, .cipher-table td {
-            border: 1px solid #ddd;
-            padding: 8px;
-            text-align: left;
-        }
-        
-        .cipher-table th {
-            background-color: var(--secondary);
-            color: white;
-        }
-        
-        .cipher-table tr:nth-child(even) {
-            background-color: #f2f2f2;
-        }
-        
-        .tab-content {
-            padding: 20px;
-            border: 1px solid #dee2e6;
-            border-top: none;
-            border-radius: 0 0 5px 5px;
-        }
-        
-        .hashed-password {
-            font-family: monospace;
-            word-break: break-all;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Crypto Toolbox</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    body {
+      background: #f9fafb;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 2rem;
+      color: #1f2937;
+    }
+    .container {
+      max-width: 1000px;
+      width: 100%;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06);
+      padding: 2rem;
+    }
+    h1 {
+      text-align: center;
+      font-size: 2rem;
+      font-weight: 700;
+      color: #1f2937;
+      margin-bottom: 2rem;
+      position: relative;
+    }
+    h1::after {
+      content: '';
+      position: absolute;
+      bottom: -10px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 80px;
+      height: 3px;
+      background: #3b82f6;
+      border-radius: 3px;
+    }
+    section {
+      margin-bottom: 2.5rem;
+      background: white;
+      border-radius: 0.75rem;
+      box-shadow: 0 1px 3px 0 rgba(0,0,0,0.1), 0 1px 2px 0 rgba(0,0,0,0.06);
+      padding: 1.5rem;
+    }
+    h2 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+      color: #1f2937;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    h2 svg {
+      width: 1.5rem;
+      height: 1.5rem;
+    }
+    .section-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+    }
+    .form-group {
+      margin-bottom: 1rem;
+    }
+    label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: 500;
+      color: #4b5563;
+    }
+    input, textarea, select {
+      width: 100%;
+      padding: 0.75rem;
+      border: 1px solid #d1d5db;
+      border-radius: 0.375rem;
+      font-size: 1rem;
+      transition: border-color 0.2s;
+    }
+    input:focus, textarea:focus, select:focus {
+      border-color: #3b82f6;
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+    }
+    textarea {
+      min-height: 100px;
+      resize: vertical;
+    }
+    .password-container {
+      display: flex;
+      border-radius: 0.375rem;
+      overflow: hidden;
+      box-shadow: 0 1px 2px 0 rgba(0,0,0,0.05);
+      margin-bottom: 1rem;
+    }
+    .password-container input {
+      flex: 1;
+      border: 1px solid #d1d5db;
+      border-right: none;
+      padding: 0.75rem;
+      font-size: 1rem;
+      outline: none;
+    }
+    .password-container button {
+      background: #f3f4f6;
+      border: none;
+      cursor: pointer;
+      padding: 0.75rem;
+      transition: background 0.2s;
+      width: 60px;
+    }
+    .password-container button:hover {
+      background: #e5e7eb;
+    }
+    .btn {
+      display: inline-block;
+      background: #3b82f6;
+      color: white;
+      border: none;
+      border-radius: 0.375rem;
+      padding: 0.75rem 1.25rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.2s;
+      width: 100%;
+      margin-top: 0.5rem;
+    }
+    .btn:hover {
+      background: #2563eb;
+    }
+    .btn:disabled {
+      background: #d1d5db;
+      cursor: not-allowed;
+    }
+    .btn-secondary {
+      background: #64748b;
+    }
+    .btn-secondary:hover {
+      background: #475569;
+    }
+    .btn-success {
+      background: #10b981;
+    }
+    .btn-success:hover {
+      background: #059669;
+    }
+    .btn-warning {
+      background: #f59e0b;
+    }
+    .btn-warning:hover {
+      background: #e69400;
+    }
+    .btn-danger {
+      background: #ef4444;
+    }
+    .btn-danger:hover {
+      background: #dc2626;
+    }
+    .result-container {
+      background: #f9fafb;
+      border: 1px solid #e5e7eb;
+      border-radius: 0.375rem;
+      padding: 1rem;
+      margin-top: 1rem;
+    }
+    .result-value {
+      font-family: monospace;
+      background: #f3f4f6;
+      padding: 0.75rem;
+      border-radius: 0.25rem;
+      overflow-x: auto;
+      font-size: 0.875rem;
+      margin: 0.5rem 0;
+      word-break: break-all;
+    }
+    .morse-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 1rem;
+    }
+    .morse-table th, .morse-table td {
+      border: 1px solid #e5e7eb;
+      padding: 0.5rem;
+      text-align: center;
+    }
+    .morse-table th {
+      background: #f3f4f6;
+      font-weight: 600;
+    }
+    .steganography-container {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+    .steganography-image {
+      max-width: 100%;
+      max-height: 300px;
+      display: block;
+      margin: 0 auto;
+      border-radius: 0.25rem;
+      border: 1px solid #e5e7eb;
+    }
+    .algorithms-notes {
+      line-height: 1.6;
+      white-space: pre-line;
+    }
+    .tabs {
+      display: flex;
+      margin-bottom: 1rem;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .tab {
+      padding: 0.75rem 1.5rem;
+      cursor: pointer;
+      font-weight: 500;
+      color: #64748b;
+      border-bottom: 3px solid transparent;
+    }
+    .tab.active {
+      color: #3b82f6;
+      border-bottom: 3px solid #3b82f6;
+    }
+    .tab-content {
+      display: none;
+    }
+    .tab-content.active {
+      display: block;
+    }
+    .email-check {
+      display: flex;
+      gap: 0.5rem;
+    }
+    .email-check input {
+      flex: 1;
+    }
+    .email-check .btn {
+      width: auto;
+    }
+    .email-result {
+      margin-top: 0.5rem;
+      padding: 0.5rem;
+      border-radius: 0.25rem;
+      font-size: 0.875rem;
+    }
+    .email-valid {
+      background: #dcfce7;
+      color: #166534;
+    }
+    .email-invalid {
+      background: #fee2e2;
+      color: #b91c1c;
+    }
+    .key-pair-container {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+    .key-display {
+      background: #f3f4f6;
+      padding: 1rem;
+      border-radius: 0.25rem;
+      font-family: monospace;
+      font-size: 0.875rem;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+    .file-upload {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    .file-upload label {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      cursor: pointer;
+      padding: 0.75rem;
+      border: 1px dashed #d1d5db;
+      border-radius: 0.375rem;
+      background: #f9fafb;
+      text-align: center;
+    }
+    .file-upload label:hover {
+      background: #f3f4f6;
+    }
+    .file-upload label svg {
+      width: 1.5rem;
+      height: 1.5rem;
+      color: #64748b;
+    }
+    .file-upload input {
+      display: none;
+    }
+    .file-name {
+      font-size: 0.875rem;
+      color: #4b5563;
+      margin-top: 0.5rem;
+    }
+    .file-name span {
+      color: #3b82f6;
+      cursor: pointer;
+      transition: color 0.2s;
+    }
+    .file-name span:hover {
+      text-decoration: underline;
+    }
+    .copy-btn {
+      background: #f3f4f6;
+      border: none;
+      cursor: pointer;
+      padding: 0.25rem 0.5rem;
+      border-radius: 0.25rem;
+      font-size: 0.875rem;
+      transition: background 0.2s;
+    }
+    .copy-btn:hover {
+      background: #e5e7eb;
+    }
+    .copy-btn svg {
+      width: 1rem;
+      height: 1rem;
+    }
+    .hash-comparison {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: 1rem;
+    }
+    .hash-comparison input {
+      flex: 1;
+    }
+    .hash-comparison .btn {
+      width: auto;
+    }
+    .match-status {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-top: 0.5rem;
+    }
+    .match-status .icon {
+      width: 1.25rem;
+      height: 1.25rem;
+    }
+    .match-status .icon.match {
+      color: #10b981;
+    }
+    .match-status .icon.nomatch {
+      color: #ef4444;
+    }
+    .steganography-controls {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: 1rem;
+    }
+    .steganography-controls .btn {
+      flex: 1;
+    }
+    .steganography-result {
+      margin-top: 1rem;
+      padding: 1rem;
+      background: #f3f4f6;
+      border-radius: 0.25rem;
+      font-family: monospace;
+      font-size: 0.875rem;
+    }
+    .steganography-result.hidden {
+      display: none;
+    }
+    .morse-converter {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+    .morse-converter textarea {
+      min-height: 100px;
+    }
+    .morse-converter .morse-output {
+      background: #f3f4f6;
+      padding: 1rem;
+      border-radius: 0.25rem;
+      font-family: monospace;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+    .morse-converter .morse-output span {
+      display: inline-block;
+      margin: 0 0.25rem;
+    }
+    .morse-table-container {
+      overflow-x: auto;
+    }
+    .algorithm-section {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+    .algorithm-card {
+      background: #f9fafb;
+      border: 1px solid #e5e7eb;
+      border-radius: 0.5rem;
+      padding: 1rem;
+    }
+    .algorithm-card h3 {
+      margin-bottom: 0.5rem;
+      color: #3b82f6;
+    }
+    .algorithm-card p {
+      line-height: 1.6;
+    }
+    .algorithm-card code {
+      background: #f3f4f6;
+      padding: 0.25rem 0.5rem;
+      border-radius: 0.25rem;
+      font-family: monospace;
+    }
+    .algorithm-card ul {
+      padding-left: 1.5rem;
+      margin-top: 0.5rem;
+    }
+    .algorithm-card li {
+      margin-bottom: 0.25rem;
+    }
+    .tabs-container {
+      margin-top: 1rem;
+    }
+    .tabs-container .tab-content {
+      padding: 1rem;
+      background: #f9fafb;
+      border-radius: 0.5rem;
+      border: 1px solid #e5e7eb;
+    }
+    .tabs-container .tab-content.active {
+      display: block;
+    }
+    .tabs-container .tab-content code {
+      display: block;
+      background: #f3f4f6;
+      padding: 1rem;
+      border-radius: 0.25rem;
+      font-family: monospace;
+      overflow-x: auto;
+    }
+  </style>
 </head>
 <body>
-    <!-- Navigation -->
-    <nav class="navbar navbar-expand-lg navbar-dark sticky-top">
-        <div class="container">
-            <a class="navbar-brand" href="#">
-                <i class="fas fa-lock"></i> SecurePass
-            </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto">
-                    <li class="nav-item">
-                        <a class="nav-link" href="#password-generator">Password Generator</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#file-encryption">File Encryption</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#key-generation">Key Generation</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#steganography">Steganography</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#ciphers">Ciphers</a>
-                    </li>
-                </ul>
-            </div>
-        </div>
-    </nav>
-
-    <!-- Hero Section -->
-    <section class="py-5 text-center container">
-        <div class="row py-lg-5">
-            <div class="col-lg-8 col-md-10 mx-auto">
-                <h1 class="fw-light">Advanced Security Toolkit</h1>
-                <p class="lead text-muted">All-in-one solution for password generation, encryption, key management, and secure communication.</p>
-                <p>
-                    <a href="#password-generator" class="btn btn-primary my-2">Get Started</a>
-                    <a href="#features" class="btn btn-outline-secondary my-2">Learn More</a>
-                </p>
-            </div>
-        </div>
+  <div class="container">
+    <h1>Crypto Toolbox</h1>
+    
+    <section>
+      <h2>
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
+          <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
+        </svg>
+        File Encryption (AES-CBC via CryptoJS) + SHA-256 fingerprint
+      </h2>
+      <div class="file-upload">
+        <label for="encryptFile">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="17 8 12 3 7 8"></polyline>
+            <line x1="12" y1="3" x2="12" y2="15"></line>
+          </svg>
+          Upload File for Encryption
+        </label>
+        <input type="file" id="encryptFile" accept="*">
+        <div class="file-name" id="encryptFileName">No file selected</div>
+      </div>
+      <div class="form-group">
+        <label for="encryptKey">Encryption Key (16/24/32 characters)</label>
+        <input type="text" id="encryptKey" placeholder="Enter encryption key">
+      </div>
+      <div class="form-group">
+        <label for="encryptIV">Initialization Vector (IV) (16 characters)</label>
+        <input type="text" id="encryptIV" placeholder="Enter IV (16 characters)">
+      </div>
+      <button class="btn" id="encryptBtn">Encrypt File</button>
+      <button class="btn btn-secondary" id="decryptBtn">Decrypt File</button>
+      <div class="result-container">
+        <div class="result-value" id="encryptedData"></div>
+        <button class="copy-btn" onclick="copyToClipboard('encryptedData')">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+          </svg>
+          Copy
+        </button>
+      </div>
+      <div class="form-group">
+        <label for="fileHash">SHA-256 Fingerprint</label>
+        <input type="text" id="fileHash" readonly>
+      </div>
     </section>
 
-    <!-- Main Content -->
-    <div class="container">
-        <!-- Password Generator Section -->
-        <section id="password-generator" class="mb-5">
-            <h2 class="section-title">Password Generator</h2>
-            <div class="row">
-                <div class="col-md-6">
-                    <div class="card feature-box">
-                        <div class="card-header">
-                            <h5 class="mb-0">Generate Secure Password</h5>
-                        </div>
-                        <div class="card-body">
-                            <div class="mb-3">
-                                <label class="form-label">Password Length</label>
-                                <input type="range" class="form-range" min="8" max="32" value="16" id="lengthSlider">
-                                <div class="d-flex justify-content-between">
-                                    <span>8</span>
-                                    <span id="lengthValue">16</span>
-                                    <span>32</span>
-                                </div>
-                            </div>
-                            
-                            <div class="mb-3">
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" id="uppercaseCheck" checked>
-                                    <label class="form-check-label" for="uppercaseCheck">
-                                        Include Uppercase Letters
-                                    </label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" id="lowercaseCheck" checked>
-                                    <label class="form-check-label" for="lowercaseCheck">
-                                        Include Lowercase Letters
-                                    </label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" id="numbersCheck" checked>
-                                    <label class="form-check-label" for="numbersCheck">
-                                        Include Numbers
-                                    </label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" id="symbolsCheck">
-                                    <label class="form-check-label" for="symbolsCheck">
-                                        Include Symbols
-                                    </label>
-                                </div>
-                            </div>
-                            
-                            <div class="mb-3">
-                                <label class="form-label">Number of Passwords</label>
-                                <input type="number" class="form-control" id="numPasswords" min="1" max="10" value="5">
-                            </div>
-                            
-                            <button class="btn btn-primary w-100" id="generateBtn">
-                                <i class="fas fa-key"></i> Generate Passwords
-                            </button>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="col-md-6">
-                    <div class="card feature-box">
-                        <div class="card-header">
-                            <h5 class="mb-0">Generated Passwords</h5>
-                        </div>
-                        <div class="card-body">
-                            <div class="password-strength-meter">
-                                <div class="strength-weak d-none" id="strengthMeter"></div>
-                            </div>
-                            <div id="passwordList"></div>
-                            <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-3">
-                                <button class="btn btn-outline-primary" id="copyAllBtn">
-                                    <i class="fas fa-copy"></i> Copy All
-                                </button>
-                                <button class="btn btn-outline-secondary" id="sortBtn">
-                                    <i class="fas fa-sort-alpha-down"></i> Sort
-                                </button>
-                                <button class="btn btn-outline-danger" id="deleteAllBtn">
-                                    <i class="fas fa-trash"></i> Delete All
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="card mt-4 feature-box">
-                        <div class="card-header">
-                            <h5 class="mb-0">Password Strength & Hacking Duration</h5>
-                        </div>
-                        <div class="card-body">
-                            <div id="strengthResult" class="alert alert-info">
-                                Password strength will be shown here.
-                            </div>
-                            <div id="hackingDuration" class="alert alert-warning">
-                                Hacking duration estimation will appear here.
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- File Encryption Section -->
-        <section id="file-encryption" class="mb-5">
-            <h2 class="section-title">File Encryption</h2>
-            <div class="row">
-                <div class="col-md-6">
-                    <div class="card feature-box">
-                        <div class="card-header">
-                            <h5 class="mb-0">Encrypt File</h5>
-                        </div>
-                        <div class="card-body">
-                            <div class="mb-3">
-                                <label for="encryptionKey" class="form-label">Encryption Key</label>
-                                <input type="password" class="form-control" id="encryptionKey" placeholder="Enter encryption key">
-                            </div>
-                            <div class="mb-3">
-                                <label for="fileInput" class="form-label">Select File</label>
-                                <input class="form-control" type="file" id="fileInput">
-                            </div>
-                            <div class="mb-3">
-                                <label for="encryptionAlgorithm" class="form-label">Encryption Algorithm</label>
-                                <select class="form-select" id="encryptionAlgorithm">
-                                    <option value="aes">AES (Advanced Encryption Standard)</option>
-                                    <option value="des">DES (Data Encryption Standard)</option>
-                                    <option value="rc4">RC4 (Rivest Cipher 4)</option>
-                                </select>
-                            </div>
-                            <button class="btn btn-primary w-100" id="encryptBtn">
-                                <i class="fas fa-lock"></i> Encrypt File
-                            </button>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-6">
-                    <div class="card feature-box">
-                        <div class="card-header">
-                            <h5 class="mb-0">Decrypt File</h5>
-                        </div>
-                        <div class="card-body">
-                            <div class="mb-3">
-                                <label for="decryptionKey" class="form-label">Decryption Key</label>
-                                <input type="password" class="form-control" id="decryptionKey" placeholder="Enter decryption key">
-                            </div>
-                            <div class="mb-3">
-                                <label for="encryptedFileInput" class="form-label">Select Encrypted File</label>
-                                <input class="form-control" type="file" id="encryptedFileInput">
-                            </div>
-                            <div class="mb-3">
-                                <label for="decryptionAlgorithm" class="form-label">Decryption Algorithm</label>
-                                <select class="form-select" id="decryptionAlgorithm">
-                                    <option value="aes">AES (Advanced Encryption Standard)</option>
-                                    <option value="des">DES (Data Encryption Standard)</option>
-                                    <option value="rc4">RC4 (Rivest Cipher 4)</option>
-                                </select>
-                            </div>
-                            <button class="btn btn-primary w-100" id="decryptBtn">
-                                <i class="fas fa-unlock"></i> Decrypt File
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Key Generation Section -->
-        <section id="key-generation" class="mb-5">
-            <h2 class="section-title">Key Generation</h2>
-            <div class="row">
-                <div class="col-md-8 mx-auto">
-                    <div class="card feature-box">
-                        <div class="card-header">
-                            <h5 class="mb-0">Generate Public & Private Keys</h5>
-                        </div>
-                        <div class="card-body">
-                            <div class="mb-3">
-                                <label for="keyType" class="form-label">Key Type</label>
-                                <select class="form-select" id="keyType">
-                                    <option value="rsa">RSA (2048-bit)</option>
-                                    <option value="ecc">ECC (Elliptic Curve Cryptography)</option>
-                                    <option value="dsa">DSA (Digital Signature Algorithm)</option>
-                                </select>
-                            </div>
-                            <button class="btn btn-primary w-100 mb-3" id="generateKeysBtn">
-                                <i class="fas fa-key"></i> Generate Keys
-                            </button>
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <div class="mb-3">
-                                        <label for="publicKey" class="form-label">Public Key</label>
-                                        <textarea class="form-control" id="publicKey" rows="5" readonly></textarea>
-                                    </div>
-                                    <button class="btn btn-outline-primary w-100" id="downloadPublicKeyBtn">
-                                        <i class="fas fa-download"></i> Download Public Key
-                                    </button>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="mb-3">
-                                        <label for="privateKey" class="form-label">Private Key</label>
-                                        <textarea class="form-control" id="privateKey" rows="5" readonly></textarea>
-                                    </div>
-                                    <button class="btn btn-outline-primary w-100" id="downloadPrivateKeyBtn">
-                                        <i class="fas fa-download"></i> Download Private Key
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Steganography Section -->
-        <section id="steganography" class="mb-5">
-            <h2 class="section-title">Steganography</h2>
-            <div class="row">
-                <div class="col-md-6">
-                    <div class="card feature-box">
-                        <div class="card-header">
-                            <h5 class="mb-0">Hide Data in Image</h5>
-                        </div>
-                        <div class="card-body">
-                            <div class="mb-3">
-                                <label for="secretMessage" class="form-label">Secret Message</label>
-                                <textarea class="form-control" id="secretMessage" rows="3" placeholder="Enter message to hide"></textarea>
-                            </div>
-                            <div class="mb-3">
-                                <label for="imageInput" class="form-label">Select Image</label>
-                                <input class="form-control" type="file" id="imageInput" accept="image/*">
-                            </div>
-                            <button class="btn btn-primary w-100" id="hideDataBtn">
-                                <i class="fas fa-eye-slash"></i> Hide Data
-                            </button>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-6">
-                    <div class="card feature-box">
-                        <div class="card-header">
-                            <h5 class="mb-0">Reveal Hidden Data</h5>
-                        </div>
-                        <div class="card-body">
-                            <div class="mb-3">
-                                <label for="stegoImageInput" class="form-label">Select Image with Hidden Data</label>
-                                <input class="form-control" type="file" id="stegoImageInput" accept="image/*">
-                            </div>
-                            <button class="btn btn-primary w-100" id="revealDataBtn">
-                                <i class="fas fa-eye"></i> Reveal Data
-                            </button>
-                            <div class="mt-3">
-                                <label for="revealedMessage" class="form-label">Hidden Message</label>
-                                <textarea class="form-control" id="revealedMessage" rows="3" readonly></textarea>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Ciphers Section -->
-        <section id="ciphers" class="mb-5">
-            <h2 class="section-title">Encryption Algorithms</h2>
-            <div class="card feature-box">
-                <div class="card-header">
-                    <h5 class="mb-0">Message Encryption & Decryption</h5>
-                </div>
-                <div class="card-body">
-                    <ul class="nav nav-pills mb-3" id="cipherTabs" role="tablist">
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link active" id="caesar-tab" data-bs-toggle="pill" data-bs-target="#caesar" type="button">Caesar Cipher</button>
-                        </li>
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link" id="morris-tab" data-bs-toggle="pill" data-bs-target="#morris" type="button">Morse Code</button>
-                        </li>
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link" id="aes-tab" data-bs-toggle="pill" data-bs-target="#aes" type="button">AES</button>
-                        </li>
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link" id="hash-tab" data-bs-toggle="pill" data-bs-target="#hash" type="button">Hash Algorithms</button>
-                        </li>
-                    </ul>
-                    
-                    <div class="tab-content" id="cipherTabsContent">
-                        <div class="tab-pane fade show active" id="caesar" role="tabpanel">
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <div class="mb-3">
-                                        <label for="caesarMessage" class="form-label">Message</label>
-                                        <textarea class="form-control" id="caesarMessage" rows="3" placeholder="Enter message"></textarea>
-                                    </div>
-                                    <div class="mb-3">
-                                        <label for="caesarShift" class="form-label">Shift Value</label>
-                                        <input type="number" class="form-control" id="caesarShift" value="3" min="1" max="25">
-                                    </div>
-                                    <div class="d-grid gap-2 d-md-flex">
-                                        <button class="btn btn-primary me-md-2" id="encryptCaesarBtn">Encrypt</button>
-                                        <button class="btn btn-outline-primary" id="decryptCaesarBtn">Decrypt</button>
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="mb-3">
-                                        <label for="caesarResult" class="form-label">Result</label>
-                                        <textarea class="form-control" id="caesarResult" rows="3" readonly></textarea>
-                                    </div>
-                                    <div class="algorithm-explanation">
-                                        <h6>Caesar Cipher Explanation</h6>
-                                        <p>The Caesar cipher is one of the simplest encryption techniques. It works by shifting each letter in the plaintext by a fixed number of positions down or up the alphabet.</p>
-                                        <p>For example, with a shift of 3: A → D, B → E, C → F, etc.</p>
-                                        <p><strong>Strength:</strong> Very weak, easily broken by brute force or frequency analysis.</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="tab-pane fade" id="morris" role="tabpanel">
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <div class="mb-3">
-                                        <label for="morrisMessage" class="form-label">Message</label>
-                                        <textarea class="form-control" id="morrisMessage" rows="3" placeholder="Enter message"></textarea>
-                                    </div>
-                                    <div class="d-grid gap-2 d-md-flex">
-                                        <button class="btn btn-primary me-md-2" id="encryptMorrisBtn">Encrypt</button>
-                                        <button class="btn btn-outline-primary" id="decryptMorrisBtn">Decrypt</button>
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="mb-3">
-                                        <label for="morrisResult" class="form-label">Result</label>
-                                        <textarea class="form-control" id="morrisResult" rows="3" readonly></textarea>
-                                    </div>
-                                    <div class="algorithm-explanation">
-                                        <h6>Morse Code Explanation</h6>
-                                        <p>Morse code represents letters and numbers using a series of dots and dashes.</p>
-                                        <table class="cipher-table">
-                                            <thead>
-                                                <tr>
-                                                    <th>Character</th>
-                                                    <th>Code</th>
-                                                    <th>Character</th>
-                                                    <th>Code</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                <tr><td>A</td><td>.-</td><td>N</td><td>-.</td></tr>
-                                                <tr><td>B</td><td>-...</td><td>O</td><td>---</td></tr>
-                                                <tr><td>C</td><td>-.-.</td><td>P</td><td>.--.</td></tr>
-                                                <tr><td>D</td><td>-..</td><td>Q</td><td>--.-</td></tr>
-                                                <tr><td>E</td><td>.</td><td>R</td><td>.-.</td></tr>
-                                                <tr><td>F</td><td>..-.</td><td>S</td><td>...</td></tr>
-                                                <tr><td>G</td><td>--.</td><td>T</td><td>-</td></tr>
-                                                <tr><td>H</td><td>....</td><td>U</td><td>..-</td></tr>
-                                                <tr><td>I</td><td>..</td><td>V</td><td>...-</td></tr>
-                                                <tr><td>J</td><td>.---</td><td>W</td><td>.--</td></tr>
-                                                <tr><td>K</td><td>-.-</td><td>X</td><td>-..-</td></tr>
-                                                <tr><td>L</td><td>.-..</td><td>Y</td><td>-.--</td></tr>
-                                                <tr><td>M</td><td>--</td><td>Z</td><td>--..</td></tr>
-                                                <tr><td>0</td><td>-----</td><td>5</td><td>.....</td></tr>
-                                                <tr><td>1</td><td>.----</td><td>6</td><td>-....</td></tr>
-                                                <tr><td>2</td><td>..---</td><td>7</td><td>--...</td></tr>
-                                                <tr><td>3</td><td>...--</td><td>8</td><td>---..</td></tr>
-                                                <tr><td>4</td><td>....-</td><td>9</td><td>----.</td></tr>
-                                            </tbody>
-                                        </table>
-                                        <p><strong>Strength:</strong> Not a secure encryption method, easily deciphered.</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="tab-pane fade" id="aes" role="tabpanel">
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <div class="mb-3">
-                                        <label for="aesMessage" class="form-label">Message</label>
-                                        <textarea class="form-control" id="aesMessage" rows="3" placeholder="Enter message"></textarea>
-                                    </div>
-                                    <div class="mb-3">
-                                        <label for="aesKey" class="form-label">Key</label>
-                                        <input type="password" class="form-control" id="aesKey" placeholder="Enter encryption key">
-                                    </div>
-                                    <div class="d-grid gap-2 d-md-flex">
-                                        <button class="btn btn-primary me-md-2" id="encryptAesBtn">Encrypt</button>
-                                        <button class="btn btn-outline-primary" id="decryptAesBtn">Decrypt</button>
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="mb-3">
-                                        <label for="aesResult" class="form-label">Result</label>
-                                        <textarea class="form-control" id="aesResult" rows="3" readonly></textarea>
-                                    </div>
-                                    <div class="algorithm-explanation">
-                                        <h6>AES Encryption Explanation</h6>
-                                        <p>The Advanced Encryption Standard (AES) is a symmetric encryption algorithm widely used across the globe. It's based on a substitution-permutation network and is efficient in both software and hardware.</p>
-                                        <p>AES operates on fixed block sizes of 128 bits and supports key sizes of 128, 192, and 256 bits.</p>
-                                        <p><strong>Strength:</strong> Considered highly secure and is the standard for many government and financial applications.</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="tab-pane fade" id="hash" role="tabpanel">
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <div class="mb-3">
-                                        <label for="hashMessage" class="form-label">Message</label>
-                                        <textarea class="form-control" id="hashMessage" rows="3" placeholder="Enter text to hash"></textarea>
-                                    </div>
-                                    <div class="mb-3">
-                                        <label for="hashAlgorithm" class="form-label">Hash Algorithm</label>
-                                        <select class="form-select" id="hashAlgorithm">
-                                            <option value="md5">MD5</option>
-                                            <option value="sha1">SHA-1</option>
-                                            <option value="sha256">SHA-256</option>
-                                            <option value="sha512">SHA-512</option>
-                                        </select>
-                                    </div>
-                                    <button class="btn btn-primary w-100" id="generateHashBtn">
-                                        Generate Hash
-                                    </button>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="mb-3">
-                                        <label for="hashResult" class="form-label">Hash Result</label>
-                                        <textarea class="form-control hashed-password" id="hashResult" rows="3" readonly></textarea>
-                                    </div>
-                                    <div class="algorithm-explanation">
-                                        <h6>Hash Algorithms Explanation</h6>
-                                        <p><strong>MD5:</strong> Produces a 128-bit hash value. Once widely used, now considered cryptographically broken and unsuitable for further use.</p>
-                                        <p><strong>SHA-1:</strong> Produces a 160-bit hash value. No longer considered secure against well-funded opponents.</p>
-                                        <p><strong>SHA-256:</strong> Part of the SHA-2 family, produces a 256-bit hash. Currently considered secure and widely used.</p>
-                                        <p><strong>SHA-512:</strong> Also part of the SHA-2 family, produces a 512-bit hash. More secure than SHA-256 but slower.</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Password Leak Check Section -->
-        <section id="leak-check" class="mb-5">
-            <h2 class="section-title">Password Leak Check</h2>
-            <div class="row">
-                <div class="col-md-6 mx-auto">
-                    <div class="card feature-box">
-                        <div class="card-header">
-                            <h5 class="mb-0">Check if Your Password Has Been Leaked</h5>
-                        </div>
-                        <div class="card-body">
-                            <div class="mb-3">
-                                <label for="passwordToCheck" class="form-label">Enter Password</label>
-                                <input type="password" class="form-control" id="passwordToCheck" placeholder="Enter password to check">
-                            </div>
-                            <button class="btn btn-primary w-100" id="checkLeakBtn">
-                                <i class="fas fa-shield-alt"></i> Check Password
-                            </button>
-                            <div id="leakResult" class="alert alert-info mt-3 d-none"></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-    </div>
-
-    <!-- Footer -->
-    <footer class="text-center">
-        <div class="container">
-            <p class="mb-0">SecurePass - Advanced Security Toolkit</p>
-            <p class="mb-0">All your security needs in one place</p>
-            <p class="mt-2">
-                <a href="#" class="text-white me-3"><i class="fab fa-github"></i></a>
-                <a href="#" class="text-white me-3"><i class="fab fa-twitter"></i></a>
-                <a href="#" class="text-white"><i class="fab fa-linkedin"></i></a>
-            </p>
+    <section>
+      <h2>
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+          <polyline points="14 2 14 8 20 8"></polyline>
+          <line x1="16" y1="13" x2="8" y2="13"></line>
+          <line x1="16" y1="17" x2="8" y2="17"></line>
+          <polyline points="10 9 9 9 8 9"></polyline>
+        </svg>
+        Public / Private Key (RSA-OAEP)
+      </h2>
+      <div class="key-pair-container">
+        <button class="btn" id="generateKeysBtn">Generate RSA Key Pair</button>
+        <div class="result-container">
+          <div class="result-value" id="publicKeyDisplay"></div>
+          <button class="copy-btn" onclick="copyToClipboard('publicKeyDisplay')">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+            </svg>
+            Copy Public Key
+          </button>
         </div>
-    </footer>
+        <div class="result-container">
+          <div class="result-value" id="privateKeyDisplay"></div>
+          <button class="copy-btn" onclick="copyToClipboard('privateKeyDisplay')">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+            </svg>
+            Copy Private Key
+          </button>
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="rsaEncryptText">Text to Encrypt</label>
+        <textarea id="rsaEncryptText" placeholder="Enter text to encrypt..."></textarea>
+      </div>
+      <button class="btn" id="rsaEncryptBtn">Encrypt with Public Key</button>
+      <div class="result-container">
+        <div class="result-value" id="rsaEncryptedData"></div>
+        <button class="copy-btn" onclick="copyToClipboard('rsaEncryptedData')">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+          </svg>
+          Copy Encrypted Data
+        </button>
+      </div>
+      <div class="form-group">
+        <label for="rsaDecryptText">Encrypted Text</label>
+        <textarea id="rsaDecryptText" placeholder="Enter encrypted text..."></textarea>
+      </div>
+      <button class="btn" id="rsaDecryptBtn">Decrypt with Private Key</button>
+      <div class="result-container">
+        <div class="result-value" id="rsaDecryptedData"></div>
+      </div>
+    </section>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-        // Import crypto-js library for encryption functions
-        const script = document.createElement('script');
-        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js';
-        script.integrity = 'sha512-E8QSvWZ0eCLGk4km3hxSsNmGWbLtSCSUcewDQPQWZF6pEU8GlT8a5fF32wOl1i8ftdMhssTrF/OhyGWwonTcXA==';
-        script.crossOrigin = 'anonymous';
-        document.head.appendChild(script);
+    <section>
+      <h2>
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+          <polyline points="14 2 14 8 20 8"></polyline>
+          <line x1="16" y1="13" x2="8" y2="13"></line>
+          <line x1="16" y1="17" x2="8" y2="17"></line>
+          <polyline points="10 9 9 9 8 9"></polyline>
+        </svg>
+        Text Encryption / Hash / Comparison
+      </h2>
+      <div class="tabs">
+        <div class="tab active" data-tab="hash">Hash</div>
+        <div class="tab" data-tab="encrypt">Encrypt</div>
+        <div class="tab" data-tab="compare">Compare</div>
+      </div>
+      <div class="tabs-container">
+        <div class="tab-content active" id="hashTab">
+          <div class="form-group">
+            <label for="hashText">Text to Hash</label>
+            <textarea id="hashText" placeholder="Enter text to hash..."></textarea>
+          </div>
+          <div class="form-group">
+            <label for="hashAlgorithm">Algorithm</label>
+            <select id="hashAlgorithm">
+              <option value="SHA-256">SHA-256</option>
+              <option value="SHA-1">SHA-1</option>
+              <option value="MD5">MD5</option>
+            </select>
+          </div>
+          <button class="btn" id="calculateHashBtn">Calculate Hash</button>
+          <div class="result-container">
+            <div class="result-value" id="hashResult"></div>
+            <button class="copy-btn" onclick="copyToClipboard('hashResult')">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+              </svg>
+              Copy Hash
+            </button>
+          </div>
+        </div>
+        <div class="tab-content" id="encryptTab">
+          <div class="form-group">
+            <label for="encryptText">Text to Encrypt</label>
+            <textarea id="encryptText" placeholder="Enter text to encrypt..."></textarea>
+          </div>
+          <div class="form-group">
+            <label for="encryptKey">Encryption Key</label>
+            <input type="text" id="encryptKeyText" placeholder="Enter encryption key">
+          </div>
+          <button class="btn" id="encryptTextBtn">Encrypt Text</button>
+          <div class="result-container">
+            <div class="result-value" id="encryptedTextResult"></div>
+            <button class="copy-btn" onclick="copyToClipboard('encryptedTextResult')">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+              </svg>
+              Copy Encrypted Text
+            </button>
+          </div>
+        </div>
+        <div class="tab-content" id="compareTab">
+          <div class="hash-comparison">
+            <input type="text" id="hash1" placeholder="Hash 1">
+            <input type="text" id="hash2" placeholder="Hash 2">
+          </div>
+          <button class="btn" id="compareHashBtn">Compare Hashes</button>
+          <div class="match-status">
+            <svg id="matchIcon" class="icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+            <span id="matchResult">No comparison done yet</span>
+          </div>
+        </div>
+      </div>
+    </section>
 
-        // Wait for crypto-js to load
-        script.onload = function() {
-            // Password Generator Functionality
-            document.addEventListener('DOMContentLoaded', function() {
-                // Update password length value
-                const lengthSlider = document.getElementById('lengthSlider');
-                const lengthValue = document.getElementById('lengthValue');
-                
-                lengthSlider.addEventListener('input', function() {
-                    lengthValue.textContent = this.value;
-                });
-                
-                // Generate passwords
-                document.getElementById('generateBtn').addEventListener('click', function() {
-                    generatePasswords();
-                });
-                
-                // Copy all passwords
-                document.getElementById('copyAllBtn').addEventListener('click', function() {
-                    const passwordElements = document.querySelectorAll('.password-item');
-                    const passwords = Array.from(passwordElements).map(el => el.textContent).join('\n');
-                    
-                    if (passwords) {
-                        navigator.clipboard.writeText(passwords).then(() => {
-                            alert('All passwords copied to clipboard!');
-                        });
-                    }
-                });
-                
-                // Sort passwords
-                document.getElementById('sortBtn').addEventListener('click', function() {
-                    const passwordList = document.getElementById('passwordList');
-                    const passwords = Array.from(passwordList.children);
-                    
-                    passwords.sort((a, b) => a.textContent.localeCompare(b.textContent));
-                    
-                    // Clear the list
-                    passwordList.innerHTML = '';
-                    
-                    // Append sorted passwords
-                    passwords.forEach(password => {
-                        passwordList.appendChild(password);
-                    });
-                });
-                
-                // Delete all passwords
-                document.getElementById('deleteAllBtn').addEventListener('click', function() {
-                    document.getElementById('passwordList').innerHTML = '';
-                    document.getElementById('strengthMeter').className = 'strength-weak d-none';
-                    document.getElementById('strengthResult').textContent = 'Password strength will be shown here.';
-                    document.getElementById('hackingDuration').textContent = 'Hacking duration estimation will appear here.';
-                });
-                
-                // Check password leak
-                document.getElementById('checkLeakBtn').addEventListener('click', function() {
-                    const password = document.getElementById('passwordToCheck').value;
-                    const leakResult = document.getElementById('leakResult');
-                    
-                    if (!password) {
-                        leakResult.textContent = 'Please enter a password to check.';
-                        leakResult.className = 'alert alert-danger mt-3';
-                        leakResult.classList.remove('d-none');
-                        return;
-                    }
-                    
-                    // Simulate leak check (in a real application, this would be an API call)
-                    const isLeaked = Math.random() > 0.7;
-                    
-                    if (isLeaked) {
-                        leakResult.textContent = 'Warning: This password has been found in data breaches! You should change it immediately.';
-                        leakResult.className = 'alert alert-danger mt-3';
-                    } else {
-                        leakResult.textContent = 'Good news! This password hasn\'t been found in any known data breaches.';
-                        leakResult.className = 'alert alert-success mt-3';
-                    }
-                    
-                    leakResult.classList.remove('d-none');
-                });
-                
-                // Hash generation
-                document.getElementById('generateHashBtn').addEventListener('click', function() {
-                    const message = document.getElementById('hashMessage').value;
-                    const algorithm = document.getElementById('hashAlgorithm').value;
-                    
-                    if (!message) {
-                        alert('Please enter text to hash.');
-                        return;
-                    }
-                    
-                    let hash;
-                    switch(algorithm) {
-                        case 'md5':
-                            hash = 'MD5: ' + CryptoJS.MD5(message);
-                            break;
-                        case 'sha1':
-                            hash = 'SHA1: ' + CryptoJS.SHA1(message);
-                            break;
-                        case 'sha256':
-                            hash = 'SHA256: ' + CryptoJS.SHA256(message);
-                            break;
-                        case 'sha512':
-                            hash = 'SHA512: ' + CryptoJS.SHA512(message);
-                            break;
-                    }
-                    
-                    document.getElementById('hashResult').value = hash;
-                });
-                
-                // AES Encryption
-                document.getElementById('encryptAesBtn').addEventListener('click', function() {
-                    const message = document.getElementById('aesMessage').value;
-                    const key = document.getElementById('aesKey').value;
-                    
-                    if (!message) {
-                        alert('Please enter a message to encrypt.');
-                        return;
-                    }
-                    
-                    if (!key) {
-                        alert('Please enter an encryption key.');
-                        return;
-                    }
-                    
-                    const encrypted = CryptoJS.AES.encrypt(message, key).toString();
-                    document.getElementById('aesResult').value = encrypted;
-                });
-                
-                // AES Decryption
-                document.getElementById('decryptAesBtn').addEventListener('click', function() {
-                    const message = document.getElementById('aesMessage').value;
-                    const key = document.getElementById('aesKey').value;
-                    
-                    if (!message) {
-                        alert('Please enter a message to decrypt.');
-                        return;
-                    }
-                    
-                    if (!key) {
-                        alert('Please enter a decryption key.');
-                        return;
-                    }
-                    
-                    try {
-                        const decrypted = CryptoJS.AES.decrypt(message, key).toString(CryptoJS.enc.Utf8);
-                        
-                        if (!decrypted) {
-                            throw new Error('Decryption failed');
-                        }
-                        
-                        document.getElementById('aesResult').value = decrypted;
-                    } catch (error) {
-                        alert('Decryption failed. Please check your key and try again.');
-                    }
-                });
-                
-                // Generate keys
-                document.getElementById('generateKeysBtn').addEventListener('click', function() {
-                    const keyType = document.getElementById('keyType').value;
-                    
-                    // In a real application, this would generate actual keys
-                    // For demonstration, we'll generate simulated keys
-                    let publicKey, privateKey;
-                    
-                    switch(keyType) {
-                        case 'rsa':
-                            publicKey = '-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8A' + 
-                                        '\nMIIBCgKCAQEAu1SU1LfVLPHCozMxH2Mo' +
-                                        '\n4lgOEePzNm0tRgeLezV6ffAt0gunVTLw' +
-                                        '\neronfV04+I+2pC+uJ+6QZz7shJXllyq' +
-                                        '\n-----END PUBLIC KEY-----';
-                            privateKey = '-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASC' +
-                                         '\nAScwggEjAgEAAoIBAQC7VJTUt9Us8cKj' +
-                                         '\nMzEfYyjiWA4R4/M2bS1GB4t7NXp98C3S' +
-                                         '\nC6dVMvB6uid9XTj4j7akL64n7pBnPuyE' +
-                                         '\n-----END PRIVATE KEY-----';
-                            break;
-                        case 'ecc':
-                            publicKey = '-----BEGIN PUBLIC KEY-----\nMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcD' +
-                                        '\nQgAEEVs/o5+uQbTjL3chynL4wXgUg2R9' +
-                                        '\nq9UU8I5mEovUf86QZ7kOBIjJwqnzD1om' +
-                                        '\nop+2QeGz5Q1/5Z2poQIDAQAB' +
-                                        '\n-----END PUBLIC KEY-----';
-                            privateKey = '-----BEGIN PRIVATE KEY-----\nMIGHAgEAMBMGByqGSM49AgEGCCqGSM49' +
-                                         '\nAwEHBG0wawIBAQQg+qa5mRlE71S0X5nW' +
-                                         '\nWTt7eL7IF/FrRr9ncTBM3GR9Zv2hRANC' +
-                                         '\nAARBWz+jn65BtOMvdyHKcvjBeBSDZH2r' +
-                                         '\n-----END PRIVATE KEY-----';
-                            break;
-                        case 'dsa':
-                            publicKey = '-----BEGIN PUBLIC KEY-----\nMIIDQjCCAi0GByqGSM44BAEwggIgAoIB' +
-                                        '\nAQC7VJTUt9Us8cKjMzEfYyjiWA4R4/M2' +
-                                        '\nbS1GB4t7NXp98C3SC6dVMvB6uid9XTj4' +
-                                        '\nj7akL64n7pBnPuyEleWXKp+2QeGz5Q1/' +
-                                        '\n-----END PUBLIC KEY-----';
-                            privateKey = '-----BEGIN PRIVATE KEY-----\nMIIDQzCCAi4GByqGSM44BAEwggIgAoIB' +
-                                         '\nAQC7VJTUt9Us8cKjMzEfYyjiWA4R4/M2' +
-                                         '\nbS1GB4t7NXp98C3SC6dVMvB6uid9XTj4' +
-                                         '\nj7akL64n7pBnPuyEleWXKp+2QeGz5Q1/' +
-                                         '\n-----END PRIVATE KEY-----';
-                            break;
-                    }
-                    
-                    document.getElementById('publicKey').value = publicKey;
-                    document.getElementById('privateKey').value = privateKey;
-                });
-                
-                // Download public key
-                document.getElementById('downloadPublicKeyBtn').addEventListener('click', function() {
-                    const publicKey = document.getElementById('publicKey').value;
-                    
-                    if (!publicKey) {
-                        alert('Please generate a key first.');
-                        return;
-                    }
-                    
-                    const blob = new Blob([publicKey], { type: 'text/plain' });
-                    const url = URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.href = url;
-                    a.download = 'public_key.txt';
-                    document.body.appendChild(a);
-                    a.click();
-                    document.body.removeChild(a);
-                    URL.revokeObjectURL(url);
-                });
-                
-                // Download private key
-                document.getElementById('downloadPrivateKeyBtn').addEventListener('click', function() {
-                    const privateKey = document.getElementById('privateKey').value;
-                    
-                    if (!privateKey) {
-                        alert('Please generate a key first.');
-                        return;
-                    }
-                    
-                    const blob = new Blob([privateKey], { type: 'text/plain' });
-                    const url = URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.href = url;
-                    a.download = 'private_key.txt';
-                    document.body.appendChild(a);
-                    a.click();
-                    document.body.removeChild(a);
-                    URL.revokeObjectURL(url);
-                });
-            });
+    <section>
+      <h2>
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"></path>
+          <path d="M12 6v6l4 2"></path>
+        </svg>
+        Image Steganography (LSB) — AES protected payload
+      </h2>
+      <div class="steganography-container">
+        <div class="file-upload">
+          <label for="stegoImage">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="17 8 12 3 7 8"></polyline>
+              <line x1="12" y1="3" x2="12" y2="15"></line>
+            </svg>
+            Upload Image
+          </label>
+          <input type="file" id="stegoImage" accept="image/*">
+          <div class="file-name" id="stegoImageName">No image selected</div>
+        </div>
+        <div class="form-group">
+          <label for="stegoMessage">Message to Hide</label>
+          <textarea id="stegoMessage" placeholder="Enter message to hide in image..."></textarea>
+        </div>
+        <div class="form-group">
+          <label for="stegoKey">AES Encryption Key</label>
+          <input type="text" id="stegoKey" placeholder="Enter encryption key">
+        </div>
+        <div class="steganography-controls">
+          <button class="btn" id="embedBtn">Embed Message</button>
+          <button class="btn btn-secondary" id="extractBtn">Extract Message</button>
+        </div>
+        <div class="steganography-result" id="stegoResult">
+          <img id="stegoImagePreview" class="steganography-image" src="https://placehold.co/400x300" alt="Image preview">
+          <div id="stegoMessageOutput" class="result-value"></div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M18 8h-1a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2v-10a2 2 0 0 0-2-2h-1"></path>
+          <rect x="2" y="2" width="20" height="20" rx="2" ry="2"></rect>
+          <line x1="10" y1="10" x2="14" y2="10"></line>
+          <line x1="10" y1="14" x2="14" y2="14"></line>
+          <line x1="10" y1="18" x2="14" y2="18"></line>
+        </svg>
+        Algorithms & Notes
+      </h2>
+      <div class="algorithm-section">
+        <div class="algorithm-card">
+          <h3>AES-CBC</h3>
+          <p>Advanced Encryption Standard in Cipher Block Chaining mode. Requires a key and initialization vector (IV). The IV must be randomly generated for each encryption operation and shared with the recipient for decryption.</p>
+          <code>const encrypted = CryptoJS.AES.encrypt(plaintext, key, { iv: iv, mode: CryptoJS.mode.CBC });</code>
+        </div>
+        <div class="algorithm-card">
+          <h3>RSA-OAEP</h3>
+          <p>RSA encryption with Optimal Asymmetric Encryption Padding. Provides strong security for public-key encryption. Used for encrypting small amounts of data like symmetric keys.</p>
+          <code>const encrypted = await crypto.subtle.encrypt({ name: 'RSA-OAEP' }, publicKey, data);</code>
+        </div>
+        <div class="algorithm-card">
+          <h3>LSB Steganography</h3>
+          <p>Least Significant Bit steganography hides data in the least significant bits of image pixels. AES encryption is used to protect the payload before embedding.</p>
+          <code>const stegoImage = embedMessageInImage(originalImage, encryptedMessage);</code>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 2a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h6z"></path>
+          <path d="M8 12h8"></path>
+          <path d="M8 16h4"></path>
+          <path d="M8 8h4"></path>
+        </svg>
+        Morse code (extended)
+      </h2>
+      <div class="morse-converter">
+        <div class="form-group">
+          <label for="morseInput">Text to Morse</label>
+          <textarea id="morseInput" placeholder="Enter text to convert to Morse code..."></textarea>
+        </div>
+        <button class="btn" id="convertMorseBtn">Convert to Morse</button>
+        <div class="morse-output" id="morseOutput"></div>
+        <div class="form-group">
+          <label for="morseReverseInput">Morse to Text</label>
+          <textarea id="morseReverseInput" placeholder="Enter Morse code (use space between letters, / for word)"></textarea>
+        </div>
+        <button class="btn" id="reverseMorseBtn">Convert to Text</button>
+        <div class="morse-output" id="morseReverseOutput"></div>
+      </div>
+      <div class="morse-table-container">
+        <table class="morse-table">
+          <thead>
+            <tr>
+              <th>Char</th>
+              <th>Morse</th>
+              <th>Char</th>
+              <th>Morse</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>A</td>
+              <td>.-</td>
+              <td>N</td>
+              <td>-. </td>
+            </tr>
+            <tr>
+              <td>B</td>
+              <td>-...</td>
+              <td>O</td>
+              <td>---</td>
+            </tr>
+            <tr>
+              <td>C</td>
+              <td>-.-.</td>
+              <td>P</td>
+              <td>.--.</td>
+            </tr>
+            <tr>
+              <td>D</td>
+              <td>-..</td>
+              <td>Q</td>
+              <td>--.-</td>
+            </tr>
+            <tr>
+              <td>E</td>
+              <td>.</td>
+              <td>R</td>
+              <td>.-. </td>
+            </tr>
+            <tr>
+              <td>F</td>
+              <td>..-.</td>
+              <td>S</td>
+              <td>...</td>
+            </tr>
+            <tr>
+              <td>G</td>
+              <td>--.</td>
+              <td>T</td>
+              <td>-</td>
+            </tr>
+            <tr>
+              <td>H</td>
+              <td>....</td>
+              <td>U</td>
+              <td>..-</td>
+            </tr>
+            <tr>
+              <td>I</td>
+              <td>..</td>
+              <td>V</td>
+              <td>...-</td>
+            </tr>
+            <tr>
+              <td>J</td>
+              <td>.---</td>
+              <td>W</td>
+              <td>.--</td>
+            </tr>
+            <tr>
+              <td>K</td>
+              <td>-.-</td>
+              <td>X</td>
+              <td>-..-</td>
+            </tr>
+            <tr>
+              <td>L</td>
+              <td>.-..</td>
+              <td>Y</td>
+              <td>-.--</td>
+            </tr>
+            <tr>
+              <td>M</td>
+              <td>--</td>
+              <td>Z</td>
+              <td>--..</td>
+            </tr>
+            <tr>
+              <td>0</td>
+              <td>-----</td>
+              <td>5</td>
+              <td>.....</td>
+            </tr>
+            <tr>
+              <td>1</td>
+              <td>.----</td>
+              <td>6</td>
+              <td>-....</td>
+            </tr>
+            <tr>
+              <td>2</td>
+              <td>..---</td>
+              <td>7</td>
+              <td>--...</td>
+            </tr>
+            <tr>
+              <td>3</td>
+              <td>...--</td>
+              <td>8</td>
+              <td>---..</td>
+            </tr>
+            <tr>
+              <td>4</td>
+              <td>....-</td>
+              <td>9</td>
+              <td>----.</td>
+            </tr>
+            <tr>
+              <td>.</td>
+              <td>.-.-.-</td>
+              <td>,</td>
+              <td>--..--</td>
+            </tr>
+            <tr>
+              <td>?</td>
+              <td>..--..</td>
+              <td>'</td>
+              <td>.----.</td>
+            </tr>
+            <tr>
+              <td>!</td>
+              <td>-.-.--</td>
+              <td>/</td>
+              <td>-..-.</td>
+            </tr>
+            <tr>
+              <td>(</td>
+              <td>-.--.</td>
+              <td>)</td>
+              <td>-.--.-</td>
+            </tr>
+            <tr>
+              <td>&</td>
+              <td>.-...</td>
+              <td>:</td>
+              <td>---...</td>
+            </tr>
+            <tr>
+              <td>;</td>
+              <td>-.-.-.</td>
+              <td>=</td>
+              <td>-...-</td>
+            </tr>
+            <tr>
+              <td>+</td>
+              <td>.-.-.</td>
+              <td>-</td>
+              <td>-....-</td>
+            </tr>
+            <tr>
+              <td>_</td>
+              <td>..--.-</td>
+              <td>"</td>
+              <td>.-..-.</td>
+            </tr>
+            <tr>
+              <td>$</td>
+              <td>...-..-</td>
+              <td>@</td>
+              <td>.--.-.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section>
+      <h2>
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
+          <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
+        </svg>
+        Password leak helper & email check (simulated)
+      </h2>
+      <div class="password-container">
+        <input type="password" id="passwordInput" readonly placeholder="Generated password will appear here">
+        <button id="showHideBtn">Show</button>
+        <button id="copyBtn">Copy</button>
+        <button id="clearBtn">Clear</button>
+      </div>
+      <button class="btn" id="generatePasswordBtn">Generate Strong Password</button>
+      <div class="email-check">
+        <input type="email" id="emailCheck" placeholder="Enter email to check">
+        <button class="btn" id="checkEmailBtn">Check Email</button>
+      </div>
+      <div class="email-result" id="emailResult"></div>
+    </section>
+  </div>
+
+  <script>
+    // CryptoJS functions
+    function encryptFile() {
+      const fileInput = document.getElementById('encryptFile');
+      const keyInput = document.getElementById('encryptKey');
+      const ivInput = document.getElementById('encryptIV');
+      const encryptedDataElement = document.getElementById('encryptedData');
+      const fileHashElement = document.getElementById('fileHash');
+      
+      if (!fileInput.files.length) {
+        alert('Please select a file');
+        return;
+      }
+      
+      if (!keyInput.value || keyInput.value.length < 16) {
+        alert('Encryption key must be at least 16 characters');
+        return;
+      }
+      
+      const key = CryptoJS.enc.Utf8.parse(keyInput.value);
+      const iv = ivInput.value ? CryptoJS.enc.Utf8.parse(ivInput.value) : CryptoJS.lib.WordArray.random(16);
+      
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const fileData = e.target.result;
+        const encrypted = CryptoJS.AES.encrypt(fileData, key, { iv: iv, mode: CryptoJS.mode.CBC });
+        encryptedDataElement.textContent = encrypted.toString();
+        
+        // Calculate SHA-256 fingerprint
+        const hash = CryptoJS.SHA256(fileData).toString();
+        fileHashElement.value = hash;
+      };
+      reader.readAsArrayBuffer(fileInput.files[0]);
+    }
+
+    function decryptFile() {
+      // Implementation for decryption would go here
+      alert('Decryption functionality is not fully implemented in this demo');
+    }
+
+    // RSA-OAEP functions
+    async function generateKeys() {
+      const keyPair = await crypto.subtle.generateKey(
+        {
+          name: 'RSA-OAEP',
+          modulusLength: 2048,
+          publicExponent: new Uint8Array([1, 0, 1]),
+          hash: { name: 'SHA-256' }
+        },
+        true,
+        ['encrypt', 'decrypt']
+      );
+      
+      const publicKey = await crypto.subtle.exportKey('spki', keyPair.publicKey);
+      const privateKey = await crypto.subtle.exportKey('pkcs8', keyPair.privateKey);
+      
+      const publicKeyBase64 = btoa(String.fromCharCode(...new Uint8Array(publicKey)));
+      const privateKeyBase64 = btoa(String.fromCharCode(...new Uint8Array(privateKey)));
+      
+      document.getElementById('publicKeyDisplay').textContent = publicKeyBase64;
+      document.getElementById('privateKeyDisplay').textContent = privateKeyBase64;
+    }
+
+    async function encryptWithRSA() {
+      const text = document.getElementById('rsaEncryptText').value;
+      const publicKeyBase64 = document.getElementById('publicKeyDisplay').textContent;
+      
+      if (!text || !publicKeyBase64) {
+        alert('Please provide text and public key');
+        return;
+      }
+      
+      const publicKeyBuffer = Uint8Array.from(atob(publicKeyBase64), c => c.charCodeAt(0));
+      const publicKey = await crypto.subtle.importKey(
+        'spki',
+        publicKeyBuffer,
+        { name: 'RSA-OAEP', hash: { name: 'SHA-256' } },
+        true,
+        ['encrypt']
+      );
+      
+      const encoder = new TextEncoder();
+      const data = encoder.encode(text);
+      const encrypted = await crypto.subtle.encrypt({ name: 'RSA-OAEP' }, publicKey, data);
+      
+      const encryptedBase64 = btoa(String.fromCharCode(...new Uint8Array(encrypted)));
+      document.getElementById('rsaEncryptedData').textContent = encryptedBase64;
+    }
+
+    async function decryptWithRSA() {
+      const encryptedText = document.getElementById('rsaDecryptText').value;
+      const privateKeyBase64 = document.getElementById('privateKeyDisplay').textContent;
+      
+      if (!encryptedText || !privateKeyBase64) {
+        alert('Please provide encrypted text and private key');
+        return;
+      }
+      
+      const privateKeyBuffer = Uint8Array.from(atob(privateKeyBase64), c => c.charCodeAt(0));
+      const privateKey = await crypto.subtle.importKey(
+        'pkcs8',
+        privateKeyBuffer,
+        { name: 'RSA-OAEP', hash: { name: 'SHA-256' } },
+        true,
+        ['decrypt']
+      );
+      
+      const encryptedBuffer = Uint8Array.from(atob(encryptedText), c => c.charCodeAt(0));
+      const decrypted = await crypto.subtle.decrypt({ name: 'RSA-OAEP' }, privateKey, encryptedBuffer);
+      
+      const decoder = new TextDecoder();
+      document.getElementById('rsaDecryptedData').textContent = decoder.decode(decrypted);
+    }
+
+    // Hash functions
+    function calculateHash() {
+      const text = document.getElementById('hashText').value;
+      const algorithm = document.getElementById('hashAlgorithm').value;
+      
+      if (!text) {
+        alert('Please enter text to hash');
+        return;
+      }
+      
+      let hash;
+      if (algorithm === 'SHA-256') {
+        hash = CryptoJS.SHA256(text).toString();
+      } else if (algorithm === 'SHA-1') {
+        hash = CryptoJS.SHA1(text).toString();
+      } else if (algorithm === 'MD5') {
+        hash = CryptoJS.MD5(text).toString();
+      }
+      
+      document.getElementById('hashResult').textContent = hash;
+    }
+
+    // Text encryption
+    function encryptText() {
+      const text = document.getElementById('encryptText').value;
+      const key = document.getElementById('encryptKeyText').value;
+      
+      if (!text || !key) {
+        alert('Please enter text and key');
+        return;
+      }
+      
+      const encrypted = CryptoJS.AES.encrypt(text, key).toString();
+      document.getElementById('encryptedTextResult').textContent = encrypted;
+    }
+
+    // Hash comparison
+    function compareHashes() {
+      const hash1 = document.getElementById('hash1').value;
+      const hash2 = document.getElementById('hash2').value;
+      
+      if (!hash1 || !hash2) {
+        alert('Please enter both hashes');
+        return;
+      }
+      
+      const match = hash1 === hash2;
+      const icon = document.getElementById('matchIcon');
+      const resultText = document.getElementById('matchResult');
+      
+      if (match) {
+        icon.classList.add('match');
+        icon.classList.remove('nomatch');
+        resultText.textContent = 'Hashes match!';
+      } else {
+        icon.classList.add('nomatch');
+        icon.classList.remove('match');
+        resultText.textContent = 'Hashes do not match';
+      }
+    }
+
+    // Steganography functions
+    function embedMessageInImage() {
+      const imageInput = document.getElementById('stegoImage');
+      const messageInput = document.getElementById('stegoMessage');
+      const keyInput = document.getElementById('stegoKey');
+      const imagePreview = document.getElementById('stegoImagePreview');
+      const resultOutput = document.getElementById('stegoMessageOutput');
+      
+      if (!imageInput.files.length) {
+        alert('Please select an image');
+        return;
+      }
+      
+      if (!messageInput.value) {
+        alert('Please enter a message to hide');
+        return;
+      }
+      
+      if (!keyInput.value) {
+        alert('Please enter an encryption key');
+        return;
+      }
+      
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const img = new Image();
+        img.src = e.target.result;
+        img.onload = function() {
+          const canvas = document.createElement('canvas');
+          canvas.width = img.width;
+          canvas.height = img.height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0);
+          
+          // Encrypt message
+          const encryptedMessage = CryptoJS.AES.encrypt(messageInput.value, keyInput.value).toString();
+          
+          // Embed message in image (LSB)
+          const data = ctx.getImageData(0, 0, canvas.width, canvas.height);
+          const messageBytes = new TextEncoder().encode(encryptedMessage);
+          
+          let index = 0;
+          for (let i = 0; i < data.data.length && index < messageBytes.length; i += 4) {
+            // Modify the red channel
+            data.data[i] = (data.data[i] & 0xFE) | ((messageBytes[index] >> 7) & 1);
+            // Modify the green channel
+            data.data[i + 1] = (data.data[i + 1] & 0xFE) | ((messageBytes[index] >> 6) & 1);
+            // Modify the blue channel
+            data.data[i + 2] = (data.data[i + 2] & 0xFE) | ((messageBytes[index] >> 5) & 1);
+            // Modify the alpha channel
+            data.data[i + 3] = (data.data[i + 3] & 0xFE) | ((messageBytes[index] >> 4) & 1);
             
-            function generatePasswords() {
-                const length = document.getElementById('lengthSlider').value;
-                const includeUppercase = document.getElementById('uppercaseCheck').checked;
-                const includeLowercase = document.getElementById('lowercaseCheck').checked;
-                const includeNumbers = document.getElementById('numbersCheck').checked;
-                const includeSymbols = document.getElementById('symbolsCheck').checked;
-                const numPasswords = document.getElementById('numPasswords').value;
-                
-                const uppercase = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-                const lowercase = 'abcdefghijklmnopqrstuvwxyz';
-                const numbers = '0123456789';
-                const symbols = '!@#$%^&*()_+-=[]{}|;:,.<>?';
-                
-                let characters = '';
-                if (includeUppercase) characters += uppercase;
-                if (includeLowercase) characters += lowercase;
-                if (includeNumbers) characters += numbers;
-                if (includeSymbols) characters += symbols;
-                
-                if (characters === '') {
-                    alert('Please select at least one character type!');
-                    return;
-                }
-                
-                const passwordList = document.getElementById('passwordList');
-                passwordList.innerHTML = '';
-                
-                let strongestPassword = '';
-                let maxStrength = -1;
-                
-                for (let i = 0; i < numPasswords; i++) {
-                    let password = '';
-                    for (let j = 0; j < length; j++) {
-                        password += characters.charAt(Math.floor(Math.random() * characters.length));
-                    }
-                    
-                    const strength = calculatePasswordStrength(password);
-                    if (strength > maxStrength) {
-                        maxStrength = strength;
-                        strongestPassword = password;
-                    }
-                    
-                    const passwordElement = document.createElement('div');
-                    passwordElement.className = 'password-item d-flex justify-content-between align-items-center mb-2';
-                    passwordElement.innerHTML = `
-                        <span>${password}</span>
-                        <div>
-                            <button class="btn btn-sm btn-outline-primary copy-btn" data-password="${password}">
-                                <i class="fas fa-copy"></i>
-                            </button>
-                            <button class="btn btn-sm btn-outline-danger delete-btn">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </div>
-                    `;
-                    
-                    passwordList.appendChild(passwordElement);
-                }
-                
-                // Add event listeners to copy and delete buttons
-                document.querySelectorAll('.copy-btn').forEach(btn => {
-                    btn.addEventListener('click', function() {
-                        const password = this.getAttribute('data-password');
-                        navigator.clipboard.writeText(password).then(() => {
-                            alert('Password copied to clipboard!');
-                        });
-                    });
-                });
-                
-                document.querySelectorAll('.delete-btn').forEach(btn => {
-                    btn.addEventListener('click', function() {
-                        this.closest('.password-item').remove();
-                    });
-                });
-                
-                // Update password strength and hacking duration
-                updatePasswordStrength(strongestPassword);
-            }
-            
-            function calculatePasswordStrength(password) {
-                let strength = 0;
-                
-                // Length factor
-                strength += password.length * 4;
-                
-                // Character variety factors
-                if (/[A-Z]/.test(password)) strength += 10;
-                if (/[a-z]/.test(password)) strength += 10;
-                if (/[0-9]/.test(password)) strength += 10;
-                if (/[^A-Za-z0-9]/.test(password)) strength += 15;
-                
-                // Deductions for poor practices
-                if (/^[a-zA-Z]+$/.test(password)) strength -= 15;
-                if (/^[0-9]+$/.test(password)) strength -= 15;
-                
-                return Math.max(0, Math.min(100, strength));
-            }
-            
-            function updatePasswordStrength(password) {
-                const strength = calculatePasswordStrength(password);
-                const strengthMeter = document.getElementById('strengthMeter');
-                const strengthResult = document.getElementById('strengthResult');
-                const hackingDuration = document.getElementById('hackingDuration');
-                
-                // Update strength meter
-                strengthMeter.classList.remove('d-none');
-                if (strength < 30) {
-                    strengthMeter.className = 'strength-weak';
-                    strengthResult.textContent = 'Weak password: Try adding more characters, numbers, or symbols.';
-                } else if (strength < 60) {
-                    strengthMeter.className = 'strength-fair';
-                    strengthResult.textContent = 'Fair password: Could be stronger with more variety.';
-                } else if (strength < 80) {
-                    strengthMeter.className = 'strength-good';
-                    strengthResult.textContent = 'Good password: Provides decent security.';
-                } else {
-                    strengthMeter.className = 'strength-strong';
-                    strengthResult.textContent = 'Strong password: Excellent security!';
-                }
-                
-                // Estimate hacking duration (very rough estimation)
-                const entropy = Math.log2(Math.pow(94, password.length));
-                let duration;
-                
-                if (entropy < 40) {
-                    duration = 'less than a second';
-                } else if (entropy < 64) {
-                    duration = 'several minutes to hours';
-                } else if (entropy < 80) {
-                    duration = 'days to weeks';
-                } else if (entropy < 100) {
-                    duration = 'years to decades';
-                } else if (entropy < 128) {
-                    duration = 'centuries to millennia';
-                } else {
-                    duration = 'longer than the age of the universe';
-                }
-                
-                hackingDuration.textContent = `Estimated time to crack: ${duration} (based on brute-force attack)`;
-            }
-            
-            // Caesar Cipher Implementation
-            document.getElementById('encryptCaesarBtn').addEventListener('click', function() {
-                const message = document.getElementById('caesarMessage').value;
-                const shift = parseInt(document.getElementById('caesarShift').value);
-                
-                if (!message) {
-                    alert('Please enter a message to encrypt.');
-                    return;
-                }
-                
-                let result = '';
-                for (let i = 0; i < message.length; i++) {
-                    let char = message[i];
-                    
-                    if (char.match(/[a-z]/i)) {
-                        const code = message.charCodeAt(i);
-                        
-                        // Uppercase letters
-                        if (code >= 65 && code <= 90) {
-                            char = String.fromCharCode(((code - 65 + shift) % 26) + 65);
-                        }
-                        // Lowercase letters
-                        else if (code >= 97 && code <= 122) {
-                            char = String.fromCharCode(((code - 97 + shift) % 26) + 97);
-                        }
-                    }
-                    
-                    result += char;
-                }
-                
-                document.getElementById('caesarResult').value = result;
-            });
-            
-            document.getElementById('decryptCaesarBtn').addEventListener('click', function() {
-                const message = document.getElementById('caesarMessage').value;
-                const shift = parseInt(document.getElementById('caesarShift').value);
-                
-                if (!message) {
-                    alert('Please enter a message to decrypt.');
-                    return;
-                }
-                
-                // Decryption is just encryption with a negative shift
-                document.getElementById('caesarShift').value = (26 - shift) % 26;
-                document.getElementById('encryptCaesarBtn').click();
-                document.getElementById('caesarShift').value = shift;
-            });
-            
-            // Morse Code Implementation
-            document.getElementById('encryptMorrisBtn').addEventListener('click', function() {
-                const message = document.getElementById('morrisMessage').value.toUpperCase();
-                
-                if (!message) {
-                    alert('Please enter a message to encrypt.');
-                    return;
-                }
-                
-                const morseMap = {
-                    'A': '.-', 'B': '-...', 'C': '-.-.', 'D': '-..', 'E': '.', 
-                    'F': '..-.', 'G': '--.', 'H': '....', 'I': '..', 'J': '.---', 
-                    'K': '-.-', 'L': '.-..', 'M': '--', 'N': '-.', 'O': '---', 
-                    'P': '.--.', 'Q': '--.-', 'R': '.-.', 'S': '...', 'T': '-', 
-                    'U': '..-', 'V': '...-', 'W': '.--', 'X': '-..-', 'Y': '-.--', 
-                    'Z': '--..', '0': '-----', '1': '.----', '2': '..---', '3': '...--', 
-                    '4': '....-', '5': '.....', '6': '-....', '7': '--...', '8': '---..', 
-                    '9': '----.', ' ': '/', '.': '.-.-.-', ',': '--..--', '?': '..--..',
-                    "'": '.----.', '!': '-.-.--', '/': '-..-.', '(': '-.--.', ')': '-.--.-',
-                    '&': '.-...', ':': '---...', ';': '-.-.-.', '=': '-...-', '+': '.-.-.',
-                    '-': '-....-', '_': '..--.-', '"': '.-..-.', '$': '...-..-', '@': '.--.-.'
-                };
-                
-                let result = '';
-                for (let i = 0; i < message.length; i++) {
-                    const char = message[i];
-                    if (morseMap[char]) {
-                        result += morseMap[char] + ' ';
-                    } else {
-                        result += char + ' ';
-                    }
-                }
-                
-                document.getElementById('morrisResult').value = result.trim();
-            });
-            
-            document.getElementById('decryptMorrisBtn').addEventListener('click', function() {
-                const message = document.getElementById('morrisMessage').value;
-                
-                if (!message) {
-                    alert('Please enter a message to decrypt.');
-                    return;
-                }
-                
-                const reverseMorseMap = {
-                    '.-': 'A', '-...': 'B', '-.-.': 'C', '-..': 'D', '.': 'E', 
-                    '..-.': 'F', '--.': 'G', '....': 'H', '..': 'I', '.---': 'J', 
-                    '-.-': 'K', '.-..': 'L', '--': 'M', '-.': 'N', '---': 'O', 
-                    '.--.': 'P', '--.-': 'Q', '.-.': 'R', '...': 'S', '-': 'T', 
-                    '..-': 'U', '...-': 'V', '.--': 'W', '-..-': 'X', '-.--': 'Y', 
-                    '--..': 'Z', '-----': '0', '.----': '1', '..---': '2', '...--': '3', 
-                    '....-': '4', '.....': '5', '-....': '6', '--...': '7', '---..': '8', 
-                    '----.': '9', '/': ' ', '.-.-.-': '.', '--..--': ',', '..--..': '?',
-                    '.----.': "'", '-.-.--': '!', '-..-.': '/', '-.--.': '(', '-.--.-': ')',
-                    '.-...': '&', '---...': ':', '-.-.-.': ';', '-...-': '=', '.-.-.': '+',
-                    '-....-': '-', '..--.-': '_', '.-..-.': '"', '...-..-': '$', '.--.-.': '@'
-                };
-                
-                const words = message.split(' ');
-                let result = '';
-                
-                for (let i = 0; i < words.length; i++) {
-                    const code = words[i];
-                    if (reverseMorseMap[code]) {
-                        result += reverseMorseMap[code];
-                    } else {
-                        result += code;
-                    }
-                }
-                
-                document.getElementById('morrisResult').value = result;
-            });
+            index++;
+          }
+          
+          ctx.putImageData(data, 0, 0);
+          imagePreview.src = canvas.toDataURL();
+          resultOutput.textContent = 'Message embedded successfully';
+          resultOutput.classList.remove('hidden');
         };
-    </script>
+      };
+      reader.readAsDataURL(imageInput.files[0]);
+    }
+
+    function extractMessageFromImage() {
+      const imageInput = document.getElementById('stegoImage');
+      const keyInput = document.getElementById('stegoKey');
+      const resultOutput = document.getElementById('stegoMessageOutput');
+      
+      if (!imageInput.files.length) {
+        alert('Please select an image');
+        return;
+      }
+      
+      if (!keyInput.value) {
+        alert('Please enter an encryption key');
+        return;
+      }
+      
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const img = new Image();
+        img.src = e.target.result;
+        img.onload = function() {
+          const canvas = document.createElement('canvas');
+          canvas.width = img.width;
+          canvas.height = img.height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0);
+          
+          const data = ctx.getImageData(0, 0, canvas.width, canvas.height);
+          let extractedBytes = [];
+          
+          for (let i = 0; i < data.data.length; i += 4) {
+            // Extract bits from each channel
+            const bit1 = data.data[i] & 1;
+            const bit2 = (data.data[i + 1] & 1) << 1;
+            const bit3 = (data.data[i + 2] & 1) << 2;
+            const bit4 = (data.data[i + 3] & 1) << 3;
+            
+            const byte = bit1 | bit2 | bit3 | bit4;
+            extractedBytes.push(byte);
+            
+            // Stop if we hit null terminator
+            if (byte === 0) break;
+          }
+          
+          // Convert to string
+          const extractedText = new TextDecoder().decode(new Uint8Array(extractedBytes));
+          
+          // Decrypt message
+          try {
+            const decrypted = CryptoJS.AES.decrypt(extractedText, keyInput.value).toString(CryptoJS.enc.Utf8);
+            resultOutput.textContent = decrypted;
+            resultOutput.classList.remove('hidden');
+          } catch (e) {
+            resultOutput.textContent = 'Failed to decrypt message. Check your key.';
+            resultOutput.classList.remove('hidden');
+          }
+        };
+      };
+      reader.readAsDataURL(imageInput.files[0]);
+    }
+
+    // Morse code functions
+    const morseCodeMap = {
+      'A': '.-', 'B': '-...', 'C': '-.-.', 'D': '-..', 'E': '.', 'F': '..-.', 'G': '--.', 'H': '....',
+      'I': '..', 'J': '.---', 'K': '-.-', 'L': '.-..', 'M': '--', 'N': '-.', 'O': '---', 'P': '.--.',
+      'Q': '--.-', 'R': '.-.', 'S': '...', 'T': '-', 'U': '..-', 'V': '...-', 'W': '.--', 'X': '-..-',
+      'Y': '-.--', 'Z': '--..', '0': '-----', '1': '.----', '2': '..---', '3': '...--', '4': '....-',
+      '5': '.....', '6': '-....', '7': '--...', '8': '---..', '9': '----.', '.': '.-.-.-', ',': '--..--',
+      '?': '..--..', "'": '.----.', '!': '-.-.--', '/': '-..-.', '(': '-.--.', ')': '-.--.-', '&': '.-...',
+      ':': '---...', ';': '-.-.-.', '=': '-...-', '+': '.-.-.', '-': '-....-', '_': '..--.-', '"': '.-..-.',
+      '$': '...-..-', '@': '.--.-.', ' ': '/'
+    };
+
+    const reverseMorseMap = Object.fromEntries(Object.entries(morseCodeMap).map(([k, v]) => [v, k]));
+
+    function convertToMorse() {
+      const input = document.getElementById('morseInput').value.toUpperCase();
+      let morse = '';
+      
+      for (const char of input) {
+        if (morseCodeMap[char]) {
+          morse += morseCodeMap[char] + ' ';
+        } else {
+          morse += '? ';
+        }
+      }
+      
+      document.getElementById('morseOutput').textContent = morse.trim();
+    }
+
+    function convertToText() {
+      const input = document.getElementById('morseReverseInput').value;
+      const words = input.split(' / ');
+      let text = '';
+      
+      for (const word of words) {
+        const chars = word.split(' ');
+        for (const char of chars) {
+          if (reverseMorseMap[char]) {
+            text += reverseMorseMap[char];
+          } else {
+            text += '?';
+          }
+        }
+        text += ' ';
+      }
+      
+      document.getElementById('morseReverseOutput').textContent = text.trim();
+    }
+
+    // Password generation
+    function generatePassword() {
+      const length = 16;
+      const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()';
+      let password = '';
+      for (let i = 0; i < length; i++) {
+        password += characters.charAt(Math.floor(Math.random() * characters.length));
+      }
+      document.getElementById('passwordInput').value = password;
+      document.getElementById('passwordInput').type = 'text';
+      document.getElementById('showHideBtn').textContent = 'Hide';
+    }
+
+    function togglePasswordVisibility() {
+      const passwordInput = document.getElementById('passwordInput');
+      if (passwordInput.type === 'password') {
+        passwordInput.type = 'text';
+        document.getElementById('showHideBtn').textContent = 'Hide';
+      } else {
+        passwordInput.type = 'password';
+        document.getElementById('showHideBtn').textContent = 'Show';
+      }
+    }
+
+    function copyPassword() {
+      const passwordInput = document.getElementById('passwordInput');
+      if (passwordInput.value) {
+        navigator.clipboard.writeText(passwordInput.value).then(() => {
+          const originalText = document.getElementById('copyBtn').textContent;
+          document.getElementById('copyBtn').textContent = 'Copied!';
+          setTimeout(() => {
+            document.getElementById('copyBtn').textContent = originalText;
+          }, 2000);
+        });
+      }
+    }
+
+    function clearPassword() {
+      document.getElementById('passwordInput').value = '';
+      document.getElementById('passwordInput').type = 'password';
+      document.getElementById('showHideBtn').textContent = 'Show';
+    }
+
+    // Email check
+    function checkEmail() {
+      const email = document.getElementById('emailCheck').value;
+      const resultElement = document.getElementById('emailResult');
+      
+      if (!email) {
+        resultElement.textContent = 'Please enter an email address';
+        resultElement.className = 'email-result email-invalid';
+        return;
+      }
+      
+      // Simulated email check (no real API)
+      const isValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+      
+      if (isValid) {
+        resultElement.textContent = 'Email is valid';
+        resultElement.className = 'email-result email-valid';
+      } else {
+        resultElement.textContent = 'Email is invalid';
+        resultElement.className = 'email-result email-invalid';
+      }
+    }
+
+    // Tab switching
+    document.querySelectorAll('.tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        
+        tab.classList.add('active');
+        const tabId = tab.getAttribute('data-tab');
+        document.getElementById(`${tabId}Tab`).classList.add('active');
+      });
+    });
+
+    // File name display
+    function updateFileName(inputId, displayId) {
+      const input = document.getElementById(inputId);
+      const display = document.getElementById(displayId);
+      
+      if (input.files.length) {
+        display.textContent = input.files[0].name;
+      } else {
+        display.textContent = 'No file selected';
+      }
+    }
+
+    // Event listeners
+    document.getElementById('encryptFile').addEventListener('change', () => updateFileName('encryptFile', 'encryptFileName'));
+    document.getElementById('stegoImage').addEventListener('change', () => updateFileName('stegoImage', 'stegoImageName'));
+    
+    document.getElementById('encryptBtn').addEventListener('click', encryptFile);
+    document.getElementById('decryptBtn').addEventListener('click', decryptFile);
+    
+    document.getElementById('generateKeysBtn').addEventListener('click', generateKeys);
+    document.getElementById('rsaEncryptBtn').addEventListener('click', encryptWithRSA);
+    document.getElementById('rsaDecryptBtn').addEventListener('click', decryptWithRSA);
+    
+    document.getElementById('calculateHashBtn').addEventListener('click', calculateHash);
+    document.getElementById('encryptTextBtn').addEventListener('click', encryptText);
+    document.getElementById('compareHashBtn').addEventListener('click', compareHashes);
+    
+    document.getElementById('embedBtn').addEventListener('click', embedMessageInImage);
+    document.getElementById('extractBtn').addEventListener('click', extractMessageFromImage);
+    
+    document.getElementById('convertMorseBtn').addEventListener('click', convertToMorse);
+    document.getElementById('reverseMorseBtn').addEventListener('click', convertToText);
+    
+    document.getElementById('generatePasswordBtn').addEventListener('click', generatePassword);
+    document.getElementById('showHideBtn').addEventListener('click', togglePasswordVisibility);
+    document.getElementById('copyBtn').addEventListener('click', copyPassword);
+    document.getElementById('clearBtn').addEventListener('click', clearPassword);
+    document.getElementById('checkEmailBtn').addEventListener('click', checkEmail);
+    
+    // Copy to clipboard helper
+    function copyToClipboard(elementId) {
+      const element = document.getElementById(elementId);
+      if (element) {
+        navigator.clipboard.writeText(element.textContent).then(() => {
+          const copyBtn = element.nextElementSibling;
+          if (copyBtn) {
+            const originalText = copyBtn.textContent;
+            copyBtn.textContent = 'Copied!';
+            setTimeout(() => {
+              copyBtn.textContent = originalText;
+            }, 2000);
+          }
+        });
+      }
+    }
+  </script>
 </body>
 </html>
