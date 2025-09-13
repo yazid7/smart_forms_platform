@@ -2,166 +2,159 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>PDF Toolkit — One Page App</title>
+  <title>PDF Toolkit — Thumbnails + Tools</title>
   <meta name="viewport" content="width=device-width,initial-scale=1" />
 
-  <!-- Bootstrap CSS -->
+  <!-- Bootstrap -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
   <!-- Bootstrap Icons -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
 
+  <!-- pdf-lib -->
+  <script src="https://cdn.jsdelivr.net/npm/pdf-lib/dist/pdf-lib.min.js"></script>
+
+  <!-- pdf.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+
+  <!-- FileSaver -->
+  <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
+
+  <!-- SortableJS -->
+  <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+
+  <!-- CryptoJS -->
+  <script src="https://cdn.jsdelivr.net/npm/crypto-js@4.1.1/crypto-js.min.js"></script>
+
   <style>
-    :root{--accent1:#0d6efd;--card-radius:12px}
-    body{background:#f5f7fb;font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial}
-    .navbar-grad{background:linear-gradient(90deg,var(--accent1),#6f42c1)}
-    .navbar-brand{color:#fff;font-weight:700}
-    .nav-tabs .nav-link{border:0}
-    .tool-card{background:#fff;border-radius:12px;padding:18px;box-shadow:0 6px 20px rgba(16,24,40,0.06)}
-    .dropzone{border:2px dashed #e7edf6;border-radius:12px;padding:28px;text-align:center;background:#fff;cursor:pointer}
-    .dropzone.dragover{background:#eef3ff}
-    .pdf-viewer{height:520px;overflow:auto;background:#fff;border-radius:10px;padding:10px;border:1px solid #e9eef8}
-    .thumb-canvas{border-radius:6px;box-shadow:0 2px 6px rgba(16,24,40,0.06)}
-    .page-thumb{display:inline-block;margin:8px;position:relative}
-    .page-controls{position:absolute;top:6px;right:6px;display:flex;gap:6px}
-    .sig-canvas{border:1px solid #ddd;border-radius:8px;background:#fff}
-    .small-muted{font-size:.86rem;color:#6c757d}
-    footer.small{opacity:.7;margin-top:20px}
-    .theme-dark{background:#0b1220;color:#e6eef8}
-    .theme-dark .tool-card{background:#0f1724}
-    .theme-dark .dropzone{background:#0f1724;border-color:#1f2a44;color:#cfe3ff}
-    .theme-dark .pdf-viewer{background:#0b1220;border-color:#1f2a44}
+    :root{--accent:#0d6efd}
+    body{background:#f4f6fa;font-family:Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial}
+    .navbar{background:linear-gradient(90deg,var(--accent),#6f42c1);color:#fff}
+    .navbar .navbar-brand{color:#fff}
+    .tool-card{background:#fff;border-radius:12px;padding:16px;box-shadow:0 8px 24px rgba(12, 34, 63, 0.06)}
+    .dropzone{border:2px dashed #e7eefc;border-radius:10px;padding:28px;text-align:center;background:#fff;cursor:pointer}
+    .dropzone.dragover{background:#eef6ff}
+    .thumb { width:160px; height:220px; border-radius:8px; overflow:hidden; border:1px solid #e6eef9; background:#fff; display:inline-block; margin:8px; position:relative }
+    .thumb canvas{ display:block; max-width:100%; max-height:100%; }
+    .thumb .badge-pos{ position:absolute; left:8px; top:8px; background:rgba(255,255,255,0.9); padding:3px 6px; border-radius:6px; font-weight:600 }
+    .thumb .controls{ position:absolute; right:6px; top:6px; display:flex; gap:6px }
+    .thumb .selected { outline:4px solid rgba(13,110,253,0.18) }
+    .pdf-viewer { min-height:160px; background:#fff; border-radius:8px; padding:10px; border:1px solid #e9f0fb; overflow:auto }
+    .sig-canvas{ border:1px dashed #ccc; border-radius:8px; background:#fff }
+    .small-muted{ font-size:.88rem; color:#6c757d }
+    footer.small{ margin-top:22px; opacity:.8 }
   </style>
 </head>
 <body>
-  <!-- Navbar -->
-  <nav class="navbar navbar-expand-lg navbar-grad py-3 mb-4">
-    <div class="container">
-      <a class="navbar-brand d-flex align-items-center gap-3" href="#">
+  <nav class="navbar py-3 mb-4">
+    <div class="container d-flex align-items-center justify-content-between">
+      <div class="d-flex align-items-center gap-3">
         <i class="bi bi-file-earmark-pdf-fill fs-2" style="color:#fff"></i>
-        <div>
-          PDF Toolkit
-          <div style="font-size:.78rem;opacity:.9">Convert · Merge · Split · Edit · Sign</div>
-        </div>
-      </a>
-
-      <div class="ms-auto d-flex align-items-center gap-2">
-        <button id="themeToggle" class="btn btn-light btn-sm"><i class="bi bi-moon"></i></button>
+        <div class="navbar-brand mb-0">PDF Toolkit</div>
       </div>
+      <div class="text-white small">Thumbnails + Tools — Client-side</div>
     </div>
   </nav>
 
-  <main class="container">
-    <!-- Hero Upload -->
+  <main class="container mb-5">
+    <!-- Upload area -->
     <div class="row mb-4">
       <div class="col-12">
-        <div id="globalDrop" class="dropzone">
-          <div class="d-flex align-items-center justify-content-center flex-column">
+        <div id="dropzone" class="dropzone">
+          <div>
             <i class="bi bi-cloud-arrow-up fs-1 text-secondary"></i>
-            <div class="mt-2 fw-semibold">Drag & drop files here or <span class="text-primary" id="clickToOpen">click to upload</span></div>
-            <div class="small-muted mt-1">Supports PDF, images (jpg/png), and text. Office files need server-side conversion.</div>
-            <input id="globalFileInput" type="file" multiple accept=".pdf,image/*,text/plain" style="display:none" />
+            <div class="mt-2 fw-semibold">Drag & drop a PDF here or click to upload</div>
+            <div class="small-muted mt-1">You can also upload images (.jpg/.png) or text (.txt) for conversion.</div>
+            <input id="inputFile" type="file" accept=".pdf,image/*,text/plain" style="display:none" />
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Tabs -->
-    <div class="row">
+    <div class="row g-3">
       <div class="col-lg-8">
         <div class="tool-card">
-          <ul class="nav nav-tabs" id="toolsTab" role="tablist">
-            <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-convert">Convert</button></li>
+          <!-- Tabs -->
+          <ul class="nav nav-tabs" id="toolsTabs" role="tablist">
+            <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-organize">Organize</button></li>
             <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-merge">Merge</button></li>
             <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-split">Split</button></li>
-            <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-organize">Organize</button></li>
             <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-watermark">Watermark</button></li>
             <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-sign">Sign</button></li>
             <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-compress">Compress</button></li>
             <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-protect">Protect</button></li>
             <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-rotate">Rotate</button></li>
+            <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-convert">Convert</button></li>
           </ul>
 
           <div class="tab-content mt-3">
-            <!-- Convert -->
-            <div class="tab-pane fade show active" id="tab-convert">
-              <div class="row g-3">
+            <!-- ORGANIZE tab -->
+            <div class="tab-pane fade show active" id="tab-organize">
+              <div class="d-flex align-items-center justify-content-between mb-2">
+                <div>
+                  <strong>Thumbnails</strong>
+                  <div class="small-muted">Drag to reorder, click to select pages. Selected pages are highlighted.</div>
+                </div>
+                <div class="d-flex gap-2">
+                  <button id="btnDeleteSelected" class="btn btn-outline-danger btn-sm"><i class="bi bi-trash"></i> Delete selected</button>
+                  <button id="btnRotateSelected" class="btn btn-outline-secondary btn-sm"><i class="bi bi-arrow-clockwise"></i> Rotate selected</button>
+                  <button id="btnExportOrganized" class="btn btn-primary btn-sm"><i class="bi bi-download"></i> Export PDF</button>
+                </div>
+              </div>
+
+              <div id="thumbnails" class="pdf-viewer d-flex flex-wrap"></div>
+            </div>
+
+            <!-- MERGE tab -->
+            <div class="tab-pane fade" id="tab-merge">
+              <div class="row">
                 <div class="col-md-8">
-                  <h5>Convert files → PDF</h5>
-                  <div class="small-muted">Images (.jpg/.png), text (.txt) and PDFs can be combined into a single PDF.</div>
-                  <div class="mt-3">
-                    <input id="convertFiles" type="file" multiple accept="image/*,text/plain,application/pdf" />
+                  <h6>Merge PDFs</h6>
+                  <div class="small-muted">Add multiple PDF files; reorder them then merge.</div>
+                  <div class="mt-2 d-flex gap-2">
+                    <input id="mergeInput" type="file" accept="application/pdf" multiple />
+                    <button id="btnMergeNow" class="btn btn-success"><i class="bi bi-files"></i> Merge</button>
                   </div>
-                  <div class="mt-3 d-flex gap-2">
-                    <button id="btnConvert" class="btn btn-primary"><i class="bi bi-file-earmark-pdf-fill me-1"></i> Convert to PDF</button>
-                    <input id="outConvertName" class="form-control w-50" placeholder="result.pdf" />
-                  </div>
+                  <div id="mergeList" class="mt-3 list-group"></div>
                 </div>
                 <div class="col-md-4">
-                  <label class="form-label small-muted">Image quality</label>
-                  <input type="range" id="convertQuality" min="0.3" max="1" step="0.05" value="0.9" />
-                  <div class="mt-3 small-muted">Page size</div>
-                  <select id="convertPageSize" class="form-select">
-                    <option value="auto">Auto (image size)</option>
-                    <option value="A4">A4</option>
-                    <option value="Letter">Letter</option>
-                  </select>
+                  <h6>Options</h6>
+                  <label class="small-muted">Output name</label>
+                  <input id="mergeOutName" class="form-control" placeholder="merged.pdf" />
                 </div>
               </div>
             </div>
 
-            <!-- Merge -->
-            <div class="tab-pane fade" id="tab-merge">
-              <h5>Merge PDFs</h5>
-              <div class="small-muted">Add multiple PDFs, reorder them, then merge.</div>
-              <div class="mt-3 d-flex gap-2">
-                <input id="mergeFilesInput" type="file" multiple accept="application/pdf" />
-                <button id="btnMerge" class="btn btn-success"><i class="bi bi-files me-1"></i> Merge</button>
-                <button id="btnClearMerge" class="btn btn-outline-secondary">Clear</button>
-              </div>
-              <div id="mergeList" class="list-group mt-3"></div>
-              <div class="small-muted mt-2">Drag list items to reorder before merging.</div>
-            </div>
-
-            <!-- Split -->
+            <!-- SPLIT tab -->
             <div class="tab-pane fade" id="tab-split">
-              <h5>Split / Extract pages</h5>
-              <div class="small-muted">Load a PDF, choose pages or ranges to extract.</div>
-              <div class="mt-3 d-flex gap-2">
-                <input id="splitInput" type="file" accept="application/pdf" />
-                <input id="splitRanges" class="form-control w-50" placeholder="e.g. 1,3-5,7" />
-                <button id="btnSplit" class="btn btn-warning"><i class="bi bi-scissors"></i> Extract</button>
-                <button id="btnSplitAll" class="btn btn-outline-secondary">Split All</button>
+              <h6>Split / Extract Pages</h6>
+              <div class="small-muted">Select thumbnails in Organize tab, then extract selected pages or use page ranges below.</div>
+              <div class="mt-2 d-flex gap-2">
+                <input id="splitFileInput" type="file" accept="application/pdf" />
+                <input id="splitRanges" class="form-control" placeholder="e.g. 1,3-5 (pages numbering starts at 1)" />
+                <button id="btnSplitRanges" class="btn btn-warning"><i class="bi bi-scissors"></i> Extract ranges</button>
+                <button id="btnSplitSelected" class="btn btn-outline-warning">Extract selected</button>
               </div>
-              <div id="splitPreview" class="mt-3"></div>
             </div>
 
-            <!-- Organize -->
-            <div class="tab-pane fade" id="tab-organize">
-              <h5>Organize pages</h5>
-              <div class="small-muted">Load a PDF to view thumbnails. Drag to reorder, delete pages, then export.</div>
-              <div class="mt-3 d-flex gap-2">
-                <input id="organizeInput" type="file" accept="application/pdf" />
-                <button id="btnExportOrganized" class="btn btn-primary">Export organized PDF</button>
-                <button id="btnClearOrganize" class="btn btn-outline-secondary">Clear</button>
-              </div>
-              <div id="pagesContainer" class="mt-3"></div>
-            </div>
-
-            <!-- Watermark -->
+            <!-- WATERMARK tab -->
             <div class="tab-pane fade" id="tab-watermark">
-              <h5>Watermark & Page numbers</h5>
-              <div class="small-muted">Add text watermark and page numbers.</div>
-              <div class="row mt-3 g-3">
-                <div class="col-md-7">
+              <div class="row">
+                <div class="col-md-8">
+                  <h6>Add watermark</h6>
+                  <div class="small-muted">Add text watermark to all pages or selected pages.</div>
                   <input id="watermarkFile" type="file" accept="application/pdf" />
                 </div>
-                <div class="col-md-5">
+                <div class="col-md-4">
+                  <label class="form-label small-muted">Watermark text</label>
                   <input id="wmText" class="form-control" placeholder="Confidential" />
-                  <div class="d-flex gap-2 mt-2">
-                    <input id="wmOpacity" type="range" min="0.05" max="0.9" step="0.05" value="0.12" />
-                    <input id="wmSize" type="number" class="form-control w-25" value="48" />
-                  </div>
-                  <select id="wmPosition" class="form-select mt-2 w-50">
+                  <label class="form-label small-muted mt-2">Opacity</label>
+                  <input id="wmOpacity" type="range" min="0.05" max="0.9" step="0.05" value="0.12" />
+                  <label class="form-label small-muted mt-2">Font size</label>
+                  <input id="wmSize" type="number" class="form-control" value="48" />
+                  <label class="form-label small-muted mt-2">Position</label>
+                  <select id="wmPosition" class="form-select">
                     <option value="diagonal">Diagonal</option>
                     <option value="center">Center</option>
                     <option value="top-left">Top-left</option>
@@ -169,36 +162,37 @@
                 </div>
               </div>
               <div class="mt-3 d-flex gap-2">
-                <button id="btnApplyWatermark" class="btn btn-info">Apply watermark</button>
-                <button id="btnAddPageNumbers" class="btn btn-outline-secondary">Add page numbers</button>
+                <button id="btnApplyWatermark" class="btn btn-info"><i class="bi bi-droplet"></i> Apply to file</button>
+                <button id="btnApplyWatermarkSelected" class="btn btn-outline-info">Apply to selected pages</button>
               </div>
             </div>
 
-            <!-- Sign -->
+            <!-- SIGN tab -->
             <div class="tab-pane fade" id="tab-sign">
-              <h5>Sign PDF</h5>
-              <div class="small-muted">Draw signature and place it on a selected page in Organize.</div>
-              <div class="row mt-3">
-                <div class="col-md-7">
-                  <canvas id="sigPad" class="sig-canvas" width="640" height="120"></canvas>
+              <h6>Signature</h6>
+              <div class="small-muted">Draw signature, save it, then place it on selected thumbnail(s).</div>
+              <div class="row mt-2">
+                <div class="col-md-8">
+                  <canvas id="sigCanvas" class="sig-canvas" width="640" height="120"></canvas>
                   <div class="mt-2 d-flex gap-2">
-                    <button id="sigClear" class="btn btn-outline-secondary">Clear</button>
-                    <button id="sigSave" class="btn btn-primary">Save signature</button>
+                    <button id="sigClear" class="btn btn-sm btn-outline-secondary">Clear</button>
+                    <button id="sigSave" class="btn btn-sm btn-primary">Save signature</button>
                   </div>
                 </div>
-                <div class="col-md-5">
-                  <div id="savedSignatures" class="d-flex flex-wrap gap-2"></div>
-                  <div class="small-muted mt-2">Select a page thumbnail in Organize and click "Place signature" there, or use 'Place on selected'.</div>
-                  <button id="btnPlaceSaved" class="btn btn-success mt-2">Place on selected page</button>
+                <div class="col-md-4">
+                  <div id="savedSigs" class="d-flex flex-wrap gap-2"></div>
+                  <div class="mt-2">
+                    <button id="btnPlaceSignature" class="btn btn-success btn-sm">Place on selected pages</button>
+                  </div>
                 </div>
               </div>
             </div>
 
-            <!-- Compress -->
+            <!-- COMPRESS tab -->
             <div class="tab-pane fade" id="tab-compress">
-              <h5>Compress PDF</h5>
-              <div class="small-muted">Lossy compression: converts pages to images at lower quality (searchability may be lost).</div>
-              <div class="mt-3 d-flex gap-2">
+              <h6>Compress (lossy)</h6>
+              <div class="small-muted">This rasterizes pages and re-embeds them as JPEG at chosen quality.</div>
+              <div class="mt-2 d-flex gap-2">
                 <input id="compressInput" type="file" accept="application/pdf" />
                 <select id="compressQuality" class="form-select w-25">
                   <option value="0.9">High</option>
@@ -209,512 +203,554 @@
               </div>
             </div>
 
-            <!-- Protect -->
+            <!-- PROTECT tab -->
             <div class="tab-pane fade" id="tab-protect">
-              <h5>Protect (AES file encryption)</h5>
-              <div class="small-muted">This encrypts the whole file into an .enc blob (strong for storage/sharing). It is not PDF-standard open-password protection.</div>
-              <div class="mt-3 d-flex gap-2">
-                <input id="protectInput" type="file" />
-                <input id="protectPass" class="form-control w-50" type="password" placeholder="password" />
+              <h6>Encrypt file (AES)</h6>
+              <div class="small-muted">Encrypts the whole file to a .enc file for safe storage/sharing (not PDF-standard open-password).</div>
+              <div class="mt-2 d-flex gap-2">
+                <input id="protectFile" type="file" />
+                <input id="protectPassword" class="form-control w-50" type="password" placeholder="Enter password" />
                 <button id="btnEncrypt" class="btn btn-dark">Encrypt</button>
                 <button id="btnDecrypt" class="btn btn-outline-secondary">Decrypt</button>
               </div>
             </div>
 
-            <!-- Rotate -->
+            <!-- ROTATE tab -->
             <div class="tab-pane fade" id="tab-rotate">
-              <h5>Rotate PDF</h5>
-              <div class="small-muted">Rotate entire document by an angle.</div>
-              <div class="mt-3 d-flex gap-2">
-                <input id="rotateInput" type="file" accept="application/pdf" />
+              <h6>Rotate pages</h6>
+              <div class="small-muted">Rotate selected pages (applies when exporting).</div>
+              <div class="mt-2 d-flex gap-2 align-items-center">
                 <select id="rotateAngle" class="form-select w-25">
                   <option value="90">90°</option>
                   <option value="180">180°</option>
                   <option value="270">270°</option>
                 </select>
-                <button id="btnRotate" class="btn btn-success">Rotate</button>
+                <button id="btnRotateSelected" class="btn btn-success">Rotate selected</button>
+              </div>
+            </div>
+
+            <!-- CONVERT tab -->
+            <div class="tab-pane fade" id="tab-convert">
+              <h6>Convert images / text to PDF</h6>
+              <div class="small-muted">Upload images or text files and convert them into a single PDF.</div>
+              <div class="mt-2 d-flex gap-2">
+                <input id="convertFiles" type="file" accept="image/*,text/plain" multiple />
+                <input id="convertOutName" class="form-control w-50" placeholder="converted.pdf" />
+                <button id="btnConvertFiles" class="btn btn-primary">Convert</button>
               </div>
             </div>
 
           </div> <!-- tab-content -->
         </div> <!-- tool-card -->
-      </div> <!-- col -->
+      </div> <!-- left column -->
 
-      <!-- Right column: viewer / info -->
+      <!-- Right column -->
       <div class="col-lg-4">
         <div class="tool-card mb-3">
-          <h6>PDF Viewer</h6>
-          <div id="pdfViewer" class="pdf-viewer mt-2"></div>
+          <h6>Preview / Current File</h6>
+          <div class="small-muted">Click a thumbnail to preview full-size below.</div>
+          <div id="previewArea" class="pdf-viewer mt-2"></div>
           <div class="mt-3 d-flex gap-2">
-            <button id="btnDownloadCurrent" class="btn btn-primary btn-sm">Download current</button>
-            <button id="btnClearViewer" class="btn btn-outline-secondary btn-sm">Clear</button>
+            <button id="downloadCurrent" class="btn btn-primary btn-sm"><i class="bi bi-download"></i> Download current</button>
+            <button id="clearAll" class="btn btn-outline-secondary btn-sm">Clear</button>
           </div>
         </div>
 
-        <div class="tool-card mb-3">
+        <div class="tool-card">
           <h6>Status & Logs</h6>
-          <div id="statusInfo" class="small-muted">Ready</div>
-          <div id="logBox" style="height:180px;overflow:auto;margin-top:10px;font-size:.9rem"></div>
+          <div id="status" class="small-muted mb-2">Ready</div>
+          <div id="log" style="height:200px; overflow:auto; font-size:.9rem"></div>
         </div>
       </div>
     </div>
 
-    <footer class="small text-center mt-4">Client-side: pdf.js | pdf-lib | SortableJS | FileSaver | CryptoJS. For PDF open-password protection or Office→PDF, ask for a small server helper script.</footer>
+    <footer class="small text-center mt-4">Client-side only. For PDF-standard password protection or Office→PDF conversion, a server helper is required.</footer>
   </main>
 
-  <!-- Libraries -->
-  <script src="https://cdn.jsdelivr.net/npm/pdf-lib/dist/pdf-lib.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/crypto-js@4.1.1/crypto-js.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-
+  <!-- Libraries already loaded in head; now script -->
   <script>
     // --- Setup & state ---
     const { PDFDocument, StandardFonts, rgb, degrees } = PDFLib;
     pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
-    let currentPdfBytes = null;
-    let lastSavedBytes = null;
-    let organizeSourceBytes = null;
-    let organizePdfDoc = null;
-    let savedSignatures = []; // dataURLs
-    const logBox = document.getElementById('logBox');
-    function log(msg){ const d=document.createElement('div'); d.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`; logBox.prepend(d); }
-    function setStatus(t){ document.getElementById('statusInfo').textContent = t; log(t); }
 
-    // --- Helpers ---
-    function fileToArrayBuffer(file){ return new Promise((res,rej)=>{ const r=new FileReader(); r.onload=()=>res(r.result); r.onerror=rej; r.readAsArrayBuffer(file); }); }
-    function blobToArrayBuffer(blob){ return new Response(blob).arrayBuffer(); }
-    function saveBytes(bytes, name){ const blob = new Blob([bytes], {type:'application/pdf'}); saveAs(blob, name); }
-    function saveBlob(blob, name){ saveAs(blob, name); }
+    let currentPdfBytes = null;            // Uint8Array / ArrayBuffer of the loaded PDF
+    let currentPdfName = null;
+    let currentPageCount = 0;
+    let currentPagesOrder = [];            // array of original page indices in current order (e.g. [0,1,2,...])
+    let pageRotationMap = {};             // mapping originalIndex -> rotationDegrees (cumulative)
+    let savedSignatures = [];             // dataURL strings
+    let lastExportBytes = null;
 
-    // --- Global drop ---
-    const globalDrop = document.getElementById('globalDrop');
-    const globalFileInput = document.getElementById('globalFileInput');
-    document.getElementById('clickToOpen').addEventListener('click', ()=> globalFileInput.click());
-    globalDrop.addEventListener('click', ()=> globalFileInput.click());
-    globalDrop.addEventListener('dragover', (e)=>{ e.preventDefault(); globalDrop.classList.add('dragover'); });
-    globalDrop.addEventListener('dragleave', ()=> globalDrop.classList.remove('dragover'));
-    globalDrop.addEventListener('drop', async (e)=>{ e.preventDefault(); globalDrop.classList.remove('dragover'); handleFiles(e.dataTransfer.files); });
-    globalFileInput.addEventListener('change', ()=> handleFiles(globalFileInput.files));
+    // Elements
+    const dropzone = document.getElementById('dropzone');
+    const inputFile = document.getElementById('inputFile');
+    const thumbnails = document.getElementById('thumbnails');
+    const previewArea = document.getElementById('previewArea');
+    const logEl = document.getElementById('log');
+    const statusEl = document.getElementById('status');
+    const downloadCurrentBtn = document.getElementById('downloadCurrent');
 
-    async function handleFiles(fileList){
+    // small logger
+    function log(msg){
+      const d = document.createElement('div'); d.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
+      logEl.prepend(d);
+      statusEl.textContent = msg;
+    }
+
+    // file -> arrayBuffer
+    function fileToArrayBuffer(file){
+      return new Promise((res,rej)=>{
+        const r = new FileReader();
+        r.onload = ()=>res(r.result);
+        r.onerror = rej;
+        r.readAsArrayBuffer(file);
+      });
+    }
+
+    function arrayBufferToUint8(arr){ return new Uint8Array(arr); }
+
+    // --- Dropzone interactions ---
+    dropzone.addEventListener('click', ()=> inputFile.click());
+    dropzone.addEventListener('dragover', e=>{ e.preventDefault(); dropzone.classList.add('dragover'); });
+    dropzone.addEventListener('dragleave', ()=> dropzone.classList.remove('dragover'));
+    dropzone.addEventListener('drop', async (e)=>{
+      e.preventDefault();
+      dropzone.classList.remove('dragover');
+      if(e.dataTransfer && e.dataTransfer.files.length) await handleIncomingFiles(e.dataTransfer.files);
+    });
+    inputFile.addEventListener('change', async ()=> { if(inputFile.files.length) await handleIncomingFiles(inputFile.files); });
+
+    async function handleIncomingFiles(fileList){
+      // prefer first PDF for thumbnailing; if images/text, convert automatically to PDF
       const files = Array.from(fileList);
-      if(!files.length) return;
-      // If PDF(s) present, load first into viewer and Organize
-      const pdfFile = files.find(f=>f.type==='application/pdf');
+      // If there's a pdf file, load the first pdf
+      const pdfFile = files.find(f => f.type === 'application/pdf' || f.name.toLowerCase().endsWith('.pdf'));
       if(pdfFile){
-        const bytes = await fileToArrayBuffer(pdfFile);
-        currentPdfBytes = bytes; lastSavedBytes = bytes;
-        renderPdfInViewer(bytes);
-        updateViewerDownload(bytes, pdfFile.name);
-        // also populate organize area
-        organizeSourceBytes = bytes;
-        organizePdfDoc = await PDFDocument.load(bytes);
-        await buildPageThumbnails(bytes);
-        setStatus(`Loaded ${pdfFile.name}`);
+        log('Loading PDF: ' + pdfFile.name);
+        const arr = await fileToArrayBuffer(pdfFile);
+        await loadPdf(arr, pdfFile.name);
         return;
       }
-      // else if images/text convert automatically
-      const imgOrTxt = files;
-      document.getElementById('convertFiles').files = new DataTransfer().files; // reset
-      // Fill convert input: cannot set FileList easily; instead process directly
-      // We'll call convert routine directly
-      await convertFilesToPdf(files);
+      // else treat as convert - gather images and text into a PDF
+      log('Converting non-PDF files to PDF');
+      await convertFilesToPdf(files, 'converted.pdf', true);
     }
 
-    // --- PDF.js Viewer ---
-    const pdfViewer = document.getElementById('pdfViewer');
-    async function renderPdfInViewer(bytes){
-      pdfViewer.innerHTML = '';
-      if(!bytes) return;
-      const uint8 = new Uint8Array(bytes);
-      const pdf = await pdfjsLib.getDocument({data:uint8}).promise;
-      for(let p=1;p<=pdf.numPages;p++){
-        const page = await pdf.getPage(p);
-        const viewport = page.getViewport({scale:1.2});
-        const canvas = document.createElement('canvas');
-        canvas.width = viewport.width; canvas.height = viewport.height;
-        canvas.className = 'thumb-canvas mb-3';
-        const ctx = canvas.getContext('2d');
-        await page.render({canvasContext:ctx,viewport}).promise;
-        const caption = document.createElement('div');
-        caption.className = 'small-muted mb-2';
-        caption.textContent = `Page ${p} — ${Math.round(viewport.width)}×${Math.round(viewport.height)}`;
-        pdfViewer.appendChild(caption);
-        pdfViewer.appendChild(canvas);
+    // --- PDF load and thumbnail generation (pdf.js for rendering) ---
+    async function loadPdf(arrayBuffer, name='document.pdf'){
+      try{
+        currentPdfBytes = arrayBuffer instanceof ArrayBuffer ? arrayBuffer : (arrayBuffer.buffer || arrayBuffer);
+        currentPdfName = name || 'document.pdf';
+        const uint8 = new Uint8Array(currentPdfBytes);
+        const pdfDoc = await pdfjsLib.getDocument({data:uint8}).promise;
+        currentPageCount = pdfDoc.numPages;
+        // prepare order array
+        currentPagesOrder = Array.from({length:currentPageCount}, (_,i)=>i);
+        pageRotationMap = {};
+        thumbnails.innerHTML = '';
+        previewArea.innerHTML = '';
+        // render thumbnails per page
+        for(let p=1; p<=pdfDoc.numPages; p++){
+          const page = await pdfDoc.getPage(p);
+          const viewport = page.getViewport({scale:0.5});
+          const canvas = document.createElement('canvas');
+          canvas.width = viewport.width; canvas.height = viewport.height;
+          const ctx = canvas.getContext('2d');
+          await page.render({canvasContext:ctx, viewport}).promise;
+          const wrapper = document.createElement('div');
+          wrapper.className = 'thumb';
+          wrapper.dataset.orig = (p-1); // original index
+          wrapper.appendChild(canvas);
+          const badge = document.createElement('div'); badge.className = 'badge-pos'; badge.textContent = p;
+          wrapper.appendChild(badge);
+          const controls = document.createElement('div'); controls.className='controls';
+          controls.innerHTML = `<button class="btn btn-sm btn-light btn-select" title="Select"><i class="bi bi-check2"></i></button>
+                                <button class="btn btn-sm btn-light btn-rotate" title="Rotate 90°"><i class="bi bi-arrow-clockwise"></i></button>
+                                <button class="btn btn-sm btn-danger btn-del" title="Delete"><i class="bi bi-trash"></i></button>`;
+          wrapper.appendChild(controls);
+          thumbnails.appendChild(wrapper);
+
+          // events
+          wrapper.addEventListener('click', (ev)=>{
+            if(ev.target.matches('button') || ev.target.closest('button')) return; // skip clicks on buttons
+            openPreviewForPage(p);
+          });
+          wrapper.querySelector('.btn-select').addEventListener('click', (ev)=>{
+            ev.stopPropagation();
+            wrapper.classList.toggle('selected');
+          });
+          wrapper.querySelector('.btn-rotate').addEventListener('click', (ev)=>{
+            ev.stopPropagation();
+            const orig = parseInt(wrapper.dataset.orig,10);
+            pageRotationMap[orig] = (pageRotationMap[orig] || 0) + 90;
+            wrapper.classList.add('rotated');
+            log('Queued rotation 90° for page ' + (orig+1));
+          });
+          wrapper.querySelector('.btn-del').addEventListener('click', (ev)=>{
+            ev.stopPropagation();
+            // remove thumbnail and remove orig from order
+            const orig = parseInt(wrapper.dataset.orig,10);
+            wrapper.remove();
+            currentPagesOrder = currentPagesOrder.filter(x => x !== orig);
+            log('Removed page ' + (orig+1) + ' from current document view');
+          });
+        }
+        // Enable drag-and-drop reorder with SortableJS
+        Sortable.create(thumbnails, {
+          animation: 180,
+          onEnd: (evt)=>{
+            // rebuild currentPagesOrder according to thumbnail DOM order
+            const els = Array.from(thumbnails.children);
+            currentPagesOrder = els.map(el => parseInt(el.dataset.orig,10));
+            log('Reordered pages');
+          }
+        });
+
+        log(`Loaded ${pdfDoc.numPages} page(s) — ${currentPdfName}`);
+        // set preview first page
+        openPreviewForPage(1);
+        // store lastExportBytes to current
+        lastExportBytes = currentPdfBytes;
+        downloadCurrentBtn.onclick = ()=> saveAs(new Blob([lastExportBytes], {type:'application/pdf'}), currentPdfName);
+      } catch(e){
+        console.error(e);
+        log('Error loading PDF: ' + e.message);
+        alert('Failed to load PDF: ' + e.message);
       }
-      setStatus(`Rendered ${pdf.numPages} page(s) in viewer`);
     }
 
-    function updateViewerDownload(bytes, name='document.pdf'){
-      document.getElementById('btnDownloadCurrent').onclick = ()=>{ saveBytes(bytes, name); };
+    // Open a bigger preview for a page (render at higher scale)
+    async function openPreviewForPage(pageNumber){
+      previewArea.innerHTML = '';
+      if(!currentPdfBytes) { previewArea.textContent = 'No PDF loaded'; return; }
+      const uint8 = new Uint8Array(currentPdfBytes);
+      const doc = await pdfjsLib.getDocument({data:uint8}).promise;
+      if(pageNumber < 1 || pageNumber > doc.numPages) return;
+      const page = await doc.getPage(pageNumber);
+      const viewport = page.getViewport({scale:1.4});
+      const canvas = document.createElement('canvas');
+      canvas.width = viewport.width; canvas.height = viewport.height;
+      const ctx = canvas.getContext('2d');
+      await page.render({canvasContext:ctx, viewport}).promise;
+      previewArea.appendChild(canvas);
     }
 
-    document.getElementById('btnClearViewer').addEventListener('click', ()=>{ pdfViewer.innerHTML=''; currentPdfBytes=null; lastSavedBytes=null; setStatus('Viewer cleared'); });
+    // --- Convert images/text to PDF ---
+    async function convertFilesToPdf(files, outName='converted.pdf', autoOpen=false){
+      try{
+        const outDoc = await PDFDocument.create();
+        for(const f of files){
+          if(f.type.startsWith('image/')){
+            const arr = await fileToArrayBuffer(f);
+            let img;
+            if(f.type === 'image/png') img = await outDoc.embedPng(arr); else img = await outDoc.embedJpg(arr);
+            const page = outDoc.addPage([img.width, img.height]);
+            page.drawImage(img, {x:0,y:0,width:img.width, height:img.height});
+            log('Added image ' + f.name);
+          } else if(f.type === 'text/plain'){
+            const text = await f.text();
+            const page = outDoc.addPage();
+            const helv = await outDoc.embedFont(StandardFonts.Helvetica);
+            page.drawText(text, {x:40,y:700,size:12,font:helv});
+            log('Added text file ' + f.name);
+          } else if(f.type === 'application/pdf'){
+            // merge pdf
+            const bytes = await fileToArrayBuffer(f);
+            const src = await PDFDocument.load(bytes);
+            const copied = await outDoc.copyPages(src, src.getPageIndices());
+            copied.forEach(p=> outDoc.addPage(p));
+            log('Merged PDF ' + f.name);
+          } else {
+            log('Skipped unsupported: ' + f.name);
+          }
+        }
+        const bytes = await outDoc.save();
+        lastExportBytes = bytes;
+        saveAs(new Blob([bytes], {type:'application/pdf'}), outName);
+        if(autoOpen) await loadPdf(bytes, outName);
+        log('Conversion finished: ' + outName);
+      } catch(e){
+        console.error(e);
+        alert('Convert error: ' + e.message);
+      }
+    }
 
-    // --- Convert ---
-    document.getElementById('btnConvert').addEventListener('click', async ()=>{
-      const files = document.getElementById('convertFiles').files;
-      if(!files.length) return alert('Choose files to convert');
-      await convertFilesToPdf(Array.from(files));
+    document.getElementById('btnConvertFiles').addEventListener('click', async ()=>{
+      const files = Array.from(document.getElementById('convertFiles').files);
+      if(!files.length){ alert('Choose files to convert'); return; }
+      const name = document.getElementById('convertOutName').value || 'converted.pdf';
+      await convertFilesToPdf(files, name, true);
     });
 
-    async function convertFilesToPdf(files){
-      setStatus('Converting files to PDF...');
-      const outDoc = await PDFDocument.create();
-      for(let i=0;i<files.length;i++){
-        const f = files[i];
-        if(f.type.startsWith('image/')){
-          const arr = await fileToArrayBuffer(f);
-          let img;
-          if(f.type==='image/png') img = await outDoc.embedPng(arr); else img = await outDoc.embedJpg(arr);
-          const page = outDoc.addPage([img.width, img.height]);
-          page.drawImage(img,{x:0,y:0,width:img.width,height:img.height});
-          log(`Embedded image ${f.name}`);
-        } else if(f.type === 'text/plain'){
-          const txt = await f.text();
-          const page = outDoc.addPage();
-          const helv = await outDoc.embedFont(StandardFonts.Helvetica);
-          const lines = txt.split('\n');
-          let y = page.getHeight() - 40;
-          for(const line of lines){
-            page.drawText(line,{x:40,y,size:12,font:helv});
-            y -= 14;
-            if(y < 40){ y = page.getHeight() - 40; }
-          }
-        } else if(f.type === 'application/pdf'){
-          const bytes = await fileToArrayBuffer(f);
-          const src = await PDFDocument.load(bytes);
-          const copied = await outDoc.copyPages(src, src.getPageIndices());
-          copied.forEach(p=> outDoc.addPage(p));
-          log(`Merged PDF ${f.name}`);
-        } else {
-          log(`Skipped unsupported: ${f.name}`);
-        }
-      }
-      const bytes = await outDoc.save();
-      lastSavedBytes = bytes; currentPdfBytes = bytes;
-      const outName = document.getElementById('outConvertName').value || 'converted.pdf';
-      saveBytes(bytes, outName);
-      await renderPdfInViewer(bytes);
-      setStatus('Conversion complete');
-    }
-
-    // --- Merge ---
+    // --- Merge PDFs ---
+    let mergeFilesArr = [];
     const mergeListEl = document.getElementById('mergeList');
-    let mergeFiles = [];
-    document.getElementById('mergeFilesInput').addEventListener('change', (e)=>{
-      const list = Array.from(e.target.files).filter(f=>f.type==='application/pdf');
-      for(const f of list){
+    document.getElementById('mergeInput').addEventListener('change', (e)=>{
+      const files = Array.from(e.target.files).filter(f=>f.type==='application/pdf');
+      for(const f of files){
+        mergeFilesArr.push(f);
         const item = document.createElement('div');
         item.className = 'list-group-item d-flex justify-content-between align-items-center';
-        item.innerHTML = `<div>${f.name}</div><div class="btn-group btn-group-sm"><button class="btn btn-outline-secondary btn-move-up"><i class="bi bi-arrow-up"></i></button><button class="btn btn-outline-secondary btn-move-down"><i class="bi bi-arrow-down"></i></button><button class="btn btn-outline-danger btn-remove"><i class="bi bi-x-lg"></i></button></div>`;
+        item.textContent = f.name;
+        const rm = document.createElement('button'); rm.className='btn btn-sm btn-danger'; rm.innerHTML='<i class="bi bi-x-lg"></i>';
+        rm.addEventListener('click', ()=>{ mergeFilesArr = mergeFilesArr.filter(x=>x!==f); item.remove(); });
+        item.appendChild(rm);
         mergeListEl.appendChild(item);
-        mergeFiles.push({file:f,el:item});
-        item.querySelector('.btn-remove').addEventListener('click', ()=>{ mergeListEl.removeChild(item); mergeFiles = mergeFiles.filter(x=>x.el!==item); });
-        item.querySelector('.btn-move-up').addEventListener('click', ()=>{ const idx = Array.from(mergeListEl.children).indexOf(item); if(idx>0) mergeListEl.insertBefore(item, mergeListEl.children[idx-1];) });
-        item.querySelector('.btn-move-down').addEventListener('click', ()=>{ const idx = Array.from(mergeListEl.children).indexOf(item); if(idx<mergeListEl.children.length-1) mergeListEl.insertBefore(item, mergeListEl.children[idx+2];) });
       }
-      // Make mergeList sortable
       Sortable.create(mergeListEl, {animation:150});
     });
 
-    document.getElementById('btnClearMerge').addEventListener('click', ()=>{ mergeListEl.innerHTML=''; mergeFiles=[]; });
-
-    document.getElementById('btnMerge').addEventListener('click', async ()=>{
-      if(mergeListEl.children.length===0) return alert('Add PDF files to merge');
+    document.getElementById('btnMergeNow').addEventListener('click', async ()=>{
+      if(mergeFilesArr.length===0) return alert('Add PDF files to merge');
       const merged = await PDFDocument.create();
-      const els = Array.from(mergeListEl.children);
-      for(let i=0;i<els.length;i++){
-        const name = els[i].firstChild.textContent;
-        const mf = mergeFiles.find(m=>m.file.name===name);
-        if(!mf){ log('Missing file: '+name); continue; }
-        const bytes = await fileToArrayBuffer(mf.file);
+      // take DOM order
+      const domNames = Array.from(mergeListEl.children).map(x=>x.firstChild.textContent);
+      for(const name of domNames){
+        const f = mergeFilesArr.find(ff=>ff.name === name);
+        if(!f) continue;
+        const bytes = await fileToArrayBuffer(f);
         const src = await PDFDocument.load(bytes);
         const copied = await merged.copyPages(src, src.getPageIndices());
-        copied.forEach(p=>merged.addPage(p));
-        setStatus(`Merging: ${mf.file.name}`);
+        copied.forEach(p=> merged.addPage(p));
+        log('Appended ' + f.name);
       }
       const out = await merged.save();
-      lastSavedBytes = out; currentPdfBytes = out;
-      saveBytes(out, 'merged.pdf');
-      await renderPdfInViewer(out);
-      setStatus('Merge complete');
+      lastExportBytes = out;
+      const outName = document.getElementById('mergeOutName').value || 'merged.pdf';
+      saveAs(new Blob([out],{type:'application/pdf'}), outName);
+      await loadPdf(out, outName);
+      log('Merge complete');
     });
 
-    // --- Split ---
-    let splitSource = null;
-    document.getElementById('splitInput').addEventListener('change', async (e)=>{ if(!e.target.files.length) return; splitSource = e.target.files[0]; document.getElementById('splitPreview').textContent = 'Loaded: ' + splitSource.name; setStatus('Loaded for split: '+splitSource.name); });
+    // --- Split / Extract ---
+    document.getElementById('btnSplitRanges').addEventListener('click', async ()=>{
+      const splitInput = document.getElementById('splitFileInput').files[0];
+      const rangesSpec = document.getElementById('splitRanges').value.trim();
+      if(!splitInput) return alert('Choose a PDF to split');
+      if(!rangesSpec) return alert('Enter pages or ranges');
+      const arr = await fileToArrayBuffer(splitInput);
+      const src = await PDFDocument.load(arr);
+      const total = src.getPageCount();
+      const ranges = parseRanges(rangesSpec, total);
+      const out = await PDFDocument.create();
+      for(const r of ranges){
+        for(let p=r.start-1; p<=r.end-1; p++){
+          if(p<0 || p>=total) continue;
+          const [copied] = await out.copyPages(src, [p]);
+          out.addPage(copied);
+        }
+      }
+      const bytes = await out.save();
+      saveAs(new Blob([bytes],{type:'application/pdf'}), 'extracted.pdf');
+      await loadPdf(bytes, 'extracted.pdf');
+      log('Extracted requested ranges');
+    });
 
     function parseRanges(spec, total){
       const parts = spec.split(',').map(s=>s.trim()).filter(Boolean);
       const out = [];
       for(const p of parts){
-        if(p.includes('-')){ const [a,b]=p.split('-').map(x=>parseInt(x)); out.push({start:Math.max(1,a), end:Math.min(total,b)}); }
-        else { const n=parseInt(p); if(!isNaN(n)) out.push({start:n,end:n}); }
+        if(p.includes('-')){
+          const [a,b] = p.split('-').map(x=>parseInt(x));
+          out.push({start: Math.max(1, a), end: Math.min(total, b)});
+        } else {
+          const n = parseInt(p);
+          out.push({start:n, end:n});
+        }
       }
       return out;
     }
 
-    document.getElementById('btnSplit').addEventListener('click', async ()=>{
-      if(!splitSource) return alert('Load a PDF first');
-      const arr = await fileToArrayBuffer(splitSource);
-      const src = await PDFDocument.load(arr);
-      const total = src.getPageCount();
-      const spec = document.getElementById('splitRanges').value;
-      if(!spec) return alert('Enter pages or ranges');
-      const ranges = parseRanges(spec, total);
-      const outDoc = await PDFDocument.create();
-      for(const r of ranges){
-        for(let p=r.start-1;p<=r.end-1;p++){
-          if(p<0||p>=total) continue;
-          const [copied] = await outDoc.copyPages(src,[p]);
-          outDoc.addPage(copied);
-        }
-      }
-      const bytes = await outDoc.save();
-      saveBytes(bytes, 'extracted.pdf');
-      await renderPdfInViewer(bytes);
-      setStatus('Extracted pages');
-    });
-
-    document.getElementById('btnSplitAll').addEventListener('click', async ()=>{
-      if(!splitSource) return alert('Load a PDF first');
-      const arr = await fileToArrayBuffer(splitSource);
-      const src = await PDFDocument.load(arr);
-      const total = src.getPageCount();
-      for(let p=0;p<total;p++){
-        const out = await PDFDocument.create();
-        const [copied] = await out.copyPages(src,[p]);
-        out.addPage(copied);
-        const bytes = await out.save();
-        saveBytes(bytes, `page-${p+1}.pdf`);
-      }
-      setStatus('Split all pages exported');
-    });
-
-    // --- Organize: thumbnails, drag/drop reorder, delete, export ---
-    const pagesContainer = document.getElementById('pagesContainer');
-
-    document.getElementById('organizeInput').addEventListener('change', async (e)=>{
-      if(!e.target.files.length) return;
-      const f = e.target.files[0];
-      const bytes = await fileToArrayBuffer(f);
-      organizeSourceBytes = bytes;
-      organizePdfDoc = await PDFDocument.load(bytes);
-      await buildPageThumbnails(bytes);
-      await renderPdfInViewer(bytes);
-      setStatus('Loaded for organize: ' + f.name);
-    });
-
-    async function buildPageThumbnails(bytes){
-      pagesContainer.innerHTML = '';
-      const uint8 = new Uint8Array(bytes);
-      const doc = await pdfjsLib.getDocument({data:uint8}).promise;
-      for(let p=1;p<=doc.numPages;p++){
-        const page = await doc.getPage(p);
-        const viewport = page.getViewport({scale:0.6});
-        const canvas = document.createElement('canvas');
-        canvas.width = viewport.width; canvas.height = viewport.height;
-        const ctx = canvas.getContext('2d');
-        await page.render({canvasContext:ctx,viewport}).promise;
-        const wrapper = document.createElement('div');
-        wrapper.className = 'page-thumb';
-        wrapper.dataset.page = p-1;
-        wrapper.appendChild(canvas);
-        const controls = document.createElement('div'); controls.className='page-controls';
-        controls.innerHTML = `<button class="btn btn-sm btn-light select-page" title="Select"><i class="bi bi-check2"></i></button>
-                              <button class="btn btn-sm btn-light del-page" title="Delete"><i class="bi bi-trash"></i></button>`;
-        wrapper.appendChild(controls);
-        pagesContainer.appendChild(wrapper);
-        wrapper.querySelector('.del-page').addEventListener('click', ()=>{ wrapper.remove(); });
-        wrapper.querySelector('.select-page').addEventListener('click', ()=>{ wrapper.classList.toggle('border-primary'); wrapper.classList.toggle('border-3'); });
-      }
-      Sortable.create(pagesContainer, {animation:200});
-      setStatus('Thumbnails ready: ' + doc.numPages + ' pages');
-    }
-
-    document.getElementById('btnExportOrganized').addEventListener('click', async ()=>{
-      if(!organizeSourceBytes) return alert('Load a PDF first');
-      const src = await PDFDocument.load(organizeSourceBytes);
+    // Extract selected thumbnails
+    document.getElementById('btnSplitSelected').addEventListener('click', async ()=>{
+      if(!currentPagesOrder.length) return alert('No PDF loaded or pages available');
+      const selectedEls = Array.from(thumbnails.querySelectorAll('.thumb.selected'));
+      if(!selectedEls.length) return alert('Select pages first in Organize');
+      const src = await PDFDocument.load(currentPdfBytes);
       const out = await PDFDocument.create();
-      const orderEls = Array.from(pagesContainer.children);
-      if(orderEls.length===0) return alert('No pages visible');
-      for(let i=0;i<orderEls.length;i++){
-        const idx = parseInt(orderEls[i].dataset.page,10);
-        const [copied] = await out.copyPages(src,[idx]);
+      for(const el of selectedEls){
+        const orig = parseInt(el.dataset.orig,10);
+        const [copied] = await out.copyPages(src, [orig]);
         out.addPage(copied);
       }
       const bytes = await out.save();
-      saveBytes(bytes, 'organized.pdf');
-      await renderPdfInViewer(bytes);
-      setStatus('Organized PDF exported');
-      lastSavedBytes = bytes; currentPdfBytes = bytes;
+      saveAs(new Blob([bytes],{type:'application/pdf'}), 'extracted-selected.pdf');
+      await loadPdf(bytes, 'extracted-selected.pdf');
+      log('Extracted selected pages');
     });
 
-    document.getElementById('btnClearOrganize').addEventListener('click', ()=>{ pagesContainer.innerHTML=''; organizeSourceBytes=null; setStatus('Organize cleared'); });
-
-    // --- Watermark & page numbers ---
+    // --- Watermark ---
     document.getElementById('btnApplyWatermark').addEventListener('click', async ()=>{
-      const fi = document.getElementById('watermarkFile').files[0];
-      if(!fi) return alert('Select a PDF file');
-      const arr = await fileToArrayBuffer(fi);
+      const f = document.getElementById('watermarkFile').files[0];
+      if(!f) return alert('Choose a PDF file');
+      const arr = await fileToArrayBuffer(f);
       const src = await PDFDocument.load(arr);
       const out = await PDFDocument.create();
       const helv = await out.embedFont(StandardFonts.HelveticaBold);
       const text = document.getElementById('wmText').value || 'Confidential';
-      const opacity = parseFloat(document.getElementById('wmOpacity').value || 0.12);
-      const size = parseInt(document.getElementById('wmSize').value || 48);
+      const opacity = parseFloat(document.getElementById('wmOpacity').value);
+      const size = parseInt(document.getElementById('wmSize').value) || 48;
       const pos = document.getElementById('wmPosition').value;
       for(let i=0;i<src.getPageCount();i++){
-        const [copied] = await out.copyPages(src,[i]);
-        const {width,height} = copied.getSize();
-        if(pos==='diagonal'){
-          copied.drawText(text,{x:width/4,y:height/2,size,font:helv,rotate:degrees(-30),opacity});
-        } else if(pos==='center'){
-          copied.drawText(text,{x:width/2 - text.length*5,y:height/2,size,font:helv,opacity});
+        const [copied] = await out.copyPages(src, [i]);
+        const {width, height} = copied.getSize();
+        if(pos === 'diagonal'){
+          copied.drawText(text, {x: width/4, y: height/2, size, font: helv, rotate: degrees(-30), opacity});
+        } else if(pos === 'center'){
+          copied.drawText(text, {x: width/2 - (text.length*6), y: height/2, size, font: helv, opacity});
         } else {
-          copied.drawText(text,{x:40,y:height-60,size,font:helv,opacity});
+          copied.drawText(text, {x: 40, y: height - 60, size, font: helv, opacity});
         }
         out.addPage(copied);
       }
       const bytes = await out.save();
-      saveBytes(bytes,'watermarked.pdf');
-      await renderPdfInViewer(bytes);
-      setStatus('Watermark applied');
-      lastSavedBytes = bytes; currentPdfBytes = bytes;
+      saveAs(new Blob([bytes],{type:'application/pdf'}), 'watermarked.pdf');
+      await loadPdf(bytes, 'watermarked.pdf');
+      log('Watermark applied to file');
     });
 
-    document.getElementById('btnAddPageNumbers').addEventListener('click', async ()=>{
-      const fi = document.getElementById('watermarkFile').files[0];
-      if(!fi) return alert('Select a PDF file');
-      const arr = await fileToArrayBuffer(fi);
-      const src = await PDFDocument.load(arr);
+    // Apply watermark to selected pages only
+    document.getElementById('btnApplyWatermarkSelected').addEventListener('click', async ()=>{
+      if(!currentPagesOrder.length) return alert('Load a PDF and have thumbnails visible');
+      const selectedEls = Array.from(thumbnails.querySelectorAll('.thumb.selected'));
+      if(!selectedEls.length) return alert('Select pages to watermark in Organize');
+      const src = await PDFDocument.load(currentPdfBytes);
       const out = await PDFDocument.create();
-      const helv = await out.embedFont(StandardFonts.Helvetica);
-      const total = src.getPageCount();
-      for(let i=0;i<total;i++){
-        const [copied] = await out.copyPages(src,[i]);
-        const {width} = copied.getSize();
-        copied.drawText(`${i+1} / ${total}`, {x: width/2 - 20, y: 20, size: 12, font:helv});
+      const helv = await out.embedFont(StandardFonts.HelveticaBold);
+      const text = document.getElementById('wmText').value || 'Confidential';
+      const opacity = parseFloat(document.getElementById('wmOpacity').value);
+      const size = parseInt(document.getElementById('wmSize').value) || 48;
+      // copy pages in current order, applying watermark to those selected
+      const orderEls = Array.from(thumbnails.children);
+      for(const el of orderEls){
+        const orig = parseInt(el.dataset.orig,10);
+        const [copied] = await out.copyPages(src, [orig]);
+        if(el.classList.contains('selected')){
+          const {width, height} = copied.getSize();
+          copied.drawText(text, {x: width/4, y: height/2, size, font: helv, rotate: degrees(-30), opacity});
+        }
         out.addPage(copied);
       }
       const bytes = await out.save();
-      saveBytes(bytes,'pagenums.pdf');
-      await renderPdfInViewer(bytes);
-      setStatus('Page numbers added');
-      lastSavedBytes = bytes; currentPdfBytes = bytes;
+      saveAs(new Blob([bytes],{type:'application/pdf'}), 'watermarked-selected.pdf');
+      await loadPdf(bytes, 'watermarked-selected.pdf');
+      log('Watermark applied to selected pages');
     });
 
-    // --- Signature: draw, save, place on selected page ---
-    const sigCanvas = document.getElementById('sigPad');
-    const sctx = sigCanvas.getContext('2d'); sctx.lineWidth=2; sctx.strokeStyle='#111';
-    let drawing=false;
-    sigCanvas.addEventListener('pointerdown', (e)=>{ drawing=true; sctx.beginPath(); sctx.moveTo(e.offsetX,e.offsetY); });
-    sigCanvas.addEventListener('pointerup', ()=>{ drawing=false; });
-    sigCanvas.addEventListener('pointermove', (e)=>{ if(!drawing) return; sctx.lineTo(e.offsetX,e.offsetY); sctx.stroke(); });
+    // --- Signature handling ---
+    const sigCanvas = document.getElementById('sigCanvas');
+    const sctx = sigCanvas.getContext('2d');
+    sctx.lineWidth = 2; sctx.strokeStyle = '#111';
+    let drawing = false;
+    sigCanvas.addEventListener('pointerdown', e=>{ drawing=true; sctx.beginPath(); sctx.moveTo(e.offsetX, e.offsetY); });
+    sigCanvas.addEventListener('pointerup', ()=> drawing=false);
+    sigCanvas.addEventListener('pointermove', e=>{ if(!drawing) return; sctx.lineTo(e.offsetX,e.offsetY); sctx.stroke(); });
 
-    document.getElementById('sigClear').addEventListener('click', ()=> sctx.clearRect(0,0,sigCanvas.width,sigCanvas.height));
+    document.getElementById('sigClear').onclick = ()=> sctx.clearRect(0,0,sigCanvas.width,sigCanvas.height);
+
     document.getElementById('sigSave').addEventListener('click', ()=>{
-      const data = sigCanvas.toDataURL('image/png');
-      savedSignatures.push(data);
-      const img = document.createElement('img'); img.src=data; img.style.height='48px'; img.style.border='1px solid #ddd'; img.style.borderRadius='6px';
-      img.className='me-2';
-      document.getElementById('savedSignatures').appendChild(img);
-      setStatus('Signature saved');
+      const dataURL = sigCanvas.toDataURL('image/png');
+      savedSignatures.push(dataURL);
+      const img = document.createElement('img'); img.src = dataURL; img.style.height='48px'; img.style.border='1px solid #ddd'; img.style.borderRadius='6px';
+      document.getElementById('savedSigs').appendChild(img);
+      log('Signature saved');
     });
 
-    document.getElementById('btnPlaceSaved').addEventListener('click', async ()=>{
-      if(savedSignatures.length===0) return alert('Save a signature first');
-      if(!organizeSourceBytes) return alert('Load a PDF in Organize tab and select a page thumbnail');
-      // find selected thumbnail
-      const selected = pagesContainer.querySelector('.border-3');
-      if(!selected) return alert('Select a page thumbnail in Organize first');
-      const pageIndex = parseInt(selected.dataset.page,10);
-      const src = await PDFDocument.load(organizeSourceBytes);
+    document.getElementById('btnPlaceSignature').addEventListener('click', async ()=>{
+      if(!savedSignatures.length) return alert('Save a signature first');
+      if(!currentPagesOrder.length) return alert('Load a PDF first and select thumbnails to place into');
+      const selectedEls = Array.from(thumbnails.querySelectorAll('.thumb.selected'));
+      if(!selectedEls.length) return alert('Select page(s) in Organize to place signature');
+      const src = await PDFDocument.load(currentPdfBytes);
       const out = await PDFDocument.create();
       const sigBytes = await (await fetch(savedSignatures[savedSignatures.length-1])).arrayBuffer();
       const sigImg = await out.embedPng(sigBytes);
-      for(let i=0;i<src.getPageCount();i++){
-        const [copied] = await out.copyPages(src,[i]);
-        if(i===pageIndex){
+      // copy pages in current order, placing signature where selected
+      const orderEls = Array.from(thumbnails.children);
+      for(const el of orderEls){
+        const orig = parseInt(el.dataset.orig,10);
+        const [copied] = await out.copyPages(src, [orig]);
+        if(el.classList.contains('selected')){
           const {width} = copied.getSize();
           const w = Math.min(200, width*0.25);
           const h = (sigImg.height / sigImg.width) * w;
-          copied.drawImage(sigImg,{x: width - w - 40, y: 40, width:w, height:h});
+          copied.drawImage(sigImg, {x: width - w - 40, y: 40, width: w, height: h});
         }
         out.addPage(copied);
       }
       const bytes = await out.save();
-      saveBytes(bytes,'signed.pdf');
-      await renderPdfInViewer(bytes);
-      setStatus('Signature placed on page '+(pageIndex+1));
-      lastSavedBytes = bytes; currentPdfBytes = bytes;
+      saveAs(new Blob([bytes],{type:'application/pdf'}),'signed.pdf');
+      await loadPdf(bytes, 'signed.pdf');
+      log('Signature placed on selected pages');
     });
 
-    // --- Compression (rasterize pages to images at chosen quality) ---
+    // --- Compress (rasterize pages to JPEG at quality) ---
     document.getElementById('btnCompress').addEventListener('click', async ()=>{
       const f = document.getElementById('compressInput').files[0];
       if(!f) return alert('Choose a PDF to compress');
       const q = parseFloat(document.getElementById('compressQuality').value);
-      setStatus('Compressing (this may be slow)...');
+      setTimeout(()=>log('Starting compression...'), 0);
       const arr = await fileToArrayBuffer(f);
-      const src = await pdfjsLib.getDocument({data:new Uint8Array(arr)}).promise;
+      const srcPdf = await pdfjsLib.getDocument({data:new Uint8Array(arr)}).promise;
       const out = await PDFDocument.create();
-      for(let p=1;p<=src.numPages;p++){
-        const page = await src.getPage(p);
+      for(let p=1;p<=srcPdf.numPages;p++){
+        const page = await srcPdf.getPage(p);
         const viewport = page.getViewport({scale:1.5});
         const canvas = document.createElement('canvas');
         canvas.width = viewport.width; canvas.height = viewport.height;
         const ctx = canvas.getContext('2d');
-        await page.render({canvasContext:ctx,viewport}).promise;
-        // convert canvas to jpeg at quality q
+        await page.render({canvasContext:ctx, viewport}).promise;
         const dataUrl = canvas.toDataURL('image/jpeg', q);
         const imgBytes = dataURLToUint8Array(dataUrl);
         const img = await out.embedJpg(imgBytes);
-        const newPage = out.addPage([img.width,img.height]);
-        newPage.drawImage(img,{x:0,y:0,width:img.width,height:img.height});
+        const pg = out.addPage([img.width, img.height]);
+        pg.drawImage(img, {x:0,y:0,width:img.width, height:img.height});
+        log('Compressed page ' + p);
       }
       const bytes = await out.save();
-      saveBytes(bytes,'compressed.pdf');
-      await renderPdfInViewer(bytes);
-      setStatus('Compression finished (lossy)');
-      lastSavedBytes = bytes; currentPdfBytes = bytes;
+      saveAs(new Blob([bytes],{type:'application/pdf'}), 'compressed.pdf');
+      await loadPdf(bytes, 'compressed.pdf');
+      log('Compression finished');
     });
 
-    // --- Protect (AES) ---
+    // Helper: dataURL -> Uint8Array
+    function dataURLToUint8Array(dataURL){
+      const base64 = dataURL.split(',')[1];
+      const binary = atob(base64);
+      const len = binary.length;
+      const arr = new Uint8Array(len);
+      for(let i=0;i<len;i++) arr[i] = binary.charCodeAt(i);
+      return arr;
+    }
+
+    // --- Protect: AES encrypt / decrypt whole file as .enc blob ---
     document.getElementById('btnEncrypt').addEventListener('click', async ()=>{
-      const f = document.getElementById('protectInput').files[0];
-      const pass = document.getElementById('protectPass').value;
-      if(!f) return alert('Choose file to encrypt');
+      const f = document.getElementById('protectFile').files[0];
+      const pass = document.getElementById('protectPassword').value;
+      if(!f) return alert('Choose a file to encrypt');
       if(!pass) return alert('Enter a password');
       const arr = await fileToArrayBuffer(f);
-      // convert arr to word array
       const wordArray = CryptoJS.lib.WordArray.create(arr);
       const ciphertext = CryptoJS.AES.encrypt(wordArray, pass).toString();
       const blob = new Blob([ciphertext], {type:'application/octet-stream'});
-      saveBlob(blob, f.name + '.enc');
-      setStatus('File encrypted (AES): ' + f.name + '.enc');
+      saveAs(blob, f.name + '.enc');
+      log('File encrypted to ' + f.name + '.enc (AES blob)');
     });
 
     document.getElementById('btnDecrypt').addEventListener('click', async ()=>{
-      const f = document.getElementById('protectInput').files[0];
-      const pass = document.getElementById('protectPass').value;
-      if(!f) return alert('Choose .enc file to decrypt');
+      const f = document.getElementById('protectFile').files[0];
+      const pass = document.getElementById('protectPassword').value;
+      if(!f) return alert('Choose an .enc file to decrypt');
       if(!pass) return alert('Enter password');
-      const text = await f.text();
+      const txt = await f.text();
       try{
-        const decrypted = CryptoJS.AES.decrypt(text, pass);
-        // decrypted is a WordArray; convert to Uint8Array
-        const u8 = wordArrayToUint8Array(decrypted);
+        const bytes = CryptoJS.AES.decrypt(txt, pass);
+        const u8 = wordArrayToUint8Array(bytes);
         const blob = new Blob([u8], {type:'application/octet-stream'});
-        saveBlob(blob, f.name.replace(/\.enc$/,''));
-        setStatus('File decrypted: ' + f.name);
+        saveAs(blob, f.name.replace(/\.enc$/,''));
+        log('Decrypted ' + f.name);
       } catch(e){
-        alert('Decryption failed');
-        log('Decrypt error: ' + e.message);
+        alert('Decryption failed: wrong password or invalid file');
       }
     });
 
@@ -725,58 +761,107 @@
       let idx=0;
       for(let i=0;i<words.length;i++){
         let w = words[i];
-        u8[idx++] = (w>>24)&0xFF; if(idx>=len) break;
-        u8[idx++] = (w>>16)&0xFF; if(idx>=len) break;
-        u8[idx++] = (w>>8)&0xFF; if(idx>=len) break;
-        u8[idx++] = (w)&0xFF; if(idx>=len) break;
+        u8[idx++] = (w >> 24) & 0xFF; if(idx>=len) break;
+        u8[idx++] = (w >> 16) & 0xFF; if(idx>=len) break;
+        u8[idx++] = (w >> 8) & 0xFF; if(idx>=len) break;
+        u8[idx++] = (w) & 0xFF; if(idx>=len) break;
       }
       return u8;
     }
 
-    function dataURLToUint8Array(dataURL){
-      const base64 = dataURL.split(',')[1];
-      const raw = atob(base64);
-      const arr = new Uint8Array(raw.length);
-      for(let i=0;i<raw.length;i++) arr[i]=raw.charCodeAt(i);
-      return arr;
-    }
+    // --- Rotate selected thumbnails (queues rotation) ---
+    document.getElementById('btnRotateSelected').addEventListener('click', async ()=>{
+      const angle = parseInt(document.getElementById('rotateAngle').value) || 90;
+      const sel = Array.from(thumbnails.querySelectorAll('.thumb.selected'));
+      if(!sel.length) return alert('Select pages to rotate in Organize');
+      sel.forEach(el=>{
+        const orig = parseInt(el.dataset.orig,10);
+        pageRotationMap[orig] = (pageRotationMap[orig] || 0) + angle;
+        log('Queued rotation ' + angle + '° for page ' + (orig+1));
+      });
+      alert('Rotation queued — export will apply rotations when saving/exporting');
+    });
 
-    // --- Rotate entire PDF ---
-    document.getElementById('btnRotate').addEventListener('click', async ()=>{
-      const f = document.getElementById('rotateInput').files[0];
-      const angle = parseInt(document.getElementById('rotateAngle').value);
-      if(!f) return alert('Choose a PDF to rotate');
-      const bytes = await fileToArrayBuffer(f);
-      const src = await PDFDocument.load(bytes);
+    // Delete selected thumbnails
+    document.getElementById('btnDeleteSelected').addEventListener('click', ()=>{
+      const sel = Array.from(thumbnails.querySelectorAll('.thumb.selected'));
+      if(!sel.length) return alert('Select pages to delete');
+      sel.forEach(el=>{
+        const orig = parseInt(el.dataset.orig,10);
+        el.remove();
+        currentPagesOrder = currentPagesOrder.filter(x => x !== orig);
+        log('Deleted page ' + (orig+1));
+      });
+    });
+
+    // Export organized PDF (applies ordering, deletions, rotations)
+    document.getElementById('btnExportOrganized').addEventListener('click', async ()=>{
+      if(!currentPagesOrder.length) return alert('No pages to export');
+      const src = await PDFDocument.load(currentPdfBytes);
       const out = await PDFDocument.create();
-      for(let i=0;i<src.getPageCount();i++){
-        const [copied] = await out.copyPages(src,[i]);
-        copied.setRotation(degrees(angle));
+      // For each thumbnail in current DOM order, copy corresponding original page and apply rotation (if any)
+      const orderEls = Array.from(thumbnails.children);
+      for(let i=0;i<orderEls.length;i++){
+        const orig = parseInt(orderEls[i].dataset.orig,10);
+        const [copied] = await out.copyPages(src, [orig]);
+        // apply rotation if present for this original index
+        const rot = pageRotationMap[orig] || 0;
+        if(rot % 360 !== 0) copied.setRotation(degrees(rot));
         out.addPage(copied);
       }
-      const outBytes = await out.save();
-      saveBytes(outBytes,'rotated.pdf');
-      await renderPdfInViewer(outBytes);
-      setStatus('Rotated by '+angle+'°');
-      lastSavedBytes = outBytes; currentPdfBytes = outBytes;
+      const bytes = await out.save();
+      lastExportBytes = bytes;
+      saveAs(new Blob([bytes],{type:'application/pdf'}), 'organized.pdf');
+      await loadPdf(bytes, 'organized.pdf');
+      log('Exported organized PDF');
     });
 
-    // --- Utilities ---
-    document.getElementById('themeToggle').addEventListener('click', ()=>{
-      document.body.classList.toggle('theme-dark');
+    // Rotate selected (apply immediately by exporting and reloading)
+    document.getElementById('btnRotateSelected').addEventListener('click', async ()=>{
+      // Use the same logic as export but apply more rotation
+      document.getElementById('btnExportOrganized').click();
     });
 
-    document.getElementById('btnDownloadCurrent').addEventListener('click', ()=>{
-      if(!lastSavedBytes) return alert('No current PDF to download');
-      saveBytes(lastSavedBytes, 'document.pdf');
+    // --- Rotate individual queued rotations handled on export (done above) ---
+
+    // --- Convert by drag-and-drop handled earlier via handleIncomingFiles ---
+
+    // --- Utilities: clear, preview click behavior ---
+    document.getElementById('clearAll').addEventListener('click', ()=>{
+      thumbnails.innerHTML = '';
+      previewArea.innerHTML = '';
+      currentPdfBytes = null;
+      currentPagesOrder = [];
+      pageRotationMap = {};
+      lastExportBytes = null;
+      log('Cleared current document');
     });
 
-    // Expose some global log on load
-    setStatus('Ready — client-side PDF toolkit loaded');
+    // --- Download current (lastExportBytes) ---
+    downloadCurrentBtn.addEventListener('click', ()=> {
+      if(!lastExportBytes) return alert('No PDF ready to download');
+      saveAs(new Blob([lastExportBytes], {type:'application/pdf'}), currentPdfName || 'document.pdf');
+    });
 
-    // Prevent syntax errors in older browsers for move up/down quick functions:
-    // (These simple movement functions were left intentionally minimal)
-    // End script
+    // --- Helper: when loadPdf sets thumbnail order (orig indices may not be contiguous after deletes),
+    // we keep currentPagesOrder updated when thumbnails reorder or delete (handled by events above) ---
+
+    // Initialize empty Sortable for thumbnails container (will work when children exist)
+    Sortable.create(thumbnails, {animation:180});
+
+    // initial log
+    log('PDF Toolkit ready — upload a PDF to begin');
+
+    // small helper: attach split input quick load if user chooses a file
+    document.getElementById('splitFileInput').addEventListener('change', async (e)=>{
+      if(!e.target.files.length) return;
+      const arr = await fileToArrayBuffer(e.target.files[0]);
+      await loadPdf(arr, e.target.files[0].name);
+    });
+
+    // Utility: if users add merge files then reorder via DOM names, we need to keep mergeFilesArr consistent.
+    // Done via matching name when executing merge.
+
   </script>
 </body>
 </html>
