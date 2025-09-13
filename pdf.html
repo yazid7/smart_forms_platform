@@ -1,0 +1,870 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF Tools - Convert, Edit & Manipulate PDF Files</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <!-- Custom CSS -->
+    <style>
+        :root {
+            --primary: #4e73df;
+            --secondary: #6f42c1;
+            --success: #1cc88a;
+            --light-bg: #f8f9fc;
+        }
+        
+        body {
+            background-color: var(--light-bg);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .navbar {
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .hero-section {
+            background: linear-gradient(to right, #4e73df, #6f42c1);
+            color: white;
+            padding: 4rem 0;
+            margin-bottom: 3rem;
+            border-radius: 0 0 20px 20px;
+        }
+        
+        .tool-card {
+            transition: transform 0.3s, box-shadow 0.3s;
+            border-radius: 10px;
+            overflow: hidden;
+            height: 100%;
+        }
+        
+        .tool-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        .tool-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            color: var(--primary);
+        }
+        
+        .feature-icon {
+            font-size: 1.2rem;
+            color: var(--success);
+            margin-right: 0.5rem;
+        }
+        
+        .upload-area {
+            border: 2px dashed #ccc;
+            padding: 2rem;
+            text-align: center;
+            border-radius: 10px;
+            background-color: white;
+            cursor: pointer;
+            transition: border-color 0.3s;
+            min-height: 200px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .upload-area:hover {
+            border-color: var(--primary);
+        }
+        
+        .upload-icon {
+            font-size: 3rem;
+            color: #6c757d;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary);
+            border-color: var(--primary);
+        }
+        
+        .btn-primary:hover {
+            background-color: #3a5ecc;
+            border-color: #3a5ecc;
+        }
+        
+        .footer {
+            background-color: white;
+            padding: 2rem 0;
+            margin-top: 3rem;
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .tool-content {
+            display: none;
+        }
+        
+        .tool-content.active {
+            display: block;
+        }
+        
+        .progress {
+            height: 10px;
+        }
+        
+        .feature-list {
+            list-style-type: none;
+            padding: 0;
+        }
+        
+        .feature-list li {
+            margin-bottom: 0.5rem;
+        }
+        
+        .tool-option {
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .tool-option:hover {
+            border-color: var(--primary);
+            background-color: rgba(78, 115, 223, 0.05);
+        }
+        
+        .tool-option.selected {
+            border-color: var(--primary);
+            background-color: rgba(78, 115, 223, 0.1);
+        }
+        
+        .page-thumbnail {
+            width: 80px;
+            height: 100px;
+            border: 1px solid #ddd;
+            margin: 5px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #f8f9fa;
+            cursor: move;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <i class="bi bi-file-earmark-pdf-fill me-2"></i>PDF Tools
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="#home">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#features">Features</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#tools">Tools</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#about">About</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero-section" id="home">
+        <div class="container text-center">
+            <h1 class="display-4 fw-bold">All PDF Tools You Need in One Place</h1>
+            <p class="lead">Convert, edit, merge, split, protect and more with our easy-to-use PDF tools</p>
+            <a href="#tools" class="btn btn-light btn-lg mt-3">Get Started</a>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="container mb-5" id="features">
+        <h2 class="text-center mb-4">Powerful PDF Features</h2>
+        <div class="row">
+            <div class="col-md-6 col-lg-3 mb-4">
+                <div class="card tool-card h-100">
+                    <div class="card-body text-center">
+                        <i class="bi bi-arrow-left-right tool-icon"></i>
+                        <h5 class="card-title">Convert Files</h5>
+                        <p class="card-text">Convert PDF to Word, Excel, PPT, Images and vice versa</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3 mb-4">
+                <div class="card tool-card h-100">
+                    <div class="card-body text-center">
+                        <i class="bi bi-lock tool-icon"></i>
+                        <h5 class="card-title">Protect PDF</h5>
+                        <p class="card-text">Add passwords and permissions to secure your PDF files</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3 mb-4">
+                <div class="card tool-card h-100">
+                    <div class="card-body text-center">
+                        <i class="bi bi-compass tool-icon"></i>
+                        <h5 class="card-title">Organize Pages</h5>
+                        <p class="card-text">Rearrange, delete, or rotate pages in your PDF documents</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3 mb-4">
+                <div class="card tool-card h-100">
+                    <div class="card-body text-center">
+                        <i class="bi bi-pen tool-icon"></i>
+                        <h5 class="card-title">Sign & Watermark</h5>
+                        <p class="card-text">Add digital signatures and watermarks to your documents</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Tools Section -->
+    <section class="container mb-5" id="tools">
+        <h2 class="text-center mb-4">PDF Tools</h2>
+        
+        <div class="row">
+            <!-- Tool Selection Sidebar -->
+            <div class="col-lg-3 mb-4">
+                <div class="list-group">
+                    <a href="#" class="list-group-item list-group-item-action active" data-tool="convert">
+                        <i class="bi bi-arrow-left-right me-2"></i>Convert Files
+                    </a>
+                    <a href="#" class="list-group-item list-group-item-action" data-tool="merge">
+                        <i class="bi bi-file-earmark-merge me-2"></i>Merge PDF
+                    </a>
+                    <a href="#" class="list-group-item list-group-item-action" data-tool="split">
+                        <i class="bi bi-scissors me-2"></i>Split PDF
+                    </a>
+                    <a href="#" class="list-group-item list-group-item-action" data-tool="protect">
+                        <i class="bi bi-lock me-2"></i>Protect PDF
+                    </a>
+                    <a href="#" class="list-group-item list-group-item-action" data-tool="sign">
+                        <i class="bi bi-pen me-2"></i>Add Signature
+                    </a>
+                    <a href="#" class="list-group-item list-group-item-action" data-tool="compress">
+                        <i class="bi bi-arrow-down-up me-2"></i>Compress PDF
+                    </a>
+                    <a href="#" class="list-group-item list-group-item-action" data-tool="pagenumbers">
+                        <i class="bi bi-list-ol me-2"></i>Add Page Numbers
+                    </a>
+                    <a href="#" class="list-group-item list-group-item-action" data-tool="watermark">
+                        <i class="bi bi-tag me-2"></i>Add Watermark
+                    </a>
+                    <a href="#" class="list-group-item list-group-item-action" data-tool="organize">
+                        <i class="bi bi-columns me-2"></i>Organize Pages
+                    </a>
+                    <a href="#" class="list-group-item list-group-item-action" data-tool="rotate">
+                        <i class="bi bi-arrow-clockwise me-2"></i>Rotate PDF
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Tool Content Area -->
+            <div class="col-lg-9">
+                <!-- Convert Tool -->
+                <div id="convert-tool" class="tool-content active">
+                    <div class="card">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0"><i class="bi bi-arrow-left-right me-2"></i>Convert Files</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="upload-area mb-4" id="convert-upload">
+                                <i class="bi bi-cloud-arrow-up upload-icon"></i>
+                                <h5>Drag & Drop your file here</h5>
+                                <p class="text-muted">or</p>
+                                <button class="btn btn-primary">Browse Files</button>
+                                <p class="mt-2 text-muted">Supported formats: PDF, DOC, DOCX, PPT, PPTX, XLS, XLSX, JPG, PNG</p>
+                            </div>
+                            
+                            <div class="row mb-4">
+                                <div class="col-md-6">
+                                    <label class="form-label">Convert From</label>
+                                    <select class="form-select">
+                                        <option selected>PDF</option>
+                                        <option>Word (DOC/DOCX)</option>
+                                        <option>PowerPoint (PPT/PPTX)</option>
+                                        <option>Excel (XLS/XLSX)</option>
+                                        <option>JPG</option>
+                                        <option>PNG</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Convert To</label>
+                                    <select class="form-select">
+                                        <option selected>PDF</option>
+                                        <option>Word (DOC/DOCX)</option>
+                                        <option>PowerPoint (PPT/PPTX)</option>
+                                        <option>Excel (XLS/XLSX)</option>
+                                        <option>JPG</option>
+                                        <option>PNG</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="d-grid">
+                                <button class="btn btn-primary btn-process">Convert Now</button>
+                            </div>
+                            
+                            <div class="progress mt-4 d-none">
+                                <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%"></div>
+                            </div>
+                            
+                            <div class="alert alert-success mt-3 d-none" role="alert">
+                                Conversion completed successfully! <a href="#" class="alert-link">Download your file</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Merge Tool -->
+                <div id="merge-tool" class="tool-content">
+                    <div class="card">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0"><i class="bi bi-file-earmark-merge me-2"></i>Merge PDF Files</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="upload-area mb-4" id="merge-upload">
+                                <i class="bi bi-cloud-arrow-up upload-icon"></i>
+                                <h5>Drag & Drop your PDF files here</h5>
+                                <p class="text-muted">or</p>
+                                <button class="btn btn-primary">Browse Files</button>
+                                <p class="mt-2 text-muted">Select multiple PDF files to merge</p>
+                            </div>
+                            
+                            <div class="d-grid">
+                                <button class="btn btn-primary btn-process">Merge PDFs</button>
+                            </div>
+                            
+                            <div class="progress mt-4 d-none">
+                                <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%"></div>
+                            </div>
+                            
+                            <div class="alert alert-success mt-3 d-none" role="alert">
+                                PDFs merged successfully! <a href="#" class="alert-link">Download your file</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Split Tool -->
+                <div id="split-tool" class="tool-content">
+                    <div class="card">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0"><i class="bi bi-scissors me-2"></i>Split PDF</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="upload-area mb-4" id="split-upload">
+                                <i class="bi bi-cloud-arrow-up upload-icon"></i>
+                                <h5>Drag & Drop your PDF file here</h5>
+                                <p class="text-muted">or</p>
+                                <button class="btn btn-primary">Browse Files</button>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <label class="form-label">Split Options</label>
+                                <div class="tool-option selected">Split by page range</div>
+                                <div class="tool-option">Extract all pages as separate files</div>
+                                <div class="tool-option">Split by bookmark</div>
+                            </div>
+                            
+                            <div class="d-grid">
+                                <button class="btn btn-primary btn-process">Split PDF</button>
+                            </div>
+                            
+                            <div class="progress mt-4 d-none">
+                                <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%"></div>
+                            </div>
+                            
+                            <div class="alert alert-success mt-3 d-none" role="alert">
+                                PDF split successfully! <a href="#" class="alert-link">Download your files</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Protect Tool -->
+                <div id="protect-tool" class="tool-content">
+                    <div class="card">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0"><i class="bi bi-lock me-2"></i>Protect PDF</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="upload-area mb-4" id="protect-upload">
+                                <i class="bi bi-cloud-arrow-up upload-icon"></i>
+                                <h5>Drag & Drop your PDF file here</h5>
+                                <p class="text-muted">or</p>
+                                <button class="btn btn-primary">Browse Files</button>
+                            </div>
+                            
+                            <div class="row mb-4">
+                                <div class="col-md-6">
+                                    <label for="password" class="form-label">Password</label>
+                                    <input type="password" class="form-control" id="password" placeholder="Enter password">
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="confirmPassword" class="form-label">Confirm Password</label>
+                                    <input type="password" class="form-control" id="confirmPassword" placeholder="Confirm password">
+                                </div>
+                            </div>
+                            
+                            <div class="d-grid">
+                                <button class="btn btn-primary btn-process">Protect PDF</button>
+                            </div>
+                            
+                            <div class="progress mt-4 d-none">
+                                <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%"></div>
+                            </div>
+                            
+                            <div class="alert alert-success mt-3 d-none" role="alert">
+                                PDF protected successfully! <a href="#" class="alert-link">Download your file</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Sign Tool -->
+                <div id="sign-tool" class="tool-content">
+                    <div class="card">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0"><i class="bi bi-pen me-2"></i>Add Signature</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="upload-area mb-4" id="sign-upload">
+                                <i class="bi bi-cloud-arrow-up upload-icon"></i>
+                                <h5>Drag & Drop your PDF file here</h5>
+                                <p class="text-muted">or</p>
+                                <button class="btn btn-primary">Browse Files</button>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <label class="form-label">Signature Options</label>
+                                <div class="tool-option selected">Draw signature</div>
+                                <div class="tool-option">Upload signature image</div>
+                                <div class="tool-option">Type signature</div>
+                            </div>
+                            
+                            <div class="d-grid">
+                                <button class="btn btn-primary btn-process">Add Signature</button>
+                            </div>
+                            
+                            <div class="progress mt-4 d-none">
+                                <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%"></div>
+                            </div>
+                            
+                            <div class="alert alert-success mt-3 d-none" role="alert">
+                                Signature added successfully! <a href="#" class="alert-link">Download your file</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Compress Tool -->
+                <div id="compress-tool" class="tool-content">
+                    <div class="card">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0"><i class="bi bi-arrow-down-up me-2"></i>Compress PDF</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="upload-area mb-4" id="compress-upload">
+                                <i class="bi bi-cloud-arrow-up upload-icon"></i>
+                                <h5>Drag & Drop your PDF file here</h5>
+                                <p class="text-muted">or</p>
+                                <button class="btn btn-primary">Browse Files</button>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <label class="form-label">Compression Level</label>
+                                <div class="tool-option">Low compression (better quality)</div>
+                                <div class="tool-option selected">Medium compression</div>
+                                <div class="tool-option">High compression (smaller size)</div>
+                            </div>
+                            
+                            <div class="d-grid">
+                                <button class="btn btn-primary btn-process">Compress PDF</button>
+                            </div>
+                            
+                            <div class="progress mt-4 d-none">
+                                <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%"></div>
+                            </div>
+                            
+                            <div class="alert alert-success mt-3 d-none" role="alert">
+                                PDF compressed successfully! <a href="#" class="alert-link">Download your file</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Add Page Numbers Tool -->
+                <div id="pagenumbers-tool" class="tool-content">
+                    <div class="card">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0"><i class="bi bi-list-ol me-2"></i>Add Page Numbers</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="upload-area mb-4" id="pagenumbers-upload">
+                                <i class="bi bi-cloud-arrow-up upload-icon"></i>
+                                <h5>Drag & Drop your PDF file here</h5>
+                                <p class="text-muted">or</p>
+                                <button class="btn btn-primary">Browse Files</button>
+                            </div>
+                            
+                            <div class="row mb-4">
+                                <div class="col-md-6">
+                                    <label class="form-label">Number Position</label>
+                                    <select class="form-select">
+                                        <option>Top Left</option>
+                                        <option>Top Center</option>
+                                        <option>Top Right</option>
+                                        <option>Bottom Left</option>
+                                        <option selected>Bottom Center</option>
+                                        <option>Bottom Right</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Number Format</label>
+                                    <select class="form-select">
+                                        <option selected>1, 2, 3</option>
+                                        <option>i, ii, iii</option>
+                                        <option>I, II, III</option>
+                                        <option>a, b, c</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="d-grid">
+                                <button class="btn btn-primary btn-process">Add Page Numbers</button>
+                            </div>
+                            
+                            <div class="progress mt-4 d-none">
+                                <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%"></div>
+                            </div>
+                            
+                            <div class="alert alert-success mt-3 d-none" role="alert">
+                                Page numbers added successfully! <a href="#" class="alert-link">Download your file</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Watermark Tool -->
+                <div id="watermark-tool" class="tool-content">
+                    <div class="card">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0"><i class="bi bi-tag me-2"></i>Add Watermark</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="upload-area mb-4" id="watermark-upload">
+                                <i class="bi bi-cloud-arrow-up upload-icon"></i>
+                                <h5>Drag & Drop your PDF file here</h5>
+                                <p class="text-muted">or</p>
+                                <button class="btn btn-primary">Browse Files</button>
+                            </div>
+                            
+                            <div class="row mb-4">
+                                <div class="col-md-6">
+                                    <label class="form-label">Watermark Type</label>
+                                    <div class="tool-option selected">Text watermark</div>
+                                    <div class="tool-option">Image watermark</div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="watermarkText" class="form-label">Watermark Text</label>
+                                    <input type="text" class="form-control" id="watermarkText" placeholder="Enter watermark text" value="CONFIDENTIAL">
+                                </div>
+                            </div>
+                            
+                            <div class="d-grid">
+                                <button class="btn btn-primary btn-process">Add Watermark</button>
+                            </div>
+                            
+                            <div class="progress mt-4 d-none">
+                                <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%"></div>
+                            </div>
+                            
+                            <div class="alert alert-success mt-3 d-none" role="alert">
+                                Watermark added successfully! <a href="#" class="alert-link">Download your file</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Organize Pages Tool -->
+                <div id="organize-tool" class="tool-content">
+                    <div class="card">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0"><i class="bi bi-columns me-2"></i>Organize Pages</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="upload-area mb-4" id="organize-upload">
+                                <i class="bi bi-cloud-arrow-up upload-icon"></i>
+                                <h5>Drag & Drop your PDF file here</h5>
+                                <p class="text-muted">or</p>
+                                <button class="btn btn-primary">Browse Files</button>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <label class="form-label">Page Thumbnails</label>
+                                <div class="border rounded p-3 text-center">
+                                    <div class="page-thumbnail">1</div>
+                                    <div class="page-thumbnail">2</div>
+                                    <div class="page-thumbnail">3</div>
+                                    <div class="page-thumbnail">4</div>
+                                    <div class="page-thumbnail">5</div>
+                                    <p class="mt-2 text-muted">Drag to reorder pages</p>
+                                </div>
+                            </div>
+                            
+                            <div class="d-grid">
+                                <button class="btn btn-primary btn-process">Reorganize Pages</button>
+                            </div>
+                            
+                            <div class="progress mt-4 d-none">
+                                <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%"></div>
+                            </div>
+                            
+                            <div class="alert alert-success mt-3 d-none" role="alert">
+                                Pages reorganized successfully! <a href="#" class="alert-link">Download your file</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Rotate Tool -->
+                <div id="rotate-tool" class="tool-content">
+                    <div class="card">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0"><i class="bi bi-arrow-clockwise me-2"></i>Rotate PDF</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="upload-area mb-4" id="rotate-upload">
+                                <i class="bi bi-cloud-arrow-up upload-icon"></i>
+                                <h5>Drag & Drop your PDF file here</h5>
+                                <p class="text-muted">or</p>
+                                <button class="btn btn-primary">Browse Files</button>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <label class="form-label">Rotation Options</label>
+                                <div class="d-flex justify-content-around">
+                                    <div class="text-center">
+                                        <div class="page-thumbnail mx-auto"><i class="bi bi-arrow-counterclockwise"></i></div>
+                                        <div class="form-check mt-2">
+                                            <input class="form-check-input" type="radio" name="rotateOption" id="rotateLeft" checked>
+                                            <label class="form-check-label" for="rotateLeft">Rotate Left</label>
+                                        </div>
+                                    </div>
+                                    <div class="text-center">
+                                        <div class="page-thumbnail mx-auto"><i class="bi bi-arrow-clockwise"></i></div>
+                                        <div class="form-check mt-2">
+                                            <input class="form-check-input" type="radio" name="rotateOption" id="rotateRight">
+                                            <label class="form-check-label" for="rotateRight">Rotate Right</label>
+                                        </div>
+                                    </div>
+                                    <div class="text-center">
+                                        <div class="page-thumbnail mx-auto"><i class="bi bi-arrow-down-up"></i></div>
+                                        <div class="form-check mt-2">
+                                            <input class="form-check-input" type="radio" name="rotateOption" id="rotate180">
+                                            <label class="form-check-label" for="rotate180">180°</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="d-grid">
+                                <button class="btn btn-primary btn-process">Rotate PDF</button>
+                            </div>
+                            
+                            <div class="progress mt-4 d-none">
+                                <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%"></div>
+                            </div>
+                            
+                            <div class="alert alert-success mt-3 d-none" role="alert">
+                                PDF rotated successfully! <a href="#" class="alert-link">Download your file</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works Section -->
+    <section class="container mb-5">
+        <h2 class="text-center mb-4">How It Works</h2>
+        <div class="row">
+            <div class="col-md-4 text-center mb-4">
+                <div class="bg-primary rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+                    <i class="bi bi-cloud-arrow-up text-white" style="font-size: 2rem;"></i>
+                </div>
+                <h4>1. Upload File</h4>
+                <p>Select the PDF file you want to edit or convert</p>
+            </div>
+            <div class="col-md-4 text-center mb-4">
+                <div class="bg-primary rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+                    <i class="bi bi-gear text-white" style="font-size: 2rem;"></i>
+                </div>
+                <h4>2. Process File</h4>
+                <p>Choose the tool and customize your settings</p>
+            </div>
+            <div class="col-md-4 text-center mb-4">
+                <div class="bg-primary rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+                    <i class="bi bi-download text-white" style="font-size: 2rem;"></i>
+                </div>
+                <h4>3. Download</h4>
+                <p>Download your processed file instantly</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer mt-5" id="about">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-4 mb-4">
+                    <h5>PDF Tools</h5>
+                    <p>Your all-in-one solution for PDF conversion and manipulation. Easy, fast, and secure.</p>
+                </div>
+                <div class="col-lg-4 mb-4">
+                    <h5>Links</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="#home" class="text-decoration-none">Home</a></li>
+                        <li><a href="#features" class="text-decoration-none">Features</a></li>
+                        <li><a href="#tools" class="text-decoration-none">Tools</a></li>
+                        <li><a href="#" class="text-decoration-none">Privacy Policy</a></li>
+                        <li><a href="#" class="text-decoration-none">Terms of Service</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-4">
+                    <h5>Connect With Us</h5>
+                    <div class="d-flex gap-3">
+                        <a href="#" class="text-decoration-none"><i class="bi bi-facebook fs-4"></i></a>
+                        <a href="#" class="text-decoration-none"><i class="bi bi-twitter fs-4"></i></a>
+                        <a href="#" class="text-decoration-none"><i class="bi bi-github fs-4"></i></a>
+                    </div>
+                </div>
+            </div>
+            <hr>
+            <div class="text-center">
+                <p class="mb-0">© 2023 PDF Tools. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap & jQuery JS -->
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Custom JavaScript -->
+    <script>
+        $(document).ready(function() {
+            // Tool selection
+            $('.list-group-item').on('click', function(e) {
+                e.preventDefault();
+                const tool = $(this).data('tool');
+                
+                // Update active state
+                $('.list-group-item').removeClass('active');
+                $(this).addClass('active');
+                
+                // Show selected tool content
+                $('.tool-content').removeClass('active');
+                $(`#${tool}-tool`).addClass('active');
+            });
+            
+            // Tool option selection
+            $('.tool-option').on('click', function() {
+                $(this).parent().find('.tool-option').removeClass('selected');
+                $(this).addClass('selected');
+            });
+            
+            // Process button click
+            $('.btn-process').on('click', function() {
+                const toolContent = $(this).closest('.tool-content');
+                const progressBar = toolContent.find('.progress');
+                const progressBarInner = toolContent.find('.progress-bar');
+                const alert = toolContent.find('.alert');
+                
+                // Hide any previous alerts
+                alert.addClass('d-none');
+                
+                // Show progress bar
+                progressBar.removeClass('d-none');
+                
+                // Simulate progress
+                let width = 0;
+                const interval = setInterval(function() {
+                    if (width >= 100) {
+                        clearInterval(interval);
+                        
+                        // Show success message
+                        alert.removeClass('d-none');
+                    } else {
+                        width += 5;
+                        progressBarInner.css('width', width + '%');
+                    }
+                }, 100);
+            });
+            
+            // File upload simulation
+            $('.upload-area').on('click', function() {
+                const uploadArea = $(this);
+                
+                // Only process if not already processed
+                if (!uploadArea.hasClass('processed')) {
+                    uploadArea.addClass('processed');
+                    
+                    // Show processing state
+                    uploadArea.html(`
+                        <div class="spinner-border text-primary mb-3" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <h5>Processing file...</h5>
+                    `);
+                    
+                    // Simulate file processing
+                    setTimeout(function() {
+                        uploadArea.html(`
+                            <i class="bi bi-check-circle-fill text-success upload-icon"></i>
+                            <h5>File uploaded successfully!</h5>
+                            <p class="text-muted">document.pdf</p>
+                            <button class="btn btn-outline-secondary mt-2 btn-sm">Change File</button>
+                        `);
+                        
+                        // Add change file handler
+                        uploadArea.find('button').on('click', function(e) {
+                            e.stopPropagation();
+                            uploadArea.removeClass('processed');
+                            uploadArea.html(`
+                                <i class="bi bi-cloud-arrow-up upload-icon"></i>
+                                <h5>Drag & Drop your file here</h5>
+                                <p class="text-muted">or</p>
+                                <button class="btn btn-primary">Browse Files</button>
+                            `);
+                            
+                            // Reattach the click event to the new button
+                            uploadArea.find('button').on('click', function(e) {
+                                e.stopPropagation();
+                                uploadArea.click();
+                            });
+                        });
+                    }, 1500);
+                }
+            });
+        });
+    </script>
+</body>
+</html>
